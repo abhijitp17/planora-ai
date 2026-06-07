@@ -138,3 +138,235 @@ def generate_forecast(dataset_version: str, sku: str, horizon: int = 12, db: Ses
         }
     }
     return output
+
+# ─── Phase 5: Paginated SKU list ─────────────────────────────────────────────
+@app.get("/api/skus")
+def list_skus(
+    dataset_version: str,
+    page: int = 1,
+    page_size: int = 50,
+    search: str = "",
+    category: str = "",
+    sort_by: str = "sku",
+    sort_dir: str = "asc",
+    db: Session = Depends(get_db)
+):
+    query = db.query(
+        models.DemandRecord.sku,
+        models.DemandRecord.category,
+        models.DemandRecord.location,
+        models.DemandRecord.channel,
+    ).filter(
+        models.DemandRecord.dataset_version == dataset_version
+    ).distinct()
+
+    if search:
+        query = query.filter(models.DemandRecord.sku.ilike(f"%{search}%"))
+    if category:
+        query = query.filter(models.DemandRecord.category == category)
+
+    total = query.count()
+
+    if sort_dir == "desc":
+        query = query.order_by(models.DemandRecord.sku.desc())
+    else:
+        query = query.order_by(models.DemandRecord.sku.asc())
+
+    rows = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": (total + page_size - 1) // page_size,
+        "items": [{"sku": r.sku, "category": r.category, "location": r.location, "channel": r.channel} for r in rows],
+    }
+
+
+# ─── Phase 5: Paginated demand records ───────────────────────────────────────
+@app.get("/api/records")
+def list_records(
+    dataset_version: str,
+    sku: str = "",
+    category: str = "",
+    page: int = 1,
+    page_size: int = 100,
+    sort_by: str = "date",
+    sort_dir: str = "asc",
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.DemandRecord).filter(
+        models.DemandRecord.dataset_version == dataset_version
+    )
+    if sku:
+        query = query.filter(models.DemandRecord.sku == sku)
+    if category:
+        query = query.filter(models.DemandRecord.category == category)
+
+    total = query.count()
+
+    col = getattr(models.DemandRecord, sort_by, models.DemandRecord.date)
+    query = query.order_by(col.desc() if sort_dir == "desc" else col.asc())
+
+    rows = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": (total + page_size - 1) // page_size,
+        "items": [
+            {
+                "id": r.id,
+                "date": r.date.isoformat() if r.date else None,
+                "sku": r.sku,
+                "category": r.category,
+                "location": r.location,
+                "channel": r.channel,
+                "target_demand": r.target_demand,
+                "dataset_version": r.dataset_version,
+            }
+            for r in rows
+        ],
+    }
+
+
+# ─── Phase 5: Dataset summary statistics ─────────────────────────────────────
+@app.get("/api/datasets/{dataset_version}/summary")
+def dataset_summary(dataset_version: str, db: Session = Depends(get_db)):
+    from sqlalchemy import func
+
+    base = db.query(models.DemandRecord).filter(
+        models.DemandRecord.dataset_version == dataset_version
+    )
+
+    total_records = base.count()
+    if total_records == 0:
+        raise HTTPException(404, "Dataset not found")
+
+    sku_count    = base.with_entities(models.DemandRecord.sku).distinct().count()
+    cat_count    = base.with_entities(models.DemandRecord.category).distinct().count()
+    loc_count    = base.with_entities(models.DemandRecord.location).distinct().count()
+    chan_count    = base.with_entities(models.DemandRecord.channel).distinct().count()
+    total_demand = base.with_entities(func.sum(models.DemandRecord.target_demand)).scalar() or 0
+    min_date     = base.with_entities(func.min(models.DemandRecord.date)).scalar()
+    max_date     = base.with_entities(func.max(models.DemandRecord.date)).scalar()
+
+    categories = [r[0] for r in base.with_entities(models.DemandRecord.category).distinct().all()]
+
+    return {
+        "dataset_version": dataset_version,
+        "total_records": total_records,
+        "sku_count": sku_count,
+        "category_count": cat_count,
+        "location_count": loc_count,
+        "channel_count": chan_count,
+        "total_demand": round(total_demand, 2),
+        "date_range": {
+            "min": min_date.isoformat() if min_date else None,
+            "max": max_date.isoformat() if max_date else None,
+        },
+        "categories": categories,
+    }
+
+
+# ─── Phase 5: Export demand records as CSV ───────────────────────────────────
+from fastapi.responses import StreamingResponse
+import csv
+
+@app.get("/api/export/records")
+def export_records(
+    dataset_version: str,
+    sku: str = "",
+    category: str = "",
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.DemandRecord).filter(
+        models.DemandRecord.dataset_version == dataset_version
+    )
+    if sku:
+        query = query.filter(models.DemandRecord.sku == sku)
+    if category:
+        query = query.filter(models.DemandRecord.category == category)
+
+    rows = query.order_by(models.DemandRecord.date.asc()).all()
+
+    def generate():
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["id", "date", "sku", "category", "location", "channel", "target_demand", "dataset_version"])
+        for r in rows:
+            writer.writerow([r.id, r.date, r.sku, r.category, r.location, r.channel, r.target_demand, r.dataset_version])
+            yield output.getvalue()
+            output.seek(0)
+            output.truncate(0)
+
+    filename = f"planora_export_{dataset_version}{'_' + sku if sku else ''}.csv"
+    return StreamingResponse(
+        generate(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Phase 7 — Audit Trail & Activity Logging
+# ═════════════════════════════════════════════════════════════════════════════
+from datetime import datetime
+
+@app.post("/api/audit/log")
+async def log_action(
+    user_id: str,
+    role: str,
+    action_type: str,
+    dataset: str = "",
+    metadata: dict = {},
+    db: Session = Depends(get_db)
+):
+    """Log user actions for governance and auditability"""
+    log_entry = models.AuditLog(
+        user_id=user_id,
+        role=role,
+        timestamp=datetime.utcnow(),
+        actionType=action_type,
+        dataset=dataset,
+        metadata_json=metadata
+    )
+    db.add(log_entry)
+    db.commit()
+    return {"status": "logged", "id": log_entry.id}
+
+
+@app.get("/api/audit/logs")
+def get_audit_logs(
+    user_id: str = "",
+    action_type: str = "",
+    dataset: str = "",
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Retrieve audit trail with filters"""
+    query = db.query(models.AuditLog).order_by(models.AuditLog.timestamp.desc())
+    
+    if user_id:
+        query = query.filter(models.AuditLog.user_id == user_id)
+    if action_type:
+        query = query.filter(models.AuditLog.actionType == action_type)
+    if dataset:
+        query = query.filter(models.AuditLog.dataset == dataset)
+    
+    logs = query.limit(limit).all()
+    
+    return {
+        "logs": [
+            {
+                "id": log.id,
+                "user_id": log.user_id,
+                "role": log.role,
+                "timestamp": log.timestamp.isoformat(),
+                "action_type": log.actionType,
+                "dataset": log.dataset,
+                "metadata": log.metadata_json,
+            }
+            for log in logs
+        ]
+    }
