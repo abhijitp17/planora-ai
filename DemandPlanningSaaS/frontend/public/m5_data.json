@@ -1,0 +1,4522 @@
+[
+  {
+    "id": "ELE_TV_85_OLED",
+    "name": "85-Inch OLED 4K Smart TV",
+    "category": "Electronics",
+    "type": "volatile",
+    "base": 150.0,
+    "unitCost": 1200,
+    "asp": 1800,
+    "aopVolume": 1800,
+    "supplyCapacity": 250,
+    "holdingCostPct": 0.15,
+    "onHand": 300,
+    "inTransit": 150,
+    "leadTime": 30,
+    "leadTimeStdDev": 5,
+    "cv": 0.35,
+    "adi": 1.0,
+    "sysMape": 8.5,
+    "humMape": 9.2,
+    "overrideRate": 15,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 160,
+        "forecast": 148
+      },
+      {
+        "date": "Day -89",
+        "actual": 129,
+        "forecast": 141
+      },
+      {
+        "date": "Day -88",
+        "actual": 179,
+        "forecast": 164
+      },
+      {
+        "date": "Day -87",
+        "actual": 115,
+        "forecast": 107
+      },
+      {
+        "date": "Day -86",
+        "actual": 114,
+        "forecast": 103
+      },
+      {
+        "date": "Day -85",
+        "actual": 153,
+        "forecast": 141
+      },
+      {
+        "date": "Day -84",
+        "actual": 173,
+        "forecast": 179
+      },
+      {
+        "date": "Day -83",
+        "actual": 124,
+        "forecast": 134
+      },
+      {
+        "date": "Day -82",
+        "actual": 119,
+        "forecast": 127
+      },
+      {
+        "date": "Day -81",
+        "actual": 167,
+        "forecast": 194
+      },
+      {
+        "date": "Day -80",
+        "actual": 381,
+        "forecast": 395
+      },
+      {
+        "date": "Day -79",
+        "actual": 159,
+        "forecast": 175
+      },
+      {
+        "date": "Day -78",
+        "actual": 165,
+        "forecast": 154
+      },
+      {
+        "date": "Day -77",
+        "actual": 134,
+        "forecast": 125
+      },
+      {
+        "date": "Day -76",
+        "actual": 120,
+        "forecast": 111
+      },
+      {
+        "date": "Day -75",
+        "actual": 140,
+        "forecast": 137
+      },
+      {
+        "date": "Day -74",
+        "actual": 133,
+        "forecast": 135
+      },
+      {
+        "date": "Day -73",
+        "actual": 167,
+        "forecast": 156
+      },
+      {
+        "date": "Day -72",
+        "actual": 187,
+        "forecast": 194
+      },
+      {
+        "date": "Day -71",
+        "actual": 164,
+        "forecast": 159
+      },
+      {
+        "date": "Day -70",
+        "actual": 128,
+        "forecast": 120
+      },
+      {
+        "date": "Day -69",
+        "actual": 142,
+        "forecast": 155
+      },
+      {
+        "date": "Day -68",
+        "actual": 132,
+        "forecast": 123
+      },
+      {
+        "date": "Day -67",
+        "actual": 132,
+        "forecast": 145
+      },
+      {
+        "date": "Day -66",
+        "actual": 142,
+        "forecast": 143
+      },
+      {
+        "date": "Day -65",
+        "actual": 116,
+        "forecast": 101
+      },
+      {
+        "date": "Day -64",
+        "actual": 172,
+        "forecast": 170
+      },
+      {
+        "date": "Day -63",
+        "actual": 141,
+        "forecast": 148
+      },
+      {
+        "date": "Day -62",
+        "actual": 133,
+        "forecast": 135
+      },
+      {
+        "date": "Day -61",
+        "actual": 145,
+        "forecast": 128
+      },
+      {
+        "date": "Day -60",
+        "actual": 178,
+        "forecast": 168
+      },
+      {
+        "date": "Day -59",
+        "actual": 126,
+        "forecast": 117
+      },
+      {
+        "date": "Day -58",
+        "actual": 158,
+        "forecast": 162
+      },
+      {
+        "date": "Day -57",
+        "actual": 152,
+        "forecast": 149
+      },
+      {
+        "date": "Day -56",
+        "actual": 178,
+        "forecast": 178
+      },
+      {
+        "date": "Day -55",
+        "actual": 410,
+        "forecast": 425
+      },
+      {
+        "date": "Day -54",
+        "actual": 148,
+        "forecast": 149
+      },
+      {
+        "date": "Day -53",
+        "actual": 178,
+        "forecast": 176
+      },
+      {
+        "date": "Day -52",
+        "actual": 153,
+        "forecast": 158
+      },
+      {
+        "date": "Day -51",
+        "actual": 136,
+        "forecast": 134
+      },
+      {
+        "date": "Day -50",
+        "actual": 122,
+        "forecast": 116
+      },
+      {
+        "date": "Day -49",
+        "actual": 157,
+        "forecast": 150
+      },
+      {
+        "date": "Day -48",
+        "actual": 118,
+        "forecast": 120
+      },
+      {
+        "date": "Day -47",
+        "actual": 180,
+        "forecast": 163
+      },
+      {
+        "date": "Day -46",
+        "actual": 129,
+        "forecast": 131
+      },
+      {
+        "date": "Day -45",
+        "actual": 171,
+        "forecast": 179
+      },
+      {
+        "date": "Day -44",
+        "actual": 120,
+        "forecast": 118
+      },
+      {
+        "date": "Day -43",
+        "actual": 148,
+        "forecast": 160
+      },
+      {
+        "date": "Day -42",
+        "actual": 186,
+        "forecast": 171
+      },
+      {
+        "date": "Day -41",
+        "actual": 138,
+        "forecast": 146
+      },
+      {
+        "date": "Day -40",
+        "actual": 127,
+        "forecast": 125
+      },
+      {
+        "date": "Day -39",
+        "actual": 133,
+        "forecast": 127
+      },
+      {
+        "date": "Day -38",
+        "actual": 154,
+        "forecast": 142
+      },
+      {
+        "date": "Day -37",
+        "actual": 129,
+        "forecast": 127
+      },
+      {
+        "date": "Day -36",
+        "actual": 141,
+        "forecast": 150
+      },
+      {
+        "date": "Day -35",
+        "actual": 144,
+        "forecast": 148
+      },
+      {
+        "date": "Day -34",
+        "actual": 124,
+        "forecast": 127
+      },
+      {
+        "date": "Day -33",
+        "actual": 169,
+        "forecast": 147
+      },
+      {
+        "date": "Day -32",
+        "actual": 150,
+        "forecast": 158
+      },
+      {
+        "date": "Day -31",
+        "actual": 185,
+        "forecast": 173
+      },
+      {
+        "date": "Day -30",
+        "actual": 397,
+        "forecast": 408
+      },
+      {
+        "date": "Day -29",
+        "actual": 121,
+        "forecast": 129
+      },
+      {
+        "date": "Day -28",
+        "actual": 157,
+        "forecast": 161
+      },
+      {
+        "date": "Day -27",
+        "actual": 156,
+        "forecast": 163
+      },
+      {
+        "date": "Day -26",
+        "actual": 128,
+        "forecast": 132
+      },
+      {
+        "date": "Day -25",
+        "actual": 142,
+        "forecast": 146
+      },
+      {
+        "date": "Day -24",
+        "actual": 136,
+        "forecast": 141
+      },
+      {
+        "date": "Day -23",
+        "actual": 147,
+        "forecast": 137
+      },
+      {
+        "date": "Day -22",
+        "actual": 132,
+        "forecast": 142
+      },
+      {
+        "date": "Day -21",
+        "actual": 124,
+        "forecast": 141
+      },
+      {
+        "date": "Day -20",
+        "actual": 158,
+        "forecast": 147
+      },
+      {
+        "date": "Day -19",
+        "actual": 183,
+        "forecast": 164
+      },
+      {
+        "date": "Day -18",
+        "actual": 133,
+        "forecast": 139
+      },
+      {
+        "date": "Day -17",
+        "actual": 128,
+        "forecast": 131
+      },
+      {
+        "date": "Day -16",
+        "actual": 149,
+        "forecast": 136
+      },
+      {
+        "date": "Day -15",
+        "actual": 133,
+        "forecast": 136
+      },
+      {
+        "date": "Day -14",
+        "actual": 168,
+        "forecast": 170
+      },
+      {
+        "date": "Day -13",
+        "actual": 113,
+        "forecast": 125
+      },
+      {
+        "date": "Day -12",
+        "actual": 175,
+        "forecast": 177
+      },
+      {
+        "date": "Day -11",
+        "actual": 122,
+        "forecast": 129
+      },
+      {
+        "date": "Day -10",
+        "actual": 131,
+        "forecast": 141
+      },
+      {
+        "date": "Day -9",
+        "actual": 159,
+        "forecast": 167
+      },
+      {
+        "date": "Day -8",
+        "actual": 172,
+        "forecast": 181
+      },
+      {
+        "date": "Day -7",
+        "actual": 174,
+        "forecast": 173
+      },
+      {
+        "date": "Day -6",
+        "actual": 172,
+        "forecast": 163
+      },
+      {
+        "date": "Day -5",
+        "actual": 417,
+        "forecast": 450
+      },
+      {
+        "date": "Day -4",
+        "actual": 161,
+        "forecast": 172
+      },
+      {
+        "date": "Day -3",
+        "actual": 121,
+        "forecast": 130
+      },
+      {
+        "date": "Day -2",
+        "actual": 121,
+        "forecast": 117
+      },
+      {
+        "date": "Day -1",
+        "actual": 136,
+        "forecast": 140
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +2",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +3",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +4",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +5",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +6",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +7",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +8",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +9",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +10",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +11",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +12",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +13",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +14",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      },
+      {
+        "date": "Day +15",
+        "forecast": 150,
+        "lower_bound": 128,
+        "upper_bound": 172
+      }
+    ]
+  },
+  {
+    "id": "ELE_SP_PRO_15",
+    "name": "SmartPhone 15 Pro Max",
+    "category": "Electronics",
+    "type": "volatile",
+    "base": 800.0,
+    "unitCost": 650,
+    "asp": 1100,
+    "aopVolume": 9600,
+    "supplyCapacity": 1200,
+    "holdingCostPct": 0.18,
+    "onHand": 1400,
+    "inTransit": 600,
+    "leadTime": 25,
+    "leadTimeStdDev": 4,
+    "cv": 0.25,
+    "adi": 1.0,
+    "sysMape": 6.8,
+    "humMape": 7.5,
+    "overrideRate": 20,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 754,
+        "forecast": 763
+      },
+      {
+        "date": "Day -89",
+        "actual": 884,
+        "forecast": 898
+      },
+      {
+        "date": "Day -88",
+        "actual": 897,
+        "forecast": 926
+      },
+      {
+        "date": "Day -87",
+        "actual": 628,
+        "forecast": 646
+      },
+      {
+        "date": "Day -86",
+        "actual": 726,
+        "forecast": 834
+      },
+      {
+        "date": "Day -85",
+        "actual": 720,
+        "forecast": 692
+      },
+      {
+        "date": "Day -84",
+        "actual": 761,
+        "forecast": 740
+      },
+      {
+        "date": "Day -83",
+        "actual": 768,
+        "forecast": 865
+      },
+      {
+        "date": "Day -82",
+        "actual": 720,
+        "forecast": 688
+      },
+      {
+        "date": "Day -81",
+        "actual": 832,
+        "forecast": 861
+      },
+      {
+        "date": "Day -80",
+        "actual": 2057,
+        "forecast": 1923
+      },
+      {
+        "date": "Day -79",
+        "actual": 960,
+        "forecast": 1002
+      },
+      {
+        "date": "Day -78",
+        "actual": 634,
+        "forecast": 637
+      },
+      {
+        "date": "Day -77",
+        "actual": 734,
+        "forecast": 847
+      },
+      {
+        "date": "Day -76",
+        "actual": 869,
+        "forecast": 833
+      },
+      {
+        "date": "Day -75",
+        "actual": 610,
+        "forecast": 574
+      },
+      {
+        "date": "Day -74",
+        "actual": 940,
+        "forecast": 858
+      },
+      {
+        "date": "Day -73",
+        "actual": 852,
+        "forecast": 749
+      },
+      {
+        "date": "Day -72",
+        "actual": 798,
+        "forecast": 726
+      },
+      {
+        "date": "Day -71",
+        "actual": 602,
+        "forecast": 681
+      },
+      {
+        "date": "Day -70",
+        "actual": 643,
+        "forecast": 636
+      },
+      {
+        "date": "Day -69",
+        "actual": 983,
+        "forecast": 985
+      },
+      {
+        "date": "Day -68",
+        "actual": 700,
+        "forecast": 754
+      },
+      {
+        "date": "Day -67",
+        "actual": 921,
+        "forecast": 1132
+      },
+      {
+        "date": "Day -66",
+        "actual": 957,
+        "forecast": 1003
+      },
+      {
+        "date": "Day -65",
+        "actual": 802,
+        "forecast": 872
+      },
+      {
+        "date": "Day -64",
+        "actual": 959,
+        "forecast": 1012
+      },
+      {
+        "date": "Day -63",
+        "actual": 704,
+        "forecast": 645
+      },
+      {
+        "date": "Day -62",
+        "actual": 906,
+        "forecast": 913
+      },
+      {
+        "date": "Day -61",
+        "actual": 710,
+        "forecast": 659
+      },
+      {
+        "date": "Day -60",
+        "actual": 709,
+        "forecast": 675
+      },
+      {
+        "date": "Day -59",
+        "actual": 655,
+        "forecast": 586
+      },
+      {
+        "date": "Day -58",
+        "actual": 883,
+        "forecast": 805
+      },
+      {
+        "date": "Day -57",
+        "actual": 817,
+        "forecast": 807
+      },
+      {
+        "date": "Day -56",
+        "actual": 768,
+        "forecast": 858
+      },
+      {
+        "date": "Day -55",
+        "actual": 2158,
+        "forecast": 2002
+      },
+      {
+        "date": "Day -54",
+        "actual": 941,
+        "forecast": 1030
+      },
+      {
+        "date": "Day -53",
+        "actual": 899,
+        "forecast": 912
+      },
+      {
+        "date": "Day -52",
+        "actual": 688,
+        "forecast": 647
+      },
+      {
+        "date": "Day -51",
+        "actual": 612,
+        "forecast": 574
+      },
+      {
+        "date": "Day -50",
+        "actual": 762,
+        "forecast": 704
+      },
+      {
+        "date": "Day -49",
+        "actual": 651,
+        "forecast": 661
+      },
+      {
+        "date": "Day -48",
+        "actual": 758,
+        "forecast": 764
+      },
+      {
+        "date": "Day -47",
+        "actual": 857,
+        "forecast": 787
+      },
+      {
+        "date": "Day -46",
+        "actual": 620,
+        "forecast": 609
+      },
+      {
+        "date": "Day -45",
+        "actual": 731,
+        "forecast": 768
+      },
+      {
+        "date": "Day -44",
+        "actual": 901,
+        "forecast": 949
+      },
+      {
+        "date": "Day -43",
+        "actual": 633,
+        "forecast": 685
+      },
+      {
+        "date": "Day -42",
+        "actual": 861,
+        "forecast": 820
+      },
+      {
+        "date": "Day -41",
+        "actual": 868,
+        "forecast": 876
+      },
+      {
+        "date": "Day -40",
+        "actual": 880,
+        "forecast": 914
+      },
+      {
+        "date": "Day -39",
+        "actual": 843,
+        "forecast": 871
+      },
+      {
+        "date": "Day -38",
+        "actual": 928,
+        "forecast": 851
+      },
+      {
+        "date": "Day -37",
+        "actual": 871,
+        "forecast": 950
+      },
+      {
+        "date": "Day -36",
+        "actual": 886,
+        "forecast": 901
+      },
+      {
+        "date": "Day -35",
+        "actual": 909,
+        "forecast": 1005
+      },
+      {
+        "date": "Day -34",
+        "actual": 648,
+        "forecast": 628
+      },
+      {
+        "date": "Day -33",
+        "actual": 748,
+        "forecast": 749
+      },
+      {
+        "date": "Day -32",
+        "actual": 940,
+        "forecast": 981
+      },
+      {
+        "date": "Day -31",
+        "actual": 984,
+        "forecast": 1078
+      },
+      {
+        "date": "Day -30",
+        "actual": 2163,
+        "forecast": 2100
+      },
+      {
+        "date": "Day -29",
+        "actual": 986,
+        "forecast": 844
+      },
+      {
+        "date": "Day -28",
+        "actual": 815,
+        "forecast": 812
+      },
+      {
+        "date": "Day -27",
+        "actual": 892,
+        "forecast": 725
+      },
+      {
+        "date": "Day -26",
+        "actual": 932,
+        "forecast": 879
+      },
+      {
+        "date": "Day -25",
+        "actual": 844,
+        "forecast": 832
+      },
+      {
+        "date": "Day -24",
+        "actual": 940,
+        "forecast": 895
+      },
+      {
+        "date": "Day -23",
+        "actual": 919,
+        "forecast": 772
+      },
+      {
+        "date": "Day -22",
+        "actual": 880,
+        "forecast": 926
+      },
+      {
+        "date": "Day -21",
+        "actual": 903,
+        "forecast": 962
+      },
+      {
+        "date": "Day -20",
+        "actual": 796,
+        "forecast": 827
+      },
+      {
+        "date": "Day -19",
+        "actual": 689,
+        "forecast": 711
+      },
+      {
+        "date": "Day -18",
+        "actual": 833,
+        "forecast": 827
+      },
+      {
+        "date": "Day -17",
+        "actual": 770,
+        "forecast": 804
+      },
+      {
+        "date": "Day -16",
+        "actual": 881,
+        "forecast": 849
+      },
+      {
+        "date": "Day -15",
+        "actual": 648,
+        "forecast": 621
+      },
+      {
+        "date": "Day -14",
+        "actual": 814,
+        "forecast": 846
+      },
+      {
+        "date": "Day -13",
+        "actual": 687,
+        "forecast": 682
+      },
+      {
+        "date": "Day -12",
+        "actual": 991,
+        "forecast": 995
+      },
+      {
+        "date": "Day -11",
+        "actual": 640,
+        "forecast": 610
+      },
+      {
+        "date": "Day -10",
+        "actual": 672,
+        "forecast": 686
+      },
+      {
+        "date": "Day -9",
+        "actual": 651,
+        "forecast": 707
+      },
+      {
+        "date": "Day -8",
+        "actual": 949,
+        "forecast": 965
+      },
+      {
+        "date": "Day -7",
+        "actual": 776,
+        "forecast": 855
+      },
+      {
+        "date": "Day -6",
+        "actual": 929,
+        "forecast": 917
+      },
+      {
+        "date": "Day -5",
+        "actual": 2132,
+        "forecast": 2155
+      },
+      {
+        "date": "Day -4",
+        "actual": 998,
+        "forecast": 1058
+      },
+      {
+        "date": "Day -3",
+        "actual": 690,
+        "forecast": 694
+      },
+      {
+        "date": "Day -2",
+        "actual": 777,
+        "forecast": 729
+      },
+      {
+        "date": "Day -1",
+        "actual": 844,
+        "forecast": 806
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +2",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +3",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +4",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +5",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +6",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +7",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +8",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +9",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +10",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +11",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +12",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +13",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +14",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      },
+      {
+        "date": "Day +15",
+        "forecast": 800,
+        "lower_bound": 680,
+        "upper_bound": 920
+      }
+    ]
+  },
+  {
+    "id": "FMCG_SODA_12P",
+    "name": "Diet Cola Soda 12-Pack",
+    "category": "FMCG",
+    "type": "seasonal",
+    "base": 5000.0,
+    "unitCost": 2.5,
+    "asp": 5.99,
+    "aopVolume": 62000,
+    "supplyCapacity": 8000,
+    "holdingCostPct": 0.1,
+    "onHand": 12000,
+    "inTransit": 4000,
+    "leadTime": 10,
+    "leadTimeStdDev": 2,
+    "cv": 0.12,
+    "adi": 1.0,
+    "sysMape": 4.2,
+    "humMape": 3.8,
+    "overrideRate": 10,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 5131,
+        "forecast": 5212
+      },
+      {
+        "date": "Day -89",
+        "actual": 4683,
+        "forecast": 4892
+      },
+      {
+        "date": "Day -88",
+        "actual": 6137,
+        "forecast": 6016
+      },
+      {
+        "date": "Day -87",
+        "actual": 6988,
+        "forecast": 6583
+      },
+      {
+        "date": "Day -86",
+        "actual": 6511,
+        "forecast": 6323
+      },
+      {
+        "date": "Day -85",
+        "actual": 6730,
+        "forecast": 7446
+      },
+      {
+        "date": "Day -84",
+        "actual": 6422,
+        "forecast": 5797
+      },
+      {
+        "date": "Day -83",
+        "actual": 6329,
+        "forecast": 6930
+      },
+      {
+        "date": "Day -82",
+        "actual": 6654,
+        "forecast": 6586
+      },
+      {
+        "date": "Day -81",
+        "actual": 6775,
+        "forecast": 6966
+      },
+      {
+        "date": "Day -80",
+        "actual": 6293,
+        "forecast": 6120
+      },
+      {
+        "date": "Day -79",
+        "actual": 6935,
+        "forecast": 6473
+      },
+      {
+        "date": "Day -78",
+        "actual": 6360,
+        "forecast": 6310
+      },
+      {
+        "date": "Day -77",
+        "actual": 5475,
+        "forecast": 5522
+      },
+      {
+        "date": "Day -76",
+        "actual": 4976,
+        "forecast": 5385
+      },
+      {
+        "date": "Day -75",
+        "actual": 5224,
+        "forecast": 5651
+      },
+      {
+        "date": "Day -74",
+        "actual": 4547,
+        "forecast": 4626
+      },
+      {
+        "date": "Day -73",
+        "actual": 3868,
+        "forecast": 3895
+      },
+      {
+        "date": "Day -72",
+        "actual": 4088,
+        "forecast": 4413
+      },
+      {
+        "date": "Day -71",
+        "actual": 4188,
+        "forecast": 3498
+      },
+      {
+        "date": "Day -70",
+        "actual": 3758,
+        "forecast": 4145
+      },
+      {
+        "date": "Day -69",
+        "actual": 2842,
+        "forecast": 2401
+      },
+      {
+        "date": "Day -68",
+        "actual": 3538,
+        "forecast": 3406
+      },
+      {
+        "date": "Day -67",
+        "actual": 3500,
+        "forecast": 3525
+      },
+      {
+        "date": "Day -66",
+        "actual": 3651,
+        "forecast": 3623
+      },
+      {
+        "date": "Day -65",
+        "actual": 2995,
+        "forecast": 3028
+      },
+      {
+        "date": "Day -64",
+        "actual": 4455,
+        "forecast": 4726
+      },
+      {
+        "date": "Day -63",
+        "actual": 4745,
+        "forecast": 5288
+      },
+      {
+        "date": "Day -62",
+        "actual": 3752,
+        "forecast": 4063
+      },
+      {
+        "date": "Day -61",
+        "actual": 5147,
+        "forecast": 5176
+      },
+      {
+        "date": "Day -60",
+        "actual": 5259,
+        "forecast": 5374
+      },
+      {
+        "date": "Day -59",
+        "actual": 4632,
+        "forecast": 4340
+      },
+      {
+        "date": "Day -58",
+        "actual": 6304,
+        "forecast": 6171
+      },
+      {
+        "date": "Day -57",
+        "actual": 6505,
+        "forecast": 6846
+      },
+      {
+        "date": "Day -56",
+        "actual": 5362,
+        "forecast": 5794
+      },
+      {
+        "date": "Day -55",
+        "actual": 6072,
+        "forecast": 5521
+      },
+      {
+        "date": "Day -54",
+        "actual": 6645,
+        "forecast": 7423
+      },
+      {
+        "date": "Day -53",
+        "actual": 6037,
+        "forecast": 5798
+      },
+      {
+        "date": "Day -52",
+        "actual": 6071,
+        "forecast": 5798
+      },
+      {
+        "date": "Day -51",
+        "actual": 6592,
+        "forecast": 6205
+      },
+      {
+        "date": "Day -50",
+        "actual": 6284,
+        "forecast": 6412
+      },
+      {
+        "date": "Day -49",
+        "actual": 5758,
+        "forecast": 6261
+      },
+      {
+        "date": "Day -48",
+        "actual": 5858,
+        "forecast": 5110
+      },
+      {
+        "date": "Day -47",
+        "actual": 5724,
+        "forecast": 5971
+      },
+      {
+        "date": "Day -46",
+        "actual": 5749,
+        "forecast": 6429
+      },
+      {
+        "date": "Day -45",
+        "actual": 5911,
+        "forecast": 6061
+      },
+      {
+        "date": "Day -44",
+        "actual": 4592,
+        "forecast": 4732
+      },
+      {
+        "date": "Day -43",
+        "actual": 3833,
+        "forecast": 3661
+      },
+      {
+        "date": "Day -42",
+        "actual": 5067,
+        "forecast": 5284
+      },
+      {
+        "date": "Day -41",
+        "actual": 4190,
+        "forecast": 4506
+      },
+      {
+        "date": "Day -40",
+        "actual": 4531,
+        "forecast": 4432
+      },
+      {
+        "date": "Day -39",
+        "actual": 3133,
+        "forecast": 3081
+      },
+      {
+        "date": "Day -38",
+        "actual": 3793,
+        "forecast": 3560
+      },
+      {
+        "date": "Day -37",
+        "actual": 4005,
+        "forecast": 3862
+      },
+      {
+        "date": "Day -36",
+        "actual": 3344,
+        "forecast": 3189
+      },
+      {
+        "date": "Day -35",
+        "actual": 3243,
+        "forecast": 3502
+      },
+      {
+        "date": "Day -34",
+        "actual": 4412,
+        "forecast": 4564
+      },
+      {
+        "date": "Day -33",
+        "actual": 4053,
+        "forecast": 4045
+      },
+      {
+        "date": "Day -32",
+        "actual": 4230,
+        "forecast": 5250
+      },
+      {
+        "date": "Day -31",
+        "actual": 4527,
+        "forecast": 4335
+      },
+      {
+        "date": "Day -30",
+        "actual": 5438,
+        "forecast": 5735
+      },
+      {
+        "date": "Day -29",
+        "actual": 5380,
+        "forecast": 5625
+      },
+      {
+        "date": "Day -28",
+        "actual": 5021,
+        "forecast": 4795
+      },
+      {
+        "date": "Day -27",
+        "actual": 6260,
+        "forecast": 5953
+      },
+      {
+        "date": "Day -26",
+        "actual": 5907,
+        "forecast": 6025
+      },
+      {
+        "date": "Day -25",
+        "actual": 6033,
+        "forecast": 6403
+      },
+      {
+        "date": "Day -24",
+        "actual": 6748,
+        "forecast": 7211
+      },
+      {
+        "date": "Day -23",
+        "actual": 5951,
+        "forecast": 5979
+      },
+      {
+        "date": "Day -22",
+        "actual": 6468,
+        "forecast": 6751
+      },
+      {
+        "date": "Day -21",
+        "actual": 5692,
+        "forecast": 5283
+      },
+      {
+        "date": "Day -20",
+        "actual": 6501,
+        "forecast": 6545
+      },
+      {
+        "date": "Day -19",
+        "actual": 6195,
+        "forecast": 7215
+      },
+      {
+        "date": "Day -18",
+        "actual": 6330,
+        "forecast": 6544
+      },
+      {
+        "date": "Day -17",
+        "actual": 5567,
+        "forecast": 5370
+      },
+      {
+        "date": "Day -16",
+        "actual": 5248,
+        "forecast": 5110
+      },
+      {
+        "date": "Day -15",
+        "actual": 4898,
+        "forecast": 5312
+      },
+      {
+        "date": "Day -14",
+        "actual": 4823,
+        "forecast": 4711
+      },
+      {
+        "date": "Day -13",
+        "actual": 4090,
+        "forecast": 4166
+      },
+      {
+        "date": "Day -12",
+        "actual": 4186,
+        "forecast": 4288
+      },
+      {
+        "date": "Day -11",
+        "actual": 3502,
+        "forecast": 3664
+      },
+      {
+        "date": "Day -10",
+        "actual": 4266,
+        "forecast": 4342
+      },
+      {
+        "date": "Day -9",
+        "actual": 3379,
+        "forecast": 3498
+      },
+      {
+        "date": "Day -8",
+        "actual": 4093,
+        "forecast": 4037
+      },
+      {
+        "date": "Day -7",
+        "actual": 3602,
+        "forecast": 3738
+      },
+      {
+        "date": "Day -6",
+        "actual": 3490,
+        "forecast": 3294
+      },
+      {
+        "date": "Day -5",
+        "actual": 4140,
+        "forecast": 3695
+      },
+      {
+        "date": "Day -4",
+        "actual": 4049,
+        "forecast": 4202
+      },
+      {
+        "date": "Day -3",
+        "actual": 4064,
+        "forecast": 4204
+      },
+      {
+        "date": "Day -2",
+        "actual": 4323,
+        "forecast": 4503
+      },
+      {
+        "date": "Day -1",
+        "actual": 4808,
+        "forecast": 4657
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 5000,
+        "lower_bound": 4250,
+        "upper_bound": 5750
+      },
+      {
+        "date": "Day +2",
+        "forecast": 5312,
+        "lower_bound": 4515,
+        "upper_bound": 6109
+      },
+      {
+        "date": "Day +3",
+        "forecast": 5610,
+        "lower_bound": 4769,
+        "upper_bound": 6452
+      },
+      {
+        "date": "Day +4",
+        "forecast": 5882,
+        "lower_bound": 4999,
+        "upper_bound": 6764
+      },
+      {
+        "date": "Day +5",
+        "forecast": 6115,
+        "lower_bound": 5198,
+        "upper_bound": 7032
+      },
+      {
+        "date": "Day +6",
+        "forecast": 6299,
+        "lower_bound": 5354,
+        "upper_bound": 7244
+      },
+      {
+        "date": "Day +7",
+        "forecast": 6427,
+        "lower_bound": 5463,
+        "upper_bound": 7391
+      },
+      {
+        "date": "Day +8",
+        "forecast": 6492,
+        "lower_bound": 5518,
+        "upper_bound": 7466
+      },
+      {
+        "date": "Day +9",
+        "forecast": 6492,
+        "lower_bound": 5518,
+        "upper_bound": 7466
+      },
+      {
+        "date": "Day +10",
+        "forecast": 6427,
+        "lower_bound": 5463,
+        "upper_bound": 7391
+      },
+      {
+        "date": "Day +11",
+        "forecast": 6299,
+        "lower_bound": 5354,
+        "upper_bound": 7244
+      },
+      {
+        "date": "Day +12",
+        "forecast": 6115,
+        "lower_bound": 5198,
+        "upper_bound": 7032
+      },
+      {
+        "date": "Day +13",
+        "forecast": 5882,
+        "lower_bound": 4999,
+        "upper_bound": 6764
+      },
+      {
+        "date": "Day +14",
+        "forecast": 5610,
+        "lower_bound": 4769,
+        "upper_bound": 6452
+      },
+      {
+        "date": "Day +15",
+        "forecast": 5312,
+        "lower_bound": 4515,
+        "upper_bound": 6109
+      }
+    ]
+  },
+  {
+    "id": "FMCG_YOGURT_GRK",
+    "name": "Greek Yogurt Strawberry 32oz",
+    "category": "FMCG",
+    "type": "stable",
+    "base": 3000.0,
+    "unitCost": 1.8,
+    "asp": 3.49,
+    "aopVolume": 36000,
+    "supplyCapacity": 5000,
+    "holdingCostPct": 0.22,
+    "onHand": 5000,
+    "inTransit": 2000,
+    "leadTime": 7,
+    "leadTimeStdDev": 1,
+    "cv": 0.08,
+    "adi": 1.0,
+    "sysMape": 3.1,
+    "humMape": 3.5,
+    "overrideRate": 8,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 2914,
+        "forecast": 2787
+      },
+      {
+        "date": "Day -89",
+        "actual": 2865,
+        "forecast": 3006
+      },
+      {
+        "date": "Day -88",
+        "actual": 3046,
+        "forecast": 3177
+      },
+      {
+        "date": "Day -87",
+        "actual": 2773,
+        "forecast": 3007
+      },
+      {
+        "date": "Day -86",
+        "actual": 3117,
+        "forecast": 3187
+      },
+      {
+        "date": "Day -85",
+        "actual": 2961,
+        "forecast": 2876
+      },
+      {
+        "date": "Day -84",
+        "actual": 2826,
+        "forecast": 2558
+      },
+      {
+        "date": "Day -83",
+        "actual": 3161,
+        "forecast": 3637
+      },
+      {
+        "date": "Day -82",
+        "actual": 3106,
+        "forecast": 2942
+      },
+      {
+        "date": "Day -81",
+        "actual": 3110,
+        "forecast": 3180
+      },
+      {
+        "date": "Day -80",
+        "actual": 3139,
+        "forecast": 3538
+      },
+      {
+        "date": "Day -79",
+        "actual": 2827,
+        "forecast": 2887
+      },
+      {
+        "date": "Day -78",
+        "actual": 3236,
+        "forecast": 3294
+      },
+      {
+        "date": "Day -77",
+        "actual": 2801,
+        "forecast": 2709
+      },
+      {
+        "date": "Day -76",
+        "actual": 2768,
+        "forecast": 2653
+      },
+      {
+        "date": "Day -75",
+        "actual": 3237,
+        "forecast": 3243
+      },
+      {
+        "date": "Day -74",
+        "actual": 3067,
+        "forecast": 3332
+      },
+      {
+        "date": "Day -73",
+        "actual": 3229,
+        "forecast": 3097
+      },
+      {
+        "date": "Day -72",
+        "actual": 2859,
+        "forecast": 2861
+      },
+      {
+        "date": "Day -71",
+        "actual": 2885,
+        "forecast": 2841
+      },
+      {
+        "date": "Day -70",
+        "actual": 2860,
+        "forecast": 2734
+      },
+      {
+        "date": "Day -69",
+        "actual": 2897,
+        "forecast": 3182
+      },
+      {
+        "date": "Day -68",
+        "actual": 3064,
+        "forecast": 3304
+      },
+      {
+        "date": "Day -67",
+        "actual": 2897,
+        "forecast": 2705
+      },
+      {
+        "date": "Day -66",
+        "actual": 2931,
+        "forecast": 3155
+      },
+      {
+        "date": "Day -65",
+        "actual": 2848,
+        "forecast": 3172
+      },
+      {
+        "date": "Day -64",
+        "actual": 3324,
+        "forecast": 3480
+      },
+      {
+        "date": "Day -63",
+        "actual": 3065,
+        "forecast": 2985
+      },
+      {
+        "date": "Day -62",
+        "actual": 2895,
+        "forecast": 3198
+      },
+      {
+        "date": "Day -61",
+        "actual": 2918,
+        "forecast": 2674
+      },
+      {
+        "date": "Day -60",
+        "actual": 3079,
+        "forecast": 3024
+      },
+      {
+        "date": "Day -59",
+        "actual": 3095,
+        "forecast": 3056
+      },
+      {
+        "date": "Day -58",
+        "actual": 3060,
+        "forecast": 3031
+      },
+      {
+        "date": "Day -57",
+        "actual": 3116,
+        "forecast": 3134
+      },
+      {
+        "date": "Day -56",
+        "actual": 3150,
+        "forecast": 3350
+      },
+      {
+        "date": "Day -55",
+        "actual": 2986,
+        "forecast": 2897
+      },
+      {
+        "date": "Day -54",
+        "actual": 3090,
+        "forecast": 2831
+      },
+      {
+        "date": "Day -53",
+        "actual": 3216,
+        "forecast": 3406
+      },
+      {
+        "date": "Day -52",
+        "actual": 3093,
+        "forecast": 2660
+      },
+      {
+        "date": "Day -51",
+        "actual": 2870,
+        "forecast": 2816
+      },
+      {
+        "date": "Day -50",
+        "actual": 2769,
+        "forecast": 2726
+      },
+      {
+        "date": "Day -49",
+        "actual": 3185,
+        "forecast": 2991
+      },
+      {
+        "date": "Day -48",
+        "actual": 3279,
+        "forecast": 2796
+      },
+      {
+        "date": "Day -47",
+        "actual": 2987,
+        "forecast": 2784
+      },
+      {
+        "date": "Day -46",
+        "actual": 3191,
+        "forecast": 3375
+      },
+      {
+        "date": "Day -45",
+        "actual": 2859,
+        "forecast": 2788
+      },
+      {
+        "date": "Day -44",
+        "actual": 2900,
+        "forecast": 2883
+      },
+      {
+        "date": "Day -43",
+        "actual": 3259,
+        "forecast": 3141
+      },
+      {
+        "date": "Day -42",
+        "actual": 2953,
+        "forecast": 2795
+      },
+      {
+        "date": "Day -41",
+        "actual": 3046,
+        "forecast": 3066
+      },
+      {
+        "date": "Day -40",
+        "actual": 2947,
+        "forecast": 3103
+      },
+      {
+        "date": "Day -39",
+        "actual": 3161,
+        "forecast": 3550
+      },
+      {
+        "date": "Day -38",
+        "actual": 2955,
+        "forecast": 3042
+      },
+      {
+        "date": "Day -37",
+        "actual": 2970,
+        "forecast": 3219
+      },
+      {
+        "date": "Day -36",
+        "actual": 2985,
+        "forecast": 3491
+      },
+      {
+        "date": "Day -35",
+        "actual": 3015,
+        "forecast": 3128
+      },
+      {
+        "date": "Day -34",
+        "actual": 2832,
+        "forecast": 3018
+      },
+      {
+        "date": "Day -33",
+        "actual": 2847,
+        "forecast": 3067
+      },
+      {
+        "date": "Day -32",
+        "actual": 3242,
+        "forecast": 3229
+      },
+      {
+        "date": "Day -31",
+        "actual": 3025,
+        "forecast": 3115
+      },
+      {
+        "date": "Day -30",
+        "actual": 3148,
+        "forecast": 3174
+      },
+      {
+        "date": "Day -29",
+        "actual": 2875,
+        "forecast": 2792
+      },
+      {
+        "date": "Day -28",
+        "actual": 2960,
+        "forecast": 3163
+      },
+      {
+        "date": "Day -27",
+        "actual": 2698,
+        "forecast": 2476
+      },
+      {
+        "date": "Day -26",
+        "actual": 2766,
+        "forecast": 2694
+      },
+      {
+        "date": "Day -25",
+        "actual": 3044,
+        "forecast": 2846
+      },
+      {
+        "date": "Day -24",
+        "actual": 3040,
+        "forecast": 2934
+      },
+      {
+        "date": "Day -23",
+        "actual": 2927,
+        "forecast": 3093
+      },
+      {
+        "date": "Day -22",
+        "actual": 2934,
+        "forecast": 2820
+      },
+      {
+        "date": "Day -21",
+        "actual": 2997,
+        "forecast": 3229
+      },
+      {
+        "date": "Day -20",
+        "actual": 3185,
+        "forecast": 3379
+      },
+      {
+        "date": "Day -19",
+        "actual": 2958,
+        "forecast": 3096
+      },
+      {
+        "date": "Day -18",
+        "actual": 3314,
+        "forecast": 3552
+      },
+      {
+        "date": "Day -17",
+        "actual": 2878,
+        "forecast": 2647
+      },
+      {
+        "date": "Day -16",
+        "actual": 3034,
+        "forecast": 2816
+      },
+      {
+        "date": "Day -15",
+        "actual": 3029,
+        "forecast": 2972
+      },
+      {
+        "date": "Day -14",
+        "actual": 2672,
+        "forecast": 2922
+      },
+      {
+        "date": "Day -13",
+        "actual": 2806,
+        "forecast": 2666
+      },
+      {
+        "date": "Day -12",
+        "actual": 2843,
+        "forecast": 2610
+      },
+      {
+        "date": "Day -11",
+        "actual": 3015,
+        "forecast": 2862
+      },
+      {
+        "date": "Day -10",
+        "actual": 3001,
+        "forecast": 3206
+      },
+      {
+        "date": "Day -9",
+        "actual": 3172,
+        "forecast": 3310
+      },
+      {
+        "date": "Day -8",
+        "actual": 3086,
+        "forecast": 3326
+      },
+      {
+        "date": "Day -7",
+        "actual": 2941,
+        "forecast": 2939
+      },
+      {
+        "date": "Day -6",
+        "actual": 2978,
+        "forecast": 3072
+      },
+      {
+        "date": "Day -5",
+        "actual": 2970,
+        "forecast": 2702
+      },
+      {
+        "date": "Day -4",
+        "actual": 2829,
+        "forecast": 2728
+      },
+      {
+        "date": "Day -3",
+        "actual": 2913,
+        "forecast": 2805
+      },
+      {
+        "date": "Day -2",
+        "actual": 2854,
+        "forecast": 2751
+      },
+      {
+        "date": "Day -1",
+        "actual": 2870,
+        "forecast": 2909
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +2",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +3",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +4",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +5",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +6",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +7",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +8",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +9",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +10",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +11",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +12",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +13",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +14",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      },
+      {
+        "date": "Day +15",
+        "forecast": 3000,
+        "lower_bound": 2550,
+        "upper_bound": 3450
+      }
+    ]
+  },
+  {
+    "id": "APP_JKT_WNT_MD",
+    "name": "Winter Down Jacket Medium",
+    "category": "Apparel",
+    "type": "seasonal",
+    "base": 400.0,
+    "unitCost": 45,
+    "asp": 120,
+    "aopVolume": 4800,
+    "supplyCapacity": 800,
+    "holdingCostPct": 0.12,
+    "onHand": 1200,
+    "inTransit": 300,
+    "leadTime": 45,
+    "leadTimeStdDev": 8,
+    "cv": 0.65,
+    "adi": 1.2,
+    "sysMape": 18.5,
+    "humMape": 15.0,
+    "overrideRate": 45,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 429,
+        "forecast": 430
+      },
+      {
+        "date": "Day -89",
+        "actual": 474,
+        "forecast": 466
+      },
+      {
+        "date": "Day -88",
+        "actual": 446,
+        "forecast": 462
+      },
+      {
+        "date": "Day -87",
+        "actual": 484,
+        "forecast": 450
+      },
+      {
+        "date": "Day -86",
+        "actual": 542,
+        "forecast": 528
+      },
+      {
+        "date": "Day -85",
+        "actual": 509,
+        "forecast": 512
+      },
+      {
+        "date": "Day -84",
+        "actual": 515,
+        "forecast": 528
+      },
+      {
+        "date": "Day -83",
+        "actual": 562,
+        "forecast": 593
+      },
+      {
+        "date": "Day -82",
+        "actual": 486,
+        "forecast": 486
+      },
+      {
+        "date": "Day -81",
+        "actual": 484,
+        "forecast": 481
+      },
+      {
+        "date": "Day -80",
+        "actual": 516,
+        "forecast": 488
+      },
+      {
+        "date": "Day -79",
+        "actual": 508,
+        "forecast": 450
+      },
+      {
+        "date": "Day -78",
+        "actual": 477,
+        "forecast": 414
+      },
+      {
+        "date": "Day -77",
+        "actual": 427,
+        "forecast": 482
+      },
+      {
+        "date": "Day -76",
+        "actual": 383,
+        "forecast": 441
+      },
+      {
+        "date": "Day -75",
+        "actual": 415,
+        "forecast": 420
+      },
+      {
+        "date": "Day -74",
+        "actual": 394,
+        "forecast": 413
+      },
+      {
+        "date": "Day -73",
+        "actual": 361,
+        "forecast": 331
+      },
+      {
+        "date": "Day -72",
+        "actual": 268,
+        "forecast": 255
+      },
+      {
+        "date": "Day -71",
+        "actual": 325,
+        "forecast": 307
+      },
+      {
+        "date": "Day -70",
+        "actual": 268,
+        "forecast": 269
+      },
+      {
+        "date": "Day -69",
+        "actual": 272,
+        "forecast": 304
+      },
+      {
+        "date": "Day -68",
+        "actual": 306,
+        "forecast": 311
+      },
+      {
+        "date": "Day -67",
+        "actual": 249,
+        "forecast": 241
+      },
+      {
+        "date": "Day -66",
+        "actual": 231,
+        "forecast": 224
+      },
+      {
+        "date": "Day -65",
+        "actual": 282,
+        "forecast": 292
+      },
+      {
+        "date": "Day -64",
+        "actual": 295,
+        "forecast": 306
+      },
+      {
+        "date": "Day -63",
+        "actual": 325,
+        "forecast": 324
+      },
+      {
+        "date": "Day -62",
+        "actual": 383,
+        "forecast": 393
+      },
+      {
+        "date": "Day -61",
+        "actual": 390,
+        "forecast": 354
+      },
+      {
+        "date": "Day -60",
+        "actual": 405,
+        "forecast": 368
+      },
+      {
+        "date": "Day -59",
+        "actual": 438,
+        "forecast": 476
+      },
+      {
+        "date": "Day -58",
+        "actual": 370,
+        "forecast": 402
+      },
+      {
+        "date": "Day -57",
+        "actual": 443,
+        "forecast": 451
+      },
+      {
+        "date": "Day -56",
+        "actual": 517,
+        "forecast": 545
+      },
+      {
+        "date": "Day -55",
+        "actual": 493,
+        "forecast": 498
+      },
+      {
+        "date": "Day -54",
+        "actual": 512,
+        "forecast": 484
+      },
+      {
+        "date": "Day -53",
+        "actual": 516,
+        "forecast": 442
+      },
+      {
+        "date": "Day -52",
+        "actual": 556,
+        "forecast": 577
+      },
+      {
+        "date": "Day -51",
+        "actual": 551,
+        "forecast": 527
+      },
+      {
+        "date": "Day -50",
+        "actual": 491,
+        "forecast": 473
+      },
+      {
+        "date": "Day -49",
+        "actual": 450,
+        "forecast": 461
+      },
+      {
+        "date": "Day -48",
+        "actual": 440,
+        "forecast": 430
+      },
+      {
+        "date": "Day -47",
+        "actual": 437,
+        "forecast": 468
+      },
+      {
+        "date": "Day -46",
+        "actual": 433,
+        "forecast": 411
+      },
+      {
+        "date": "Day -45",
+        "actual": 434,
+        "forecast": 425
+      },
+      {
+        "date": "Day -44",
+        "actual": 372,
+        "forecast": 381
+      },
+      {
+        "date": "Day -43",
+        "actual": 295,
+        "forecast": 288
+      },
+      {
+        "date": "Day -42",
+        "actual": 276,
+        "forecast": 244
+      },
+      {
+        "date": "Day -41",
+        "actual": 312,
+        "forecast": 292
+      },
+      {
+        "date": "Day -40",
+        "actual": 297,
+        "forecast": 272
+      },
+      {
+        "date": "Day -39",
+        "actual": 240,
+        "forecast": 256
+      },
+      {
+        "date": "Day -38",
+        "actual": 282,
+        "forecast": 254
+      },
+      {
+        "date": "Day -37",
+        "actual": 342,
+        "forecast": 318
+      },
+      {
+        "date": "Day -36",
+        "actual": 318,
+        "forecast": 291
+      },
+      {
+        "date": "Day -35",
+        "actual": 274,
+        "forecast": 283
+      },
+      {
+        "date": "Day -34",
+        "actual": 355,
+        "forecast": 338
+      },
+      {
+        "date": "Day -33",
+        "actual": 349,
+        "forecast": 359
+      },
+      {
+        "date": "Day -32",
+        "actual": 313,
+        "forecast": 317
+      },
+      {
+        "date": "Day -31",
+        "actual": 338,
+        "forecast": 353
+      },
+      {
+        "date": "Day -30",
+        "actual": 410,
+        "forecast": 391
+      },
+      {
+        "date": "Day -29",
+        "actual": 439,
+        "forecast": 467
+      },
+      {
+        "date": "Day -28",
+        "actual": 467,
+        "forecast": 460
+      },
+      {
+        "date": "Day -27",
+        "actual": 421,
+        "forecast": 364
+      },
+      {
+        "date": "Day -26",
+        "actual": 508,
+        "forecast": 526
+      },
+      {
+        "date": "Day -25",
+        "actual": 490,
+        "forecast": 428
+      },
+      {
+        "date": "Day -24",
+        "actual": 492,
+        "forecast": 505
+      },
+      {
+        "date": "Day -23",
+        "actual": 511,
+        "forecast": 536
+      },
+      {
+        "date": "Day -22",
+        "actual": 514,
+        "forecast": 483
+      },
+      {
+        "date": "Day -21",
+        "actual": 504,
+        "forecast": 463
+      },
+      {
+        "date": "Day -20",
+        "actual": 610,
+        "forecast": 615
+      },
+      {
+        "date": "Day -19",
+        "actual": 471,
+        "forecast": 487
+      },
+      {
+        "date": "Day -18",
+        "actual": 432,
+        "forecast": 474
+      },
+      {
+        "date": "Day -17",
+        "actual": 377,
+        "forecast": 400
+      },
+      {
+        "date": "Day -16",
+        "actual": 416,
+        "forecast": 384
+      },
+      {
+        "date": "Day -15",
+        "actual": 413,
+        "forecast": 400
+      },
+      {
+        "date": "Day -14",
+        "actual": 365,
+        "forecast": 366
+      },
+      {
+        "date": "Day -13",
+        "actual": 341,
+        "forecast": 368
+      },
+      {
+        "date": "Day -12",
+        "actual": 319,
+        "forecast": 306
+      },
+      {
+        "date": "Day -11",
+        "actual": 318,
+        "forecast": 298
+      },
+      {
+        "date": "Day -10",
+        "actual": 256,
+        "forecast": 256
+      },
+      {
+        "date": "Day -9",
+        "actual": 300,
+        "forecast": 310
+      },
+      {
+        "date": "Day -8",
+        "actual": 216,
+        "forecast": 212
+      },
+      {
+        "date": "Day -7",
+        "actual": 287,
+        "forecast": 312
+      },
+      {
+        "date": "Day -6",
+        "actual": 255,
+        "forecast": 227
+      },
+      {
+        "date": "Day -5",
+        "actual": 278,
+        "forecast": 292
+      },
+      {
+        "date": "Day -4",
+        "actual": 309,
+        "forecast": 342
+      },
+      {
+        "date": "Day -3",
+        "actual": 294,
+        "forecast": 309
+      },
+      {
+        "date": "Day -2",
+        "actual": 342,
+        "forecast": 333
+      },
+      {
+        "date": "Day -1",
+        "actual": 441,
+        "forecast": 499
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 400,
+        "lower_bound": 340,
+        "upper_bound": 460
+      },
+      {
+        "date": "Day +2",
+        "forecast": 425,
+        "lower_bound": 361,
+        "upper_bound": 489
+      },
+      {
+        "date": "Day +3",
+        "forecast": 449,
+        "lower_bound": 381,
+        "upper_bound": 516
+      },
+      {
+        "date": "Day +4",
+        "forecast": 471,
+        "lower_bound": 400,
+        "upper_bound": 541
+      },
+      {
+        "date": "Day +5",
+        "forecast": 489,
+        "lower_bound": 416,
+        "upper_bound": 563
+      },
+      {
+        "date": "Day +6",
+        "forecast": 504,
+        "lower_bound": 428,
+        "upper_bound": 580
+      },
+      {
+        "date": "Day +7",
+        "forecast": 514,
+        "lower_bound": 437,
+        "upper_bound": 591
+      },
+      {
+        "date": "Day +8",
+        "forecast": 519,
+        "lower_bound": 441,
+        "upper_bound": 597
+      },
+      {
+        "date": "Day +9",
+        "forecast": 519,
+        "lower_bound": 441,
+        "upper_bound": 597
+      },
+      {
+        "date": "Day +10",
+        "forecast": 514,
+        "lower_bound": 437,
+        "upper_bound": 591
+      },
+      {
+        "date": "Day +11",
+        "forecast": 504,
+        "lower_bound": 428,
+        "upper_bound": 580
+      },
+      {
+        "date": "Day +12",
+        "forecast": 489,
+        "lower_bound": 416,
+        "upper_bound": 563
+      },
+      {
+        "date": "Day +13",
+        "forecast": 471,
+        "lower_bound": 400,
+        "upper_bound": 541
+      },
+      {
+        "date": "Day +14",
+        "forecast": 449,
+        "lower_bound": 381,
+        "upper_bound": 516
+      },
+      {
+        "date": "Day +15",
+        "forecast": 425,
+        "lower_bound": 361,
+        "upper_bound": 489
+      }
+    ]
+  },
+  {
+    "id": "APP_TEE_WHT_LG",
+    "name": "Classic White Tee Shirt Large",
+    "category": "Apparel",
+    "type": "stable",
+    "base": 1500.0,
+    "unitCost": 3.5,
+    "asp": 15.0,
+    "aopVolume": 18000,
+    "supplyCapacity": 3000,
+    "holdingCostPct": 0.1,
+    "onHand": 4000,
+    "inTransit": 1000,
+    "leadTime": 30,
+    "leadTimeStdDev": 5,
+    "cv": 0.15,
+    "adi": 1.0,
+    "sysMape": 7.2,
+    "humMape": 8.0,
+    "overrideRate": 12,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 1537,
+        "forecast": 1487
+      },
+      {
+        "date": "Day -89",
+        "actual": 1415,
+        "forecast": 1363
+      },
+      {
+        "date": "Day -88",
+        "actual": 1560,
+        "forecast": 1399
+      },
+      {
+        "date": "Day -87",
+        "actual": 1497,
+        "forecast": 1661
+      },
+      {
+        "date": "Day -86",
+        "actual": 1545,
+        "forecast": 1611
+      },
+      {
+        "date": "Day -85",
+        "actual": 1362,
+        "forecast": 1250
+      },
+      {
+        "date": "Day -84",
+        "actual": 1558,
+        "forecast": 1485
+      },
+      {
+        "date": "Day -83",
+        "actual": 1411,
+        "forecast": 1539
+      },
+      {
+        "date": "Day -82",
+        "actual": 1498,
+        "forecast": 1638
+      },
+      {
+        "date": "Day -81",
+        "actual": 1568,
+        "forecast": 1364
+      },
+      {
+        "date": "Day -80",
+        "actual": 1634,
+        "forecast": 1747
+      },
+      {
+        "date": "Day -79",
+        "actual": 1545,
+        "forecast": 1490
+      },
+      {
+        "date": "Day -78",
+        "actual": 1466,
+        "forecast": 1366
+      },
+      {
+        "date": "Day -77",
+        "actual": 1512,
+        "forecast": 1379
+      },
+      {
+        "date": "Day -76",
+        "actual": 1370,
+        "forecast": 1323
+      },
+      {
+        "date": "Day -75",
+        "actual": 1456,
+        "forecast": 1471
+      },
+      {
+        "date": "Day -74",
+        "actual": 1482,
+        "forecast": 1412
+      },
+      {
+        "date": "Day -73",
+        "actual": 1401,
+        "forecast": 1375
+      },
+      {
+        "date": "Day -72",
+        "actual": 1427,
+        "forecast": 1311
+      },
+      {
+        "date": "Day -71",
+        "actual": 1515,
+        "forecast": 1412
+      },
+      {
+        "date": "Day -70",
+        "actual": 1586,
+        "forecast": 1703
+      },
+      {
+        "date": "Day -69",
+        "actual": 1467,
+        "forecast": 1390
+      },
+      {
+        "date": "Day -68",
+        "actual": 1412,
+        "forecast": 1408
+      },
+      {
+        "date": "Day -67",
+        "actual": 1447,
+        "forecast": 1537
+      },
+      {
+        "date": "Day -66",
+        "actual": 1386,
+        "forecast": 1420
+      },
+      {
+        "date": "Day -65",
+        "actual": 1552,
+        "forecast": 1709
+      },
+      {
+        "date": "Day -64",
+        "actual": 1548,
+        "forecast": 1421
+      },
+      {
+        "date": "Day -63",
+        "actual": 1477,
+        "forecast": 1508
+      },
+      {
+        "date": "Day -62",
+        "actual": 1572,
+        "forecast": 1631
+      },
+      {
+        "date": "Day -61",
+        "actual": 1474,
+        "forecast": 1511
+      },
+      {
+        "date": "Day -60",
+        "actual": 1327,
+        "forecast": 1343
+      },
+      {
+        "date": "Day -59",
+        "actual": 1531,
+        "forecast": 1560
+      },
+      {
+        "date": "Day -58",
+        "actual": 1448,
+        "forecast": 1590
+      },
+      {
+        "date": "Day -57",
+        "actual": 1503,
+        "forecast": 1537
+      },
+      {
+        "date": "Day -56",
+        "actual": 1489,
+        "forecast": 1607
+      },
+      {
+        "date": "Day -55",
+        "actual": 1500,
+        "forecast": 1406
+      },
+      {
+        "date": "Day -54",
+        "actual": 1493,
+        "forecast": 1487
+      },
+      {
+        "date": "Day -53",
+        "actual": 1474,
+        "forecast": 1428
+      },
+      {
+        "date": "Day -52",
+        "actual": 1545,
+        "forecast": 1729
+      },
+      {
+        "date": "Day -51",
+        "actual": 1527,
+        "forecast": 1456
+      },
+      {
+        "date": "Day -50",
+        "actual": 1685,
+        "forecast": 1594
+      },
+      {
+        "date": "Day -49",
+        "actual": 1387,
+        "forecast": 1375
+      },
+      {
+        "date": "Day -48",
+        "actual": 1518,
+        "forecast": 1546
+      },
+      {
+        "date": "Day -47",
+        "actual": 1533,
+        "forecast": 1776
+      },
+      {
+        "date": "Day -46",
+        "actual": 1559,
+        "forecast": 1499
+      },
+      {
+        "date": "Day -45",
+        "actual": 1510,
+        "forecast": 1555
+      },
+      {
+        "date": "Day -44",
+        "actual": 1517,
+        "forecast": 1682
+      },
+      {
+        "date": "Day -43",
+        "actual": 1637,
+        "forecast": 1534
+      },
+      {
+        "date": "Day -42",
+        "actual": 1429,
+        "forecast": 1252
+      },
+      {
+        "date": "Day -41",
+        "actual": 1502,
+        "forecast": 1396
+      },
+      {
+        "date": "Day -40",
+        "actual": 1389,
+        "forecast": 1480
+      },
+      {
+        "date": "Day -39",
+        "actual": 1498,
+        "forecast": 1438
+      },
+      {
+        "date": "Day -38",
+        "actual": 1410,
+        "forecast": 1412
+      },
+      {
+        "date": "Day -37",
+        "actual": 1541,
+        "forecast": 1664
+      },
+      {
+        "date": "Day -36",
+        "actual": 1547,
+        "forecast": 1457
+      },
+      {
+        "date": "Day -35",
+        "actual": 1421,
+        "forecast": 1598
+      },
+      {
+        "date": "Day -34",
+        "actual": 1507,
+        "forecast": 1600
+      },
+      {
+        "date": "Day -33",
+        "actual": 1562,
+        "forecast": 1811
+      },
+      {
+        "date": "Day -32",
+        "actual": 1490,
+        "forecast": 1591
+      },
+      {
+        "date": "Day -31",
+        "actual": 1321,
+        "forecast": 1343
+      },
+      {
+        "date": "Day -30",
+        "actual": 1574,
+        "forecast": 1501
+      },
+      {
+        "date": "Day -29",
+        "actual": 1452,
+        "forecast": 1334
+      },
+      {
+        "date": "Day -28",
+        "actual": 1439,
+        "forecast": 1336
+      },
+      {
+        "date": "Day -27",
+        "actual": 1463,
+        "forecast": 1498
+      },
+      {
+        "date": "Day -26",
+        "actual": 1554,
+        "forecast": 1645
+      },
+      {
+        "date": "Day -25",
+        "actual": 1659,
+        "forecast": 1819
+      },
+      {
+        "date": "Day -24",
+        "actual": 1497,
+        "forecast": 1426
+      },
+      {
+        "date": "Day -23",
+        "actual": 1483,
+        "forecast": 1487
+      },
+      {
+        "date": "Day -22",
+        "actual": 1589,
+        "forecast": 1717
+      },
+      {
+        "date": "Day -21",
+        "actual": 1611,
+        "forecast": 1587
+      },
+      {
+        "date": "Day -20",
+        "actual": 1481,
+        "forecast": 1488
+      },
+      {
+        "date": "Day -19",
+        "actual": 1489,
+        "forecast": 1247
+      },
+      {
+        "date": "Day -18",
+        "actual": 1451,
+        "forecast": 1473
+      },
+      {
+        "date": "Day -17",
+        "actual": 1437,
+        "forecast": 1527
+      },
+      {
+        "date": "Day -16",
+        "actual": 1528,
+        "forecast": 1561
+      },
+      {
+        "date": "Day -15",
+        "actual": 1577,
+        "forecast": 1616
+      },
+      {
+        "date": "Day -14",
+        "actual": 1329,
+        "forecast": 1240
+      },
+      {
+        "date": "Day -13",
+        "actual": 1417,
+        "forecast": 1285
+      },
+      {
+        "date": "Day -12",
+        "actual": 1497,
+        "forecast": 1343
+      },
+      {
+        "date": "Day -11",
+        "actual": 1488,
+        "forecast": 1364
+      },
+      {
+        "date": "Day -10",
+        "actual": 1533,
+        "forecast": 1244
+      },
+      {
+        "date": "Day -9",
+        "actual": 1538,
+        "forecast": 1543
+      },
+      {
+        "date": "Day -8",
+        "actual": 1534,
+        "forecast": 1645
+      },
+      {
+        "date": "Day -7",
+        "actual": 1424,
+        "forecast": 1652
+      },
+      {
+        "date": "Day -6",
+        "actual": 1579,
+        "forecast": 1538
+      },
+      {
+        "date": "Day -5",
+        "actual": 1469,
+        "forecast": 1492
+      },
+      {
+        "date": "Day -4",
+        "actual": 1563,
+        "forecast": 1798
+      },
+      {
+        "date": "Day -3",
+        "actual": 1529,
+        "forecast": 1536
+      },
+      {
+        "date": "Day -2",
+        "actual": 1545,
+        "forecast": 1712
+      },
+      {
+        "date": "Day -1",
+        "actual": 1400,
+        "forecast": 1434
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +2",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +3",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +4",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +5",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +6",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +7",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +8",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +9",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +10",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +11",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +12",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +13",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +14",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      },
+      {
+        "date": "Day +15",
+        "forecast": 1500,
+        "lower_bound": 1275,
+        "upper_bound": 1725
+      }
+    ]
+  },
+  {
+    "id": "PHARM_INSUL_RGL",
+    "name": "Regular Insulin Vial 10ml",
+    "category": "Pharmaceuticals",
+    "type": "stable",
+    "base": 600.0,
+    "unitCost": 25.0,
+    "asp": 75.0,
+    "aopVolume": 7200,
+    "supplyCapacity": 1000,
+    "holdingCostPct": 0.25,
+    "onHand": 1800,
+    "inTransit": 400,
+    "leadTime": 14,
+    "leadTimeStdDev": 2,
+    "cv": 0.05,
+    "adi": 1.0,
+    "sysMape": 2.4,
+    "humMape": 2.1,
+    "overrideRate": 5,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 643,
+        "forecast": 610
+      },
+      {
+        "date": "Day -89",
+        "actual": 570,
+        "forecast": 610
+      },
+      {
+        "date": "Day -88",
+        "actual": 613,
+        "forecast": 592
+      },
+      {
+        "date": "Day -87",
+        "actual": 554,
+        "forecast": 564
+      },
+      {
+        "date": "Day -86",
+        "actual": 580,
+        "forecast": 584
+      },
+      {
+        "date": "Day -85",
+        "actual": 642,
+        "forecast": 657
+      },
+      {
+        "date": "Day -84",
+        "actual": 638,
+        "forecast": 582
+      },
+      {
+        "date": "Day -83",
+        "actual": 594,
+        "forecast": 541
+      },
+      {
+        "date": "Day -82",
+        "actual": 614,
+        "forecast": 665
+      },
+      {
+        "date": "Day -81",
+        "actual": 605,
+        "forecast": 625
+      },
+      {
+        "date": "Day -80",
+        "actual": 622,
+        "forecast": 628
+      },
+      {
+        "date": "Day -79",
+        "actual": 596,
+        "forecast": 596
+      },
+      {
+        "date": "Day -78",
+        "actual": 591,
+        "forecast": 525
+      },
+      {
+        "date": "Day -77",
+        "actual": 615,
+        "forecast": 616
+      },
+      {
+        "date": "Day -76",
+        "actual": 625,
+        "forecast": 621
+      },
+      {
+        "date": "Day -75",
+        "actual": 641,
+        "forecast": 632
+      },
+      {
+        "date": "Day -74",
+        "actual": 585,
+        "forecast": 567
+      },
+      {
+        "date": "Day -73",
+        "actual": 587,
+        "forecast": 621
+      },
+      {
+        "date": "Day -72",
+        "actual": 597,
+        "forecast": 634
+      },
+      {
+        "date": "Day -71",
+        "actual": 603,
+        "forecast": 553
+      },
+      {
+        "date": "Day -70",
+        "actual": 573,
+        "forecast": 567
+      },
+      {
+        "date": "Day -69",
+        "actual": 598,
+        "forecast": 623
+      },
+      {
+        "date": "Day -68",
+        "actual": 557,
+        "forecast": 530
+      },
+      {
+        "date": "Day -67",
+        "actual": 654,
+        "forecast": 674
+      },
+      {
+        "date": "Day -66",
+        "actual": 602,
+        "forecast": 601
+      },
+      {
+        "date": "Day -65",
+        "actual": 643,
+        "forecast": 667
+      },
+      {
+        "date": "Day -64",
+        "actual": 606,
+        "forecast": 581
+      },
+      {
+        "date": "Day -63",
+        "actual": 652,
+        "forecast": 679
+      },
+      {
+        "date": "Day -62",
+        "actual": 587,
+        "forecast": 492
+      },
+      {
+        "date": "Day -61",
+        "actual": 605,
+        "forecast": 559
+      },
+      {
+        "date": "Day -60",
+        "actual": 590,
+        "forecast": 571
+      },
+      {
+        "date": "Day -59",
+        "actual": 577,
+        "forecast": 651
+      },
+      {
+        "date": "Day -58",
+        "actual": 611,
+        "forecast": 647
+      },
+      {
+        "date": "Day -57",
+        "actual": 572,
+        "forecast": 552
+      },
+      {
+        "date": "Day -56",
+        "actual": 612,
+        "forecast": 599
+      },
+      {
+        "date": "Day -55",
+        "actual": 617,
+        "forecast": 603
+      },
+      {
+        "date": "Day -54",
+        "actual": 582,
+        "forecast": 606
+      },
+      {
+        "date": "Day -53",
+        "actual": 534,
+        "forecast": 580
+      },
+      {
+        "date": "Day -52",
+        "actual": 625,
+        "forecast": 562
+      },
+      {
+        "date": "Day -51",
+        "actual": 560,
+        "forecast": 596
+      },
+      {
+        "date": "Day -50",
+        "actual": 579,
+        "forecast": 548
+      },
+      {
+        "date": "Day -49",
+        "actual": 608,
+        "forecast": 583
+      },
+      {
+        "date": "Day -48",
+        "actual": 603,
+        "forecast": 584
+      },
+      {
+        "date": "Day -47",
+        "actual": 604,
+        "forecast": 581
+      },
+      {
+        "date": "Day -46",
+        "actual": 591,
+        "forecast": 591
+      },
+      {
+        "date": "Day -45",
+        "actual": 576,
+        "forecast": 591
+      },
+      {
+        "date": "Day -44",
+        "actual": 624,
+        "forecast": 564
+      },
+      {
+        "date": "Day -43",
+        "actual": 652,
+        "forecast": 664
+      },
+      {
+        "date": "Day -42",
+        "actual": 639,
+        "forecast": 610
+      },
+      {
+        "date": "Day -41",
+        "actual": 573,
+        "forecast": 532
+      },
+      {
+        "date": "Day -40",
+        "actual": 582,
+        "forecast": 618
+      },
+      {
+        "date": "Day -39",
+        "actual": 638,
+        "forecast": 694
+      },
+      {
+        "date": "Day -38",
+        "actual": 571,
+        "forecast": 541
+      },
+      {
+        "date": "Day -37",
+        "actual": 619,
+        "forecast": 627
+      },
+      {
+        "date": "Day -36",
+        "actual": 568,
+        "forecast": 657
+      },
+      {
+        "date": "Day -35",
+        "actual": 653,
+        "forecast": 750
+      },
+      {
+        "date": "Day -34",
+        "actual": 596,
+        "forecast": 577
+      },
+      {
+        "date": "Day -33",
+        "actual": 586,
+        "forecast": 529
+      },
+      {
+        "date": "Day -32",
+        "actual": 639,
+        "forecast": 619
+      },
+      {
+        "date": "Day -31",
+        "actual": 561,
+        "forecast": 631
+      },
+      {
+        "date": "Day -30",
+        "actual": 612,
+        "forecast": 589
+      },
+      {
+        "date": "Day -29",
+        "actual": 573,
+        "forecast": 608
+      },
+      {
+        "date": "Day -28",
+        "actual": 613,
+        "forecast": 611
+      },
+      {
+        "date": "Day -27",
+        "actual": 624,
+        "forecast": 586
+      },
+      {
+        "date": "Day -26",
+        "actual": 547,
+        "forecast": 601
+      },
+      {
+        "date": "Day -25",
+        "actual": 583,
+        "forecast": 615
+      },
+      {
+        "date": "Day -24",
+        "actual": 572,
+        "forecast": 565
+      },
+      {
+        "date": "Day -23",
+        "actual": 621,
+        "forecast": 586
+      },
+      {
+        "date": "Day -22",
+        "actual": 584,
+        "forecast": 581
+      },
+      {
+        "date": "Day -21",
+        "actual": 554,
+        "forecast": 538
+      },
+      {
+        "date": "Day -20",
+        "actual": 577,
+        "forecast": 551
+      },
+      {
+        "date": "Day -19",
+        "actual": 609,
+        "forecast": 584
+      },
+      {
+        "date": "Day -18",
+        "actual": 617,
+        "forecast": 658
+      },
+      {
+        "date": "Day -17",
+        "actual": 614,
+        "forecast": 598
+      },
+      {
+        "date": "Day -16",
+        "actual": 599,
+        "forecast": 600
+      },
+      {
+        "date": "Day -15",
+        "actual": 648,
+        "forecast": 659
+      },
+      {
+        "date": "Day -14",
+        "actual": 616,
+        "forecast": 642
+      },
+      {
+        "date": "Day -13",
+        "actual": 639,
+        "forecast": 625
+      },
+      {
+        "date": "Day -12",
+        "actual": 588,
+        "forecast": 564
+      },
+      {
+        "date": "Day -11",
+        "actual": 639,
+        "forecast": 642
+      },
+      {
+        "date": "Day -10",
+        "actual": 595,
+        "forecast": 621
+      },
+      {
+        "date": "Day -9",
+        "actual": 604,
+        "forecast": 570
+      },
+      {
+        "date": "Day -8",
+        "actual": 586,
+        "forecast": 570
+      },
+      {
+        "date": "Day -7",
+        "actual": 606,
+        "forecast": 587
+      },
+      {
+        "date": "Day -6",
+        "actual": 618,
+        "forecast": 602
+      },
+      {
+        "date": "Day -5",
+        "actual": 623,
+        "forecast": 591
+      },
+      {
+        "date": "Day -4",
+        "actual": 611,
+        "forecast": 642
+      },
+      {
+        "date": "Day -3",
+        "actual": 644,
+        "forecast": 678
+      },
+      {
+        "date": "Day -2",
+        "actual": 588,
+        "forecast": 560
+      },
+      {
+        "date": "Day -1",
+        "actual": 664,
+        "forecast": 717
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +2",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +3",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +4",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +5",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +6",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +7",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +8",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +9",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +10",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +11",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +12",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +13",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +14",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      },
+      {
+        "date": "Day +15",
+        "forecast": 600,
+        "lower_bound": 510,
+        "upper_bound": 690
+      }
+    ]
+  },
+  {
+    "id": "PHARM_PAIN_IBU",
+    "name": "Ibuprofen 200mg 100-Count",
+    "category": "Pharmaceuticals",
+    "type": "stable",
+    "base": 2500.0,
+    "unitCost": 1.2,
+    "asp": 4.99,
+    "aopVolume": 30000,
+    "supplyCapacity": 4000,
+    "holdingCostPct": 0.08,
+    "onHand": 6000,
+    "inTransit": 2000,
+    "leadTime": 15,
+    "leadTimeStdDev": 3,
+    "cv": 0.09,
+    "adi": 1.0,
+    "sysMape": 3.8,
+    "humMape": 4.0,
+    "overrideRate": 6,
+    "historicalData": [
+      {
+        "date": "Day -90",
+        "actual": 2394,
+        "forecast": 2396
+      },
+      {
+        "date": "Day -89",
+        "actual": 2401,
+        "forecast": 2032
+      },
+      {
+        "date": "Day -88",
+        "actual": 2503,
+        "forecast": 2409
+      },
+      {
+        "date": "Day -87",
+        "actual": 2529,
+        "forecast": 2772
+      },
+      {
+        "date": "Day -86",
+        "actual": 2425,
+        "forecast": 2195
+      },
+      {
+        "date": "Day -85",
+        "actual": 2598,
+        "forecast": 2476
+      },
+      {
+        "date": "Day -84",
+        "actual": 2750,
+        "forecast": 2784
+      },
+      {
+        "date": "Day -83",
+        "actual": 2228,
+        "forecast": 2294
+      },
+      {
+        "date": "Day -82",
+        "actual": 2459,
+        "forecast": 2322
+      },
+      {
+        "date": "Day -81",
+        "actual": 2716,
+        "forecast": 2679
+      },
+      {
+        "date": "Day -80",
+        "actual": 2507,
+        "forecast": 2672
+      },
+      {
+        "date": "Day -79",
+        "actual": 2581,
+        "forecast": 2511
+      },
+      {
+        "date": "Day -78",
+        "actual": 2718,
+        "forecast": 2448
+      },
+      {
+        "date": "Day -77",
+        "actual": 2620,
+        "forecast": 2858
+      },
+      {
+        "date": "Day -76",
+        "actual": 2608,
+        "forecast": 2809
+      },
+      {
+        "date": "Day -75",
+        "actual": 2471,
+        "forecast": 2498
+      },
+      {
+        "date": "Day -74",
+        "actual": 2562,
+        "forecast": 2612
+      },
+      {
+        "date": "Day -73",
+        "actual": 2510,
+        "forecast": 2404
+      },
+      {
+        "date": "Day -72",
+        "actual": 2392,
+        "forecast": 2766
+      },
+      {
+        "date": "Day -71",
+        "actual": 2288,
+        "forecast": 2238
+      },
+      {
+        "date": "Day -70",
+        "actual": 2379,
+        "forecast": 2119
+      },
+      {
+        "date": "Day -69",
+        "actual": 2451,
+        "forecast": 2044
+      },
+      {
+        "date": "Day -68",
+        "actual": 2453,
+        "forecast": 2895
+      },
+      {
+        "date": "Day -67",
+        "actual": 2501,
+        "forecast": 2450
+      },
+      {
+        "date": "Day -66",
+        "actual": 2403,
+        "forecast": 2342
+      },
+      {
+        "date": "Day -65",
+        "actual": 2661,
+        "forecast": 2454
+      },
+      {
+        "date": "Day -64",
+        "actual": 2617,
+        "forecast": 2667
+      },
+      {
+        "date": "Day -63",
+        "actual": 2297,
+        "forecast": 2284
+      },
+      {
+        "date": "Day -62",
+        "actual": 2271,
+        "forecast": 2332
+      },
+      {
+        "date": "Day -61",
+        "actual": 2662,
+        "forecast": 2621
+      },
+      {
+        "date": "Day -60",
+        "actual": 2271,
+        "forecast": 2010
+      },
+      {
+        "date": "Day -59",
+        "actual": 2536,
+        "forecast": 2626
+      },
+      {
+        "date": "Day -58",
+        "actual": 2371,
+        "forecast": 2401
+      },
+      {
+        "date": "Day -57",
+        "actual": 2599,
+        "forecast": 2359
+      },
+      {
+        "date": "Day -56",
+        "actual": 2531,
+        "forecast": 2046
+      },
+      {
+        "date": "Day -55",
+        "actual": 2463,
+        "forecast": 2426
+      },
+      {
+        "date": "Day -54",
+        "actual": 2556,
+        "forecast": 2731
+      },
+      {
+        "date": "Day -53",
+        "actual": 2388,
+        "forecast": 2433
+      },
+      {
+        "date": "Day -52",
+        "actual": 2608,
+        "forecast": 2620
+      },
+      {
+        "date": "Day -51",
+        "actual": 2534,
+        "forecast": 2633
+      },
+      {
+        "date": "Day -50",
+        "actual": 2443,
+        "forecast": 2434
+      },
+      {
+        "date": "Day -49",
+        "actual": 2613,
+        "forecast": 2429
+      },
+      {
+        "date": "Day -48",
+        "actual": 2548,
+        "forecast": 2585
+      },
+      {
+        "date": "Day -47",
+        "actual": 2579,
+        "forecast": 2656
+      },
+      {
+        "date": "Day -46",
+        "actual": 2419,
+        "forecast": 2275
+      },
+      {
+        "date": "Day -45",
+        "actual": 2284,
+        "forecast": 2226
+      },
+      {
+        "date": "Day -44",
+        "actual": 2499,
+        "forecast": 2693
+      },
+      {
+        "date": "Day -43",
+        "actual": 2543,
+        "forecast": 2286
+      },
+      {
+        "date": "Day -42",
+        "actual": 2553,
+        "forecast": 2456
+      },
+      {
+        "date": "Day -41",
+        "actual": 2491,
+        "forecast": 2176
+      },
+      {
+        "date": "Day -40",
+        "actual": 2346,
+        "forecast": 2402
+      },
+      {
+        "date": "Day -39",
+        "actual": 2446,
+        "forecast": 2740
+      },
+      {
+        "date": "Day -38",
+        "actual": 2387,
+        "forecast": 2568
+      },
+      {
+        "date": "Day -37",
+        "actual": 2336,
+        "forecast": 2575
+      },
+      {
+        "date": "Day -36",
+        "actual": 2572,
+        "forecast": 2636
+      },
+      {
+        "date": "Day -35",
+        "actual": 2456,
+        "forecast": 2733
+      },
+      {
+        "date": "Day -34",
+        "actual": 2390,
+        "forecast": 2348
+      },
+      {
+        "date": "Day -33",
+        "actual": 2745,
+        "forecast": 2714
+      },
+      {
+        "date": "Day -32",
+        "actual": 2425,
+        "forecast": 2610
+      },
+      {
+        "date": "Day -31",
+        "actual": 2636,
+        "forecast": 2717
+      },
+      {
+        "date": "Day -30",
+        "actual": 2517,
+        "forecast": 2155
+      },
+      {
+        "date": "Day -29",
+        "actual": 2418,
+        "forecast": 2501
+      },
+      {
+        "date": "Day -28",
+        "actual": 2665,
+        "forecast": 2719
+      },
+      {
+        "date": "Day -27",
+        "actual": 2498,
+        "forecast": 2264
+      },
+      {
+        "date": "Day -26",
+        "actual": 2473,
+        "forecast": 2412
+      },
+      {
+        "date": "Day -25",
+        "actual": 2422,
+        "forecast": 2405
+      },
+      {
+        "date": "Day -24",
+        "actual": 2498,
+        "forecast": 2296
+      },
+      {
+        "date": "Day -23",
+        "actual": 2278,
+        "forecast": 2325
+      },
+      {
+        "date": "Day -22",
+        "actual": 2502,
+        "forecast": 2459
+      },
+      {
+        "date": "Day -21",
+        "actual": 2391,
+        "forecast": 2437
+      },
+      {
+        "date": "Day -20",
+        "actual": 2483,
+        "forecast": 2556
+      },
+      {
+        "date": "Day -19",
+        "actual": 2571,
+        "forecast": 2283
+      },
+      {
+        "date": "Day -18",
+        "actual": 2641,
+        "forecast": 2664
+      },
+      {
+        "date": "Day -17",
+        "actual": 2228,
+        "forecast": 2294
+      },
+      {
+        "date": "Day -16",
+        "actual": 2529,
+        "forecast": 2744
+      },
+      {
+        "date": "Day -15",
+        "actual": 2458,
+        "forecast": 2530
+      },
+      {
+        "date": "Day -14",
+        "actual": 2250,
+        "forecast": 2472
+      },
+      {
+        "date": "Day -13",
+        "actual": 2606,
+        "forecast": 2378
+      },
+      {
+        "date": "Day -12",
+        "actual": 2507,
+        "forecast": 2496
+      },
+      {
+        "date": "Day -11",
+        "actual": 2610,
+        "forecast": 2701
+      },
+      {
+        "date": "Day -10",
+        "actual": 2370,
+        "forecast": 2614
+      },
+      {
+        "date": "Day -9",
+        "actual": 2501,
+        "forecast": 2610
+      },
+      {
+        "date": "Day -8",
+        "actual": 2488,
+        "forecast": 2401
+      },
+      {
+        "date": "Day -7",
+        "actual": 2576,
+        "forecast": 3023
+      },
+      {
+        "date": "Day -6",
+        "actual": 2536,
+        "forecast": 2589
+      },
+      {
+        "date": "Day -5",
+        "actual": 2399,
+        "forecast": 2665
+      },
+      {
+        "date": "Day -4",
+        "actual": 2561,
+        "forecast": 2379
+      },
+      {
+        "date": "Day -3",
+        "actual": 2490,
+        "forecast": 2576
+      },
+      {
+        "date": "Day -2",
+        "actual": 2835,
+        "forecast": 2358
+      },
+      {
+        "date": "Day -1",
+        "actual": 2639,
+        "forecast": 2706
+      }
+    ],
+    "forecastData": [
+      {
+        "date": "Day +1",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +2",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +3",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +4",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +5",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +6",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +7",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +8",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +9",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +10",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +11",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +12",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +13",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +14",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      },
+      {
+        "date": "Day +15",
+        "forecast": 2500,
+        "lower_bound": 2125,
+        "upper_bound": 2875
+      }
+    ]
+  }
+]

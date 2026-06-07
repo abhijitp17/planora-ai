@@ -1,0 +1,65 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/
+python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+ENV/local/
+ENV/production/
+ENV/staging/
+ENV/development/
+
+# Node/Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Databases & local files
+*.db
+*.sqlite3
+*.log
+*.pem
+.env*
+.vercel
+*.tsbuildinfo
+next-env.d.ts
