@@ -7,6 +7,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import { getDemandAccuracyData, getServiceTrendData, STOCKOUT_EVENTS, SUPPLIER_DATA } from '@/lib/mockData';
 import { buildExportUrl } from '@/lib/api';
 import { KPISkeletonRow } from '@/components/ui/Skeletons';
+import { formatCurrency, CURRENCIES } from '@/types';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, BarChart,
@@ -23,7 +24,7 @@ export default function GlobalAnalyticsModule() {
   const { can } = useAuth();
   const {
     activeTab, skuDatabase, selectedSkuId, targetServiceLevel,
-    financeSim, forecastModel: model, horizon,
+    financeSim, forecastModel: model, horizon, selectedCurrencyCode,
   } = state;
 
   const selectedSku = skuDatabase.find(s => s.id === selectedSkuId) ?? skuDatabase[0];
@@ -106,11 +107,11 @@ export default function GlobalAnalyticsModule() {
                       <span className="value">{doh.toFixed(0)} Days</span>
                       <span className="subtext" style={{ color: 'var(--text-muted)' }}>Average Network</span>
                     </div>
-                    <div className="kpi-infolet">
-                      <span className="label">Excess & Obsolete (E&O)</span>
-                      <span className="value">${(eoValue/1000).toLocaleString()}k</span>
-                      <span className="subtext" style={{ color: 'var(--status-error)' }}>At-Risk Capital</span>
-                    </div>
+                     <div className="kpi-infolet">
+                       <span className="label">Excess & Obsolete (E&O)</span>
+                       <span className="value">{formatCurrency(eoValue, selectedCurrencyCode, true)}</span>
+                       <span className="subtext" style={{ color: 'var(--status-error)' }}>At-Risk Capital</span>
+                     </div>
                     <div className="kpi-infolet">
                       <span className="label">Stockouts (Last 30D)</span>
                       <span className="value">{STOCKOUT_EVENTS} Events</span>
@@ -147,7 +148,7 @@ export default function GlobalAnalyticsModule() {
                                    <td><strong>{sku.name}</strong><br/><span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.category}</span></td>
                                    <td>{sku.onHand.toLocaleString()} Units</td>
                                    <td>{skuTurns.toFixed(1)}x</td>
-                                   <td>${skuInvVal.toLocaleString()}</td>
+                                   <td>{formatCurrency(skuInvVal, selectedCurrencyCode)}</td>
                                    <td style={{ textAlign: 'right', fontWeight: 600, color: color }}>{statusStr}</td>
                                  </tr>
                                )
@@ -177,11 +178,11 @@ export default function GlobalAnalyticsModule() {
                       <span className="value">97.8%</span>
                       <span className="subtext" style={{ color: 'var(--status-good)' }}>Target: 97.5%</span>
                     </div>
-                    <div className="kpi-infolet">
-                      <span className="label">Estimated Lost Sales ($)</span>
-                      <span className="value">$432,500</span>
-                      <span className="subtext" style={{ color: 'var(--status-error)' }}>Due to shorting / backorders</span>
-                    </div>
+                     <div className="kpi-infolet">
+                       <span className="label">Estimated Lost Sales ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</span>
+                       <span className="value">{formatCurrency(432500, selectedCurrencyCode)}</span>
+                       <span className="subtext" style={{ color: 'var(--status-error)' }}>Due to shorting / backorders</span>
+                     </div>
                   </div>
 
                   <div className="workspace-panel shadow-sm">
@@ -257,16 +258,16 @@ export default function GlobalAnalyticsModule() {
              return (
                <div>
                   <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="kpi-infolet" style={{ margin: 0 }}>
-                      <span className="label">Working Capital Trapped (Inventory)</span>
-                      <span className="value">${(tInventoryValue/1000).toLocaleString()}k</span>
-                      <span className="subtext" style={{ color: 'var(--text-muted)' }}>Capital requiring liberation</span>
-                    </div>
-                    <div className="kpi-infolet" style={{ margin: 0 }}>
-                      <span className="label">Annualized Inventory Carrying Cost (20% APICS Rate)</span>
-                      <span className="value" style={{ color: 'var(--status-error)' }}>${(tCarryingCost/1000).toLocaleString()}k</span>
-                      <span className="subtext">Cost of Storage, Insurance, Obsolescence & Opportunity</span>
-                    </div>
+                     <div className="kpi-infolet" style={{ margin: 0 }}>
+                       <span className="label">Working Capital Trapped (Inventory)</span>
+                       <span className="value">{formatCurrency(tInventoryValue, selectedCurrencyCode, true)}</span>
+                       <span className="subtext" style={{ color: 'var(--text-muted)' }}>Capital requiring liberation</span>
+                     </div>
+                     <div className="kpi-infolet" style={{ margin: 0 }}>
+                       <span className="label">Annualized Inventory Carrying Cost (20% APICS Rate)</span>
+                       <span className="value" style={{ color: 'var(--status-error)' }}>{formatCurrency(tCarryingCost, selectedCurrencyCode, true)}</span>
+                       <span className="subtext">Cost of Storage, Insurance, Obsolescence & Opportunity</span>
+                     </div>
                   </div>
 
                   <div className="workspace-panel shadow-sm">
@@ -275,10 +276,13 @@ export default function GlobalAnalyticsModule() {
                      <ResponsiveContainer width="100%" height={300}>
                         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)"/>
-                           <XAxis type="number" dataKey="x" name="Working Cap Built ($)" unit="$" stroke="var(--text-muted)" fontSize={12} />
-                           <YAxis type="number" dataKey="y" name="Gross Margin Yield (%)" unit="%" stroke="var(--text-muted)" fontSize={12} />
-                           <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}/>
-                           <Scatter name="SKUs" data={skuDatabase.map(s => ({ x: s.onHand * s.unitCost, y: ((s.asp - s.unitCost)/s.asp)*100, name: s.name }))} fill="var(--accent-primary)" />
+                            <XAxis type="number" dataKey="x" name={`Working Cap Built (${CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})`} unit={CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'} stroke="var(--text-muted)" fontSize={12} />
+                            <YAxis type="number" dataKey="y" name="Gross Margin Yield (%)" unit="%" stroke="var(--text-muted)" fontSize={12} />
+                            <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}/>
+                            <Scatter name="SKUs" data={skuDatabase.map(s => {
+                              const cur = CURRENCIES.find(c => c.code === selectedCurrencyCode) || CURRENCIES[0];
+                              return { x: s.onHand * s.unitCost * cur.rate, y: ((s.asp - s.unitCost)/s.asp)*100, name: s.name };
+                            })} fill="var(--accent-primary)" />
                         </ScatterChart>
                      </ResponsiveContainer>
                   </div>

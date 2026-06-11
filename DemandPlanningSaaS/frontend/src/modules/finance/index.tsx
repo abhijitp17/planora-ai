@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { DataTable, type TableColumn } from '@/components/ui/DataTable';
 import { buildExportUrl } from '@/lib/api';
 import { KPISkeletonRow } from '@/components/ui/Skeletons';
+import { formatCurrency, CURRENCIES } from '@/types';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, BarChart,
@@ -22,7 +23,7 @@ export default function FinancialSimulationModule() {
   const { can } = useAuth();
   const {
     activeTab, skuDatabase, selectedSkuId, targetServiceLevel,
-    financeSim, forecastModel: model, horizon,
+    financeSim, forecastModel: model, horizon, selectedCurrencyCode,
   } = state;
 
   const selectedSku = skuDatabase.find(s => s.id === selectedSkuId) ?? skuDatabase[0];
@@ -135,32 +136,32 @@ export default function FinancialSimulationModule() {
                                <th>Financial Line Item</th>
                                <th style={{ textAlign: 'right' }}>Operational Baseline</th>
                                <th style={{ textAlign: 'right' }}>Stress-Test Scenario</th>
-                               <th style={{ textAlign: 'right' }}>Absolute Delta ($)</th>
+                               <th style={{ textAlign: 'right' }}>Absolute Delta ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</th>
                              </tr>
                            </thead>
                            <tbody>
                              <tr>
                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>Total Revenue</td>
-                               <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>${(baseRev / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
-                               <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-main)' }}>${(simRev / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
+                               <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{formatCurrency(baseRev, selectedCurrencyCode, true)}</td>
+                               <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-main)' }}>{formatCurrency(simRev, selectedCurrencyCode, true)}</td>
                                <td style={{ textAlign: 'right', fontWeight: 600, color: (simRev - baseRev) >= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>
-                                 {(simRev - baseRev) > 0 ? '+' : ''}{((simRev - baseRev) / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K
+                                 {(simRev - baseRev) >= 0 ? '+' : ''}{formatCurrency(simRev - baseRev, selectedCurrencyCode, true)}
                                </td>
                              </tr>
                              <tr>
                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>Cost of Goods Sold (COGS)</td>
-                               <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>${(baseCogs / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
-                               <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-main)' }}>${(simCogs / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
+                               <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{formatCurrency(baseCogs, selectedCurrencyCode, true)}</td>
+                               <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-main)' }}>{formatCurrency(simCogs, selectedCurrencyCode, true)}</td>
                                <td style={{ textAlign: 'right', fontWeight: 600, color: (simCogs - baseCogs) <= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>
-                                 {(simCogs - baseCogs) > 0 ? '+' : ''}{((simCogs - baseCogs) / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K
+                                 {(simCogs - baseCogs) > 0 ? '+' : ''}{formatCurrency(simCogs - baseCogs, selectedCurrencyCode, true)}
                                </td>
                              </tr>
                              <tr style={{ background: 'var(--bg-hover)' }}>
-                               <td style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1.1em' }}>Gross Margin ($)</td>
-                               <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontWeight: 700 }}>${(baseGm / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
-                               <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--accent-primary)', fontSize: '1.1em' }}>${(simGm / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K</td>
+                               <td style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '1.1em' }}>Gross Margin ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</td>
+                               <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontWeight: 700 }}>{formatCurrency(baseGm, selectedCurrencyCode, true)}</td>
+                               <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--accent-primary)', fontSize: '1.1em' }}>{formatCurrency(simGm, selectedCurrencyCode, true)}</td>
                                <td style={{ textAlign: 'right', fontWeight: 800, color: (simGm - baseGm) >= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>
-                                 {(simGm - baseGm) > 0 ? '+' : ''}{((simGm - baseGm) / 1000).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}K
+                                 {(simGm - baseGm) > 0 ? '+' : ''}{formatCurrency(simGm - baseGm, selectedCurrencyCode, true)}
                                </td>
                              </tr>
                              <tr>
@@ -179,7 +180,7 @@ export default function FinancialSimulationModule() {
                         <div className="kpi-infolet flex-1" style={{ margin: 0 }}>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Scenario EBITDA Impact</span>
                           <span style={{ fontSize: '2rem', fontWeight: 300, color: (simGm - baseGm) >= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>
-                            {(simGm - baseGm) > 0 ? '+' : ''}${((simGm - baseGm) / 1000).toLocaleString()}K
+                             {(simGm - baseGm) > 0 ? '+' : ''}{formatCurrency(simGm - baseGm, selectedCurrencyCode, true)}
                           </span>
                         </div>
                       </div>
@@ -227,9 +228,9 @@ export default function FinancialSimulationModule() {
                            <tr key={sku.id}>
                               <td style={{ color: 'var(--text-muted)' }}>{sku.category}</td>
                               <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sku.name}</td>
-                              <td>${sku.asp.toLocaleString()}</td>
-                              <td>${sku.unitCost.toLocaleString()}</td>
-                              <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>${sku.marginDol.toLocaleString()}</td>
+                              <td>{formatCurrency(sku.asp, selectedCurrencyCode)}</td>
+                              <td>{formatCurrency(sku.unitCost, selectedCurrencyCode)}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{formatCurrency(sku.marginDol, selectedCurrencyCode)}</td>
                               <td>
                                  <span className="badge" style={{ background: sku.marginPct > 50 ? 'var(--status-good)20' : 'var(--status-warn)20', color: sku.marginPct > 50 ? 'var(--status-good)' : 'var(--status-warn)' }}>
                                    {sku.marginPct.toFixed(1)}%
@@ -266,7 +267,7 @@ export default function FinancialSimulationModule() {
                            <th>AOP Baseline (Budget)</th>
                            <th>Unconstrained Forecast</th>
                            <th>Constrained Operational Plan</th>
-                           <th>Variance to Budget ($)</th>
+                           <th>Variance to Budget ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</th>
                          </tr>
                        </thead>
                        <tbody>
@@ -282,10 +283,10 @@ export default function FinancialSimulationModule() {
                             return (
                               <tr key={`rev-${cat}`}>
                                 <td style={{ paddingLeft: '2rem' }}>{cat} Revenue</td>
-                                <td>${(tAop/1000).toLocaleString()}k</td>
-                                <td>${(tUnc/1000).toLocaleString()}k</td>
-                                <td style={{ fontWeight: 600 }}>${(tCon/1000).toLocaleString()}k</td>
-                                <td style={{ color: (tCon - tAop) > 0 ? 'var(--status-good)' : 'var(--status-error)' }}>{(tCon - tAop) > 0 ? '+' : ''}${((tCon - tAop)/1000).toLocaleString()}k</td>
+                                <td>{formatCurrency(tAop, selectedCurrencyCode, true)}</td>
+                                <td>{formatCurrency(tUnc, selectedCurrencyCode, true)}</td>
+                                <td style={{ fontWeight: 600 }}>{formatCurrency(tCon, selectedCurrencyCode, true)}</td>
+                                <td style={{ color: (tCon - tAop) > 0 ? 'var(--status-good)' : 'var(--status-error)' }}>{(tCon - tAop) > 0 ? '+' : ''}{formatCurrency(tCon - tAop, selectedCurrencyCode, true)}</td>
                               </tr>
                             )
                          })}
@@ -302,10 +303,10 @@ export default function FinancialSimulationModule() {
                             return (
                               <tr key={`cost-${cat}`}>
                                 <td style={{ paddingLeft: '2rem' }}>{cat} COGS</td>
-                                <td>${(tAop/1000).toLocaleString()}k</td>
-                                <td>${(tUnc/1000).toLocaleString()}k</td>
-                                <td style={{ fontWeight: 600 }}>${(tCon/1000).toLocaleString()}k</td>
-                                <td>${((tCon - tAop)/1000).toLocaleString()}k</td>
+                                <td>{formatCurrency(tAop, selectedCurrencyCode, true)}</td>
+                                <td>{formatCurrency(tUnc, selectedCurrencyCode, true)}</td>
+                                <td style={{ fontWeight: 600 }}>{formatCurrency(tCon, selectedCurrencyCode, true)}</td>
+                                <td>{formatCurrency(tCon - tAop, selectedCurrencyCode, true)}</td>
                               </tr>
                             )
                          })}
@@ -326,11 +327,11 @@ export default function FinancialSimulationModule() {
                             
                             return (
                               <tr key={`mar-${cat}`}>
-                                <td style={{ paddingLeft: '2rem' }}>{cat} Gross Margin ($)</td>
-                                <td>${(tAopGm/1000).toLocaleString()}k</td>
+                                <td style={{ paddingLeft: '2rem' }}>{cat} Gross Margin ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</td>
+                                <td>{formatCurrency(tAopGm, selectedCurrencyCode, true)}</td>
                                 <td style={{ color: 'var(--text-muted)' }}>-</td>
-                                <td style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>${(tConGm/1000).toLocaleString()}k</td>
-                                <td style={{ color: (tConGm - tAopGm) > 0 ? 'var(--status-good)' : 'var(--status-error)' }}>{(tConGm - tAopGm) > 0 ? '+' : ''}${((tConGm - tAopGm)/1000).toLocaleString()}k</td>
+                                <td style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{formatCurrency(tConGm, selectedCurrencyCode, true)}</td>
+                                <td style={{ color: (tConGm - tAopGm) > 0 ? 'var(--status-good)' : 'var(--status-error)' }}>{(tConGm - tAopGm) > 0 ? '+' : ''}{formatCurrency(tConGm - tAopGm, selectedCurrencyCode, true)}</td>
                               </tr>
                             )
                          })}

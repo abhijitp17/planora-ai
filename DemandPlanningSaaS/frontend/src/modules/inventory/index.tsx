@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { DataTable, type TableColumn } from '@/components/ui/DataTable';
 import { buildExportUrl } from '@/lib/api';
 import { KPISkeletonRow } from '@/components/ui/Skeletons';
+import { formatCurrency, CURRENCIES } from '@/types';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, BarChart,
@@ -22,7 +23,7 @@ export default function InventoryOptimizationModule() {
   const { can } = useAuth();
   const {
     activeTab, skuDatabase, selectedSkuId, targetServiceLevel,
-    financeSim, forecastModel: model, horizon,
+    financeSim, forecastModel: model, horizon, selectedCurrencyCode,
   } = state;
 
   const selectedSku = skuDatabase.find(s => s.id === selectedSkuId) ?? skuDatabase[0];
@@ -44,14 +45,14 @@ export default function InventoryOptimizationModule() {
                  <div className="kpi-infolet">
                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Total Network Value (On-Hand)</span>
                    <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>
-                     ${skuDatabase.reduce((acc, sku) => acc + (sku.onHand * sku.unitCost), 0).toLocaleString()}
+                     {formatCurrency(skuDatabase.reduce((acc, sku) => acc + (sku.onHand * sku.unitCost), 0), selectedCurrencyCode)}
                    </span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Capital Invested</span>
                  </div>
                  <div className="kpi-infolet">
                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>In-Transit Value</span>
                    <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--accent-primary)' }}>
-                     ${skuDatabase.reduce((acc, sku) => acc + (sku.inTransit * sku.unitCost), 0).toLocaleString()}
+                     {formatCurrency(skuDatabase.reduce((acc, sku) => acc + (sku.inTransit * sku.unitCost), 0), selectedCurrencyCode)}
                    </span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Pipeline</span>
                  </div>
@@ -77,7 +78,7 @@ export default function InventoryOptimizationModule() {
                         <th>On-Hand Qty</th>
                         <th>In-Transit Qty</th>
                         <th>Unit Cost</th>
-                        <th>Inv. Value ($)</th>
+                        <th>Inv. Value ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</th>
                         <th>Avg Demand / Day</th>
                         <th>Days of Supply (DoS)</th>
                         <th>Status</th>
@@ -99,8 +100,8 @@ export default function InventoryOptimizationModule() {
                              </td>
                              <td style={{ fontWeight: 600 }}>{sku.onHand.toLocaleString()}</td>
                              <td>{sku.inTransit.toLocaleString()}</td>
-                             <td>${sku.unitCost.toFixed(2)}</td>
-                             <td>${Math.round(sku.onHand * sku.unitCost).toLocaleString()}</td>
+                             <td>{formatCurrency(sku.unitCost, selectedCurrencyCode)}</td>
+                             <td>{formatCurrency(sku.onHand * sku.unitCost, selectedCurrencyCode)}</td>
                              <td>{avgDailyDemand.toFixed(1)}</td>
                              <td style={{ fontWeight: 600, color }}>{dos} Days</td>
                              <td><span className="badge" style={{ background: color + '20', color, border: `1px solid ${color}` }}>{status}</span></td>
@@ -156,7 +157,7 @@ export default function InventoryOptimizationModule() {
                        </div>
                        <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Capital Tied Up</div>
-                         <div style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: 300 }}>${Math.round(ssCapital).toLocaleString()}</div>
+                         <div style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: 300 }}>{formatCurrency(ssCapital, selectedCurrencyCode)}</div>
                        </div>
                      </div>
                   </div>
@@ -191,7 +192,7 @@ export default function InventoryOptimizationModule() {
                     <div className="ai-panel">
                        <strong style={{ display: 'flex', alignItems: 'center', color: 'var(--text-main)' }}><Sparkles size={16} className="mr-2" color="var(--accent-primary)"/> AI Inventory Insight</strong>
                        <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                         The required safety stock jumps exponentially as you approach 99.9% service level. At {targetServiceLevel.toFixed(1)}%, your safety stock is {ssUnits} units. Decreasing the Supplier Lead Time (σ) manually by negotiating better shipping consistency would save the company approx. ${(ssCapital * 0.25).toLocaleString()} in tied-up working capital.
+                         The required safety stock jumps exponentially as you approach 99.9% service level. At {targetServiceLevel.toFixed(1)}%, your safety stock is {ssUnits} units. Decreasing the Supplier Lead Time (σ) manually by negotiating better shipping consistency would save the company approx. {formatCurrency(ssCapital * 0.25, selectedCurrencyCode)} in tied-up working capital.
                        </p>
                     </div>
                   </div>

@@ -5,7 +5,7 @@ import {
   TrendingUp, Package, Stethoscope, Briefcase, DollarSign, BarChart2,
   BrainCircuit, Gauge, Upload, Bell, Sparkles, Sun, Moon, Search,
   ChevronLeft, ChevronRight, CheckCircle2, Tag, Menu, User,
-  LogOut, Settings, Shield, AlertTriangle, Activity,
+  LogOut, Settings, Shield, AlertTriangle, Activity, Database, Network, Store,
 } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 import { usePlatform } from '@/store/PlatformContext';
@@ -19,7 +19,7 @@ import { DashboardSkeleton, KPISkeletonRow, SidebarSkeleton } from '@/components
 import CopilotPanel from '@/components/ui/CopilotPanel';
 import LoginPage from '@/components/ui/LoginPage';
 import { uploadDataset, generateForecast, checkHealth, buildChartData } from '@/lib/api';
-import type { ModuleId } from '@/types';
+import { type ModuleId, CURRENCIES } from '@/types';
 
 // ─── Lazy-loaded modules ──────────────────────────────────────────────────────
 const DemandModule      = lazy(() => import('@/modules/demand'));
@@ -28,6 +28,9 @@ const DiagnosticsModule = lazy(() => import('@/modules/diagnostics'));
 const SOPModule         = lazy(() => import('@/modules/sop'));
 const FinanceModule     = lazy(() => import('@/modules/finance'));
 const AnalyticsModule   = lazy(() => import('@/modules/analytics'));
+const BIModule          = lazy(() => import('@/modules/bi'));
+const TwinModule        = lazy(() => import('@/modules/twin'));
+const RetailModule      = lazy(() => import('@/modules/retail'));
 
 // ─── Module registry ──────────────────────────────────────────────────────────
 const MODULE_DEFS = [
@@ -37,6 +40,9 @@ const MODULE_DEFS = [
   { id: 'sop' as ModuleId,         label: 'S&OP / IBP',             icon: <Briefcase size={18}/>,   minRole: 'manager', tabs: [{ id:'overview', label:'Executive Summary' }, { id:'balancing', label:'RCCP Balancing' }, { id:'finance', label:'Financial Reconciliation' }] },
   { id: 'finance' as ModuleId,     label: 'Financial Simulation',   icon: <DollarSign size={18}/>,  minRole: 'manager', tabs: [{ id:'overview', label:'Scenario Simulation' }, { id:'optimization', label:'Product Mix' }, { id:'plan', label:'Master Plan' }] },
   { id: 'analytics' as ModuleId,   label: 'Global Analytics',       icon: <BarChart2 size={18}/>,   minRole: 'viewer',  tabs: [{ id:'overview', label:'Demand & Sales' }, { id:'inventory', label:'Inventory Health' }, { id:'service', label:'Service & Fulfillment' }, { id:'supply', label:'Supplier & Capacity' }, { id:'financial', label:'Financial Capital' }, { id:'ai', label:'✨ AI Insights' }] },
+  { id: 'bi' as ModuleId,          label: 'Business Intelligence',  icon: <Database size={18}/>,    minRole: 'viewer',  tabs: [{ id:'sources', label:'Data Sources' }, { id:'query', label:'Visual Query Builder' }, { id:'dashboards', label:'Custom Dashboards' }] },
+  { id: 'twin' as ModuleId,        label: 'Digital Twin & Scenarios', icon: <Network size={18}/>,   minRole: 'planner', tabs: [{ id:'network', label:'Network Topology' }, { id:'scenarios', label:'Scenario Sandbox' }, { id:'impact', label:'Impact Analysis' }] },
+  { id: 'retail' as ModuleId,      label: 'Retail & Category',      icon: <Store size={18}/>,       minRole: 'planner', tabs: [{ id:'overview', label:'Category Overview' }, { id:'assortment', label:'Assortment & Merchandising' }, { id:'space', label:'Space Planning' }, { id:'demand', label:'Retail Demand' }] },
 ];
 
 const ROLE_RANK: Record<string, number> = { viewer: 0, planner: 1, manager: 2, admin: 3 };
@@ -81,6 +87,9 @@ function ActiveModule({ moduleId }: { moduleId: ModuleId }) {
     case 'sop':         return <SOPModule />;
     case 'finance':     return <FinanceModule />;
     case 'analytics':   return <AnalyticsModule />;
+    case 'bi':          return <BIModule />;
+    case 'twin':        return <TwinModule />;
+    case 'retail':      return <RetailModule />;
     default:            return <div style={{ padding:'2rem', color:'var(--text-muted)' }}>Module not found.</div>;
   }
 }
@@ -105,6 +114,12 @@ export default function AppShell() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+  const [isSkuPaneCollapsed, setIsSkuPaneCollapsed] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('planora_sku_pane_collapsed') === 'true';
+    }
+    return false;
+  });
 
   const {
     activeModule, activeTab, isSidebarCollapsed, isDarkMode, isCopilotOpen,
@@ -118,6 +133,16 @@ export default function AppShell() {
     if (isDarkMode) document.documentElement.setAttribute('data-theme', 'dark');
     else document.documentElement.removeAttribute('data-theme');
   }, [isDarkMode]);
+
+  // ── Programmatic shell tab switcher ─────────────────────────────────────────
+  useEffect(() => {
+    const handleSetTab = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      dispatch({ type: 'SET_TAB', payload: customEvent.detail });
+    };
+    window.addEventListener('set-shell-tab', handleSetTab);
+    return () => window.removeEventListener('set-shell-tab', handleSetTab);
+  }, [dispatch]);
 
   // ── Data fetch ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -241,24 +266,37 @@ export default function AppShell() {
           )}
         </div>
 
+        {/* Global ERPNext style Search Bar */}
+        <div className="desk-search-container">
+          <Search size={14} className="desk-search-icon" />
+          <input 
+            type="text" 
+            className="desk-search-input" 
+            placeholder="Search SKUs or type a command... (Ctrl + G)" 
+            value={searchQuery}
+            onChange={e => dispatch({ type:'SET_SEARCH', payload:e.target.value })}
+            ref={searchInputRef}
+          />
+        </div>
+
         <div className="flex gap-2 items-center">
           {can('run:forecast') && (
-            <button className="header-action-btn primary" onClick={handleGenerate} disabled={isGenerating || isForecastLoading} aria-label="Run calculation">
-              {(isGenerating || isForecastLoading) ? <><div className="spin"/><span>Running…</span></> : <><BrainCircuit size={15}/><span>{activeModule==='demand'?'Run Forecast':'Calculate'}</span></>}
+            <button className="btn btn-primary" onClick={handleGenerate} disabled={isGenerating || isForecastLoading} aria-label="Run calculation" title="Run Planning Logic" style={{ padding: '8px 20px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+              {(isGenerating || isForecastLoading) ? <><div className="spin" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff', marginRight: '8px' }}/><span>Running…</span></> : <><BrainCircuit size={16} style={{ marginRight: '8px' }}/><span>{activeModule==='demand'?'Run Forecast':'Calculate'}</span></>}
             </button>
           )}
           {can('upload:dataset') && (
             <>
               <input type="file" ref={fileInputRef} style={{ display:'none' }} accept=".csv,.xlsx" onChange={handleFileUpload} />
-              <button className="header-action-btn" onClick={() => fileInputRef.current?.click()} aria-label="Upload dataset">
-                <Upload size={15}/><span>Upload Data</span>
+              <button className="header-action-btn" onClick={() => fileInputRef.current?.click()} aria-label="Upload dataset" title="Upload Dataset">
+                <Upload size={15}/>
               </button>
             </>
           )}
           {/* Notifications */}
           <div style={{ position:'relative' }}>
-            <button className="header-action-btn" onClick={() => setIsNotifOpen(!isNotifOpen)} style={{ position:'relative' }} aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}>
-              <Bell size={15}/><span>Alerts</span>
+            <button className="header-action-btn" onClick={() => setIsNotifOpen(!isNotifOpen)} style={{ position:'relative' }} aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`} title="Alerts & Notifications">
+              <Bell size={15}/>
               {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
             </button>
             {isNotifOpen && (
@@ -285,15 +323,10 @@ export default function AppShell() {
             )}
           </div>
           {/* Copilot */}
-          <button className="header-action-btn" onClick={() => dispatch({ type:'TOGGLE_COPILOT' })} style={{ background:isCopilotOpen?'var(--accent-primary-light)':undefined, color:isCopilotOpen?'var(--accent-primary)':undefined }} aria-label="AI Copilot" aria-expanded={isCopilotOpen}>
-            <Sparkles size={15}/><span>Copilot</span>
+          <button className="header-action-btn" onClick={() => dispatch({ type:'TOGGLE_COPILOT' })} style={{ background:isCopilotOpen?'var(--accent-primary-light)':undefined, color:isCopilotOpen?'var(--accent-primary)':undefined }} aria-label="AI Copilot" aria-expanded={isCopilotOpen} title="AI Copilot">
+            <Sparkles size={15}/>
           </button>
-          {/* Theme */}
-          <button className="theme-toggle" onClick={() => dispatch({ type:'TOGGLE_DARK_MODE' })} aria-label={isDarkMode?'Switch to light mode':'Switch to dark mode'}>
-            {isDarkMode ? <Sun size={15}/> : <Moon size={15}/>}
-            <span>{isDarkMode?'Light':'Dark'}</span>
-          </button>
-          {/* Profile */}
+          {/* Profile & Dropdown with Theme */}
           <div style={{ position:'relative' }}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -307,13 +340,48 @@ export default function AppShell() {
               <RoleBadge role={user?.role ?? 'viewer'} />
             </button>
             {isProfileOpen && (
-              <div className="profile-dropdown">
+              <div className="profile-dropdown" style={{ width: '210px' }}>
                 <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border-color)' }}>
                   <div style={{ fontSize:'0.875rem', fontWeight:600, color:'var(--text-main)' }}>{user?.name}</div>
                   <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>{user?.email}</div>
                 </div>
                 <button className="profile-dropdown-item"><User size={14}/> Profile Settings</button>
                 {hasRole('admin') && <button className="profile-dropdown-item"><Shield size={14}/> Admin Panel</button>}
+                
+                {/* Theme toggle inside dropdown */}
+                <button className="profile-dropdown-item" onClick={() => dispatch({ type:'TOGGLE_DARK_MODE' })} aria-label={isDarkMode?'Switch to light mode':'Switch to dark mode'}>
+                  {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
+                  <span>Theme: {isDarkMode ? 'Light' : 'Dark'}</span>
+                </button>
+                
+                {/* Currency selector inside dropdown */}
+                <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Currency
+                  </div>
+                  <select
+                    value={state.selectedCurrencyCode}
+                    onChange={(e) => dispatch({ type: 'SET_CURRENCY', payload: e.target.value })}
+                    className="form-control"
+                    style={{
+                      width: '100%',
+                      fontSize: '0.8rem',
+                      padding: '4px 8px',
+                      background: 'var(--bg-panel)',
+                      color: 'var(--text-main)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {CURRENCIES.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {c.code} ({c.symbol}) — {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
                 <div className="profile-dropdown-divider" />
                 <button className="profile-dropdown-item" onClick={() => { logout(); setIsProfileOpen(false); }} style={{ color:'#dc2626' }}>
                   <LogOut size={14}/> Sign Out
@@ -359,7 +427,21 @@ export default function AppShell() {
         </nav>
 
         {/* ── SKU sidebar ──────────────────────────────────────────────────── */}
-        <div className="sidebar">
+        <div className={`sidebar${isSkuPaneCollapsed ? ' collapsed' : ''}`}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 16px 12px', borderBottom: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>SKU Browser</span>
+            <button 
+              onClick={() => {
+                setIsSkuPaneCollapsed(true);
+                localStorage.setItem('planora_sku_pane_collapsed', 'true');
+              }} 
+              className="btn btn-outline" 
+              style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+              title="Collapse SKU Browser"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          </div>
           <div className="sidebar-search">
             <select value={selectedCategory} onChange={e => dispatch({ type:'SET_CATEGORY', payload:e.target.value })} className="form-control mb-2" style={{ fontSize:'0.8rem', padding:'0.4rem 0.5rem' }}>
               {categories.map(c => <option key={c} value={c}>{c==='All'?'All Portfolios':c}</option>)}
@@ -389,16 +471,54 @@ export default function AppShell() {
         {/* ── Main workspace ────────────────────────────────────────────────── */}
         <ErrorBoundary moduleName={activeMod?.label}>
           <div className="main-content">
-            {/* SKU breadcrumb header */}
-            {selectedSku && (
-              <div style={{ padding:'1.25rem 2rem 0', background:'var(--bg-main)' }}>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="badge badge-primary" style={{ fontFamily:'monospace', fontSize:'0.85rem' }}>{selectedSku.id}</span>
-                  <h2 style={{ fontSize:'1.4rem', margin:0, color:'var(--text-main)' }}>{selectedSku.name}</h2>
+            {/* SKU breadcrumb header - ERPNext style */}
+            {(selectedSku || isSkuPaneCollapsed) && (
+              <div style={{ padding: '1rem 2.05rem 0', background: 'var(--bg-main)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {isSkuPaneCollapsed && (
+                    <button 
+                      onClick={() => {
+                        setIsSkuPaneCollapsed(false);
+                        localStorage.setItem('planora_sku_pane_collapsed', 'false');
+                      }}
+                      className="btn btn-outline" 
+                      style={{ 
+                        padding: '4px 10px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 600,
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        border: 'none',
+                        background: 'var(--bg-panel)',
+                        boxShadow: 'var(--shadow-sm)',
+                        borderRadius: '6px',
+                        height: '28px',
+                        cursor: 'pointer',
+                        color: 'var(--text-main)'
+                      }}
+                      title="Expand SKU Browser"
+                    >
+                      <Menu size={14} /> SKUs
+                    </button>
+                  )}
+                  {selectedSku && (
+                    <ul className="desk-breadcrumb" style={{ margin: 0, padding: 0 }}>
+                      <li><a href="#home">Home</a></li>
+                      <li className="desk-breadcrumb-sep">/</li>
+                      <li><a href={`#${activeModule}`}>{activeMod?.label}</a></li>
+                      <li className="desk-breadcrumb-sep">/</li>
+                      <li>{selectedSku.category}</li>
+                      <li className="desk-breadcrumb-sep">/</li>
+                      <li style={{ fontWeight: 600, color: 'var(--text-main)' }}>{selectedSku.id}</li>
+                    </ul>
+                  )}
                 </div>
-                <p className="text-muted" style={{ display:'flex', alignItems:'center', fontSize:'0.85rem' }}>
-                  <Tag size={12} className="mr-1"/> Portfolio: {selectedSku.category}
-                </p>
+                {selectedSku && (
+                  <div className="desk-title-bar">
+                    <h2 className="desk-title">{selectedSku.name}</h2>
+                  </div>
+                )}
               </div>
             )}
 

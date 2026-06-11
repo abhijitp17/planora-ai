@@ -90,16 +90,16 @@ export default function DataExplorer({ datasetVersion }: DataExplorerProps) {
       {summaryLoading ? <KPISkeletonRow /> : summary && (
         <div className="grid grid-cols-4 mb-6">
           {[
-            { label: 'Total Records',   value: summary.total_records.toLocaleString(),   color: 'var(--accent-primary)' },
-            { label: 'Unique SKUs',     value: summary.sku_count.toLocaleString(),        color: 'var(--text-main)' },
-            { label: 'Categories',      value: summary.category_count.toLocaleString(),   color: 'var(--text-main)' },
-            { label: 'Total Demand',    value: `${(summary.total_demand / 1000).toFixed(1)}K`, color: 'var(--status-good)' },
+            { label: 'Total Records',   value: summary.total_records.toLocaleString(),   colorClass: 'kpi-blue' },
+            { label: 'Unique SKUs',     value: summary.sku_count.toLocaleString(),        colorClass: 'kpi-purple' },
+            { label: 'Categories',      value: summary.category_count.toLocaleString(),   colorClass: 'kpi-orange' },
+            { label: 'Total Demand',    value: `${(summary.total_demand / 1000).toFixed(1)}K`, colorClass: 'kpi-green' },
           ].map(kpi => (
-            <div key={kpi.label} className="kpi-infolet">
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-              <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+            <div key={kpi.label} className={`kpi-infolet ${kpi.colorClass}`}>
+              <span className="label">{kpi.label}</span>
+              <span className="value">{kpi.value}</span>
               {kpi.label === 'Total Records' && summary.date_range.min && (
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                <span className="subtext">
                   {summary.date_range.min.slice(0,10)} → {summary.date_range.max.slice(0,10)}
                 </span>
               )}

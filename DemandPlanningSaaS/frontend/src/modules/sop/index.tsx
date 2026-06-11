@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { DataTable, type TableColumn } from '@/components/ui/DataTable';
 import { buildExportUrl } from '@/lib/api';
 import { KPISkeletonRow } from '@/components/ui/Skeletons';
+import { formatCurrency, CURRENCIES } from '@/types';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, BarChart,
@@ -22,7 +23,7 @@ export default function SOPIBPModule() {
   const { can } = useAuth();
   const {
     activeTab, skuDatabase, selectedSkuId, targetServiceLevel,
-    financeSim, forecastModel: model, horizon,
+    financeSim, forecastModel: model, horizon, selectedCurrencyCode,
   } = state;
 
   const selectedSku = skuDatabase.find(s => s.id === selectedSkuId) ?? skuDatabase[0];
@@ -52,30 +53,30 @@ export default function SOPIBPModule() {
             return (
               <div>
                 <div className="grid grid-cols-4 mb-6">
-                   <div className="kpi-infolet">
-                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>AOP Revenue Target (Fy26)</span>
-                     <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>${(aopRevenue/1000).toFixed(1)}K</span>
-                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Annual Operating Plan</span>
-                   </div>
-                   <div className="kpi-infolet">
-                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Constrained LE Revenue</span>
-                     <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--accent-primary)' }}>${(constrainedSupply/1000).toFixed(1)}K</span>
-                     <span style={{ fontSize: '0.7rem', color: aopVariance > 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
-                       {aopVariance > 0 ? 'Trending Above AOP' : 'Trending Below AOP'}
-                     </span>
-                   </div>
-                   <div className="kpi-infolet">
-                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Gross Margin (LE)</span>
-                     <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>${(supplyMargin/1000).toFixed(1)}K</span>
-                     <span style={{ fontSize: '0.7rem', color: marginVariance >= 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
-                       Var vs AOP: ${(marginVariance/1000).toFixed(1)}K
-                     </span>
-                   </div>
-                   <div className="kpi-infolet" style={{ border: '1px solid var(--status-warn)', background: 'var(--status-warn)10' }}>
-                     <span style={{ fontSize: '0.75rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Revenue at Risk</span>
-                     <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--status-warn)' }}>${(revenueShortfall/1000).toFixed(1)}K</span>
-                     <span style={{ fontSize: '0.7rem', color: 'var(--status-warn)', marginTop: '0.5rem' }}>Unconstrained Demand &gt; Supply</span>
-                   </div>
+                    <div className="kpi-infolet">
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>AOP Revenue Target (Fy26)</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(aopRevenue, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Annual Operating Plan</span>
+                    </div>
+                    <div className="kpi-infolet">
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Constrained LE Revenue</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(constrainedSupply, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.7rem', color: aopVariance > 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
+                        {aopVariance > 0 ? 'Trending Above AOP' : 'Trending Below AOP'}
+                      </span>
+                    </div>
+                    <div className="kpi-infolet">
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Gross Margin (LE)</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(supplyMargin, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.7rem', color: marginVariance >= 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
+                        Var vs AOP: {formatCurrency(marginVariance, selectedCurrencyCode, true)}
+                      </span>
+                    </div>
+                    <div className="kpi-infolet" style={{ border: '1px solid var(--status-warn)', background: 'var(--status-warn)10' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Revenue at Risk</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--status-warn)' }}>{formatCurrency(revenueShortfall, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--status-warn)', marginTop: '0.5rem' }}>Unconstrained Demand &gt; Supply</span>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
@@ -102,13 +103,13 @@ export default function SOPIBPModule() {
                             
                             return (
                               <tr key={cat}>
-                                <td style={{ fontWeight: 600 }}>{cat}</td>
-                                <td>${(tAop/1000).toFixed(1)}k</td>
-                                <td>${(tDem/1000).toFixed(1)}k</td>
-                                <td>${(tSup/1000).toFixed(1)}k</td>
-                                <td style={{ color: risk > 0 ? 'var(--status-error)' : 'var(--status-good)' }}>
-                                  ${(risk/1000).toFixed(1)}k
-                                </td>
+                                 <td style={{ fontWeight: 600 }}>{cat}</td>
+                                 <td>{formatCurrency(tAop, selectedCurrencyCode, true)}</td>
+                                 <td>{formatCurrency(tDem, selectedCurrencyCode, true)}</td>
+                                 <td>{formatCurrency(tSup, selectedCurrencyCode, true)}</td>
+                                 <td style={{ color: risk > 0 ? 'var(--status-error)' : 'var(--status-good)' }}>
+                                   {formatCurrency(risk, selectedCurrencyCode, true)}
+                                 </td>
                               </tr>
                             )
                           })}
@@ -125,7 +126,7 @@ export default function SOPIBPModule() {
                       ]} barGap={10} barSize={40}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: 'var(--text-main)', fontWeight: 600 }}/>
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(val) => `$${val/1000}k`}/>
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(val) => formatCurrency(val, selectedCurrencyCode, true)}/>
                         <RechartsTooltip cursor={{fill: 'var(--bg-hover)'}} contentStyle={{ borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }}/>
                         <Legend />
                         <Bar dataKey="AOP" fill="var(--text-muted)" radius={[4, 4, 0, 0]} name="AOP Budget" />
@@ -182,7 +183,7 @@ export default function SOPIBPModule() {
                       <h3 style={{ fontSize: '1rem', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', margin: 0, color: 'var(--text-main)' }}>Capacity Constraints</h3>
                       
                       <div className="mb-4">
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Expedite Air Freight ($50k)</label>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Expedite Air Freight ({formatCurrency(50000, selectedCurrencyCode, true)})</label>
                         <select className="form-control" style={{ fontSize: '0.85rem' }}>
                           <option>Off</option>
                           <option>Enable for Month 3-5 Peak</option>
@@ -200,7 +201,7 @@ export default function SOPIBPModule() {
                       <div className="ai-panel mt-6">
                          <strong style={{ display: 'flex', alignItems: 'center', color: 'var(--text-main)' }}><BrainCircuit size={16} className="mr-2" color="var(--accent-primary)"/> S&OP Resolution</strong>
                          <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                           Demand exceeds Aggregate Supply Capacity by 34% during the Month 3 peak. Recommend enabling Subcontractor Flex Tier to capture the volume, sacrificing 2% margin but acquiring $180k in net revenue.
+                           Demand exceeds Aggregate Supply Capacity by 34% during the Month 3 peak. Recommend enabling Subcontractor Flex Tier to capture the volume, sacrificing 2% margin but acquiring {formatCurrency(180000, selectedCurrencyCode, true)} in net revenue.
                          </p>
                       </div>
                     </div>
@@ -246,13 +247,13 @@ export default function SOPIBPModule() {
                                    {sku.name} 
                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.id}</div>
                                 </td>
-                                <td style={{ color: 'var(--text-muted)' }}>${Math.round(unconstrainedRev).toLocaleString()}</td>
-                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>${Math.round(constrainedRev).toLocaleString()}</td>
-                                <td>${Math.round(aopRev).toLocaleString()}</td>
-                                <td style={{ color: variance >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 600 }}>
-                                  {variance > 0 ? '+' : ''}${Math.round(variance).toLocaleString()}
-                                </td>
-                                <td>${Math.round(cogs).toLocaleString()}</td>
+                                 <td style={{ color: 'var(--text-muted)' }}>{formatCurrency(unconstrainedRev, selectedCurrencyCode)}</td>
+                                 <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{formatCurrency(constrainedRev, selectedCurrencyCode)}</td>
+                                 <td>{formatCurrency(aopRev, selectedCurrencyCode)}</td>
+                                 <td style={{ color: variance >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 600 }}>
+                                   {variance > 0 ? '+' : ''}{formatCurrency(variance, selectedCurrencyCode)}
+                                 </td>
+                                 <td>{formatCurrency(cogs, selectedCurrencyCode)}</td>
                                 <td>
                                    <span className="badge" style={{ background: gmPct > 40 ? 'var(--status-good)20' : 'var(--status-warn)20', color: gmPct > 40 ? 'var(--status-good)' : 'var(--status-warn)' }}>
                                      {gmPct.toFixed(1)}%

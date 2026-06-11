@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import type { SKU, AppNotification, ModuleId, ForecastPoint } from '@/types';
+import type { SKU, AppNotification, ModuleId, ForecastPoint, NetworkNode, NetworkEdge, Scenario, RetailCategory, PlanogramSpace } from '@/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State shape
@@ -50,6 +50,19 @@ interface PlatformState {
 
   // Notifications
   notifications: AppNotification[];
+
+  // Currency selection
+  selectedCurrencyCode: string;
+
+  // Digital Twin
+  networkNodes: NetworkNode[];
+  networkEdges: NetworkEdge[];
+  scenarios: Scenario[];
+  activeScenarioId: string | null;
+
+  // Retail & Category
+  retailCategories: RetailCategory[];
+  planogramSpaces: PlanogramSpace[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -84,7 +97,14 @@ type Action =
   | { type: 'SET_CATEGORY'; payload: string }
   | { type: 'ADD_NOTIFICATION'; payload: AppNotification }
   | { type: 'MARK_ALL_READ' }
-  | { type: 'SET_COPILOT_OPEN'; payload: boolean };
+  | { type: 'SET_COPILOT_OPEN'; payload: boolean }
+  | { type: 'SET_CURRENCY'; payload: string }
+  | { type: 'SET_NETWORK_NODES'; payload: NetworkNode[] }
+  | { type: 'SET_NETWORK_EDGES'; payload: NetworkEdge[] }
+  | { type: 'SET_SCENARIOS'; payload: Scenario[] }
+  | { type: 'SET_ACTIVE_SCENARIO'; payload: string | null }
+  | { type: 'SET_RETAIL_CATEGORIES'; payload: RetailCategory[] }
+  | { type: 'SET_PLANOGRAM_SPACES'; payload: PlanogramSpace[] };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Initial state
@@ -118,6 +138,13 @@ const initialState: PlatformState = {
   searchQuery: '',
   selectedCategory: 'All',
   notifications: [],
+  selectedCurrencyCode: 'USD',
+  networkNodes: [],
+  networkEdges: [],
+  scenarios: [],
+  activeScenarioId: null,
+  retailCategories: [],
+  planogramSpaces: [],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,6 +187,16 @@ function reducer(state: PlatformState, action: Action): PlatformState {
       ...state,
       notifications: state.notifications.map(n => ({ ...n, read: true })),
     };
+    case 'SET_CURRENCY': return {
+      ...state,
+      selectedCurrencyCode: action.payload,
+    };
+    case 'SET_NETWORK_NODES': return { ...state, networkNodes: action.payload };
+    case 'SET_NETWORK_EDGES': return { ...state, networkEdges: action.payload };
+    case 'SET_SCENARIOS': return { ...state, scenarios: action.payload };
+    case 'SET_ACTIVE_SCENARIO': return { ...state, activeScenarioId: action.payload };
+    case 'SET_RETAIL_CATEGORIES': return { ...state, retailCategories: action.payload };
+    case 'SET_PLANOGRAM_SPACES': return { ...state, planogramSpaces: action.payload };
     default: return state;
   }
 }
