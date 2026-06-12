@@ -8,6 +8,11 @@ import {
   Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, BarChart,
 } from 'recharts';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { ConsensusBulkActions } from '@/components/ui/ConsensusBulkActions';
+import { autoMLForecast, batchForecast } from '@/lib/api';
+import { 
+  Activity, Upload, Settings, Plus, Calendar, Tag, TrendingDown, DollarSign, AlertTriangle,
+} from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
 import { calculateDeterministicForecast, ERROR_ANALYSIS_MODELS } from '@/lib/mockData';
 import { buildExportUrl } from '@/lib/api';
@@ -17,6 +22,8 @@ import { KPISkeletonRow, ChartSkeleton } from '@/components/ui/Skeletons';
 
 export default function DemandModule() {
   const { state, dispatch } = usePlatform();
+  const [bulkActionsOpen, setBulkActionsOpen] = React.useState(false);
+  const [isRunningAutoML, setIsRunningAutoML] = React.useState(false);
   const { can } = useAuth();
   const {
     activeTab, skuDatabase, selectedSkuId, forecastModel: model,
@@ -228,6 +235,414 @@ export default function DemandModule() {
             </div>
           </div>
         )}
+        {/* ═══════════════════════════════════════════════════════════════════
+            DEMAND SENSING TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'sensing' && (
+          <div>
+            <div className="grid grid-cols-4 mb-6">
+              {[
+                { label: 'Real-Time Signals (24h)', value: '142', color: 'var(--accent-primary)', sub: 'POS + Early actuals' },
+                { label: 'Forecast Adjustment', value: '+8%', color: 'var(--status-good)', sub: 'vs Statistical baseline' },
+                { label: 'Signal Latency', value: '4 min', color: 'var(--text-main)', sub: 'Avg ingestion time' },
+                { label: 'Coverage', value: '85%', color: 'var(--accent-primary)', sub: 'SKUs with live signals' },
+              ].map(kpi => (
+                <div key={kpi.label} className="kpi-infolet">
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="workspace-panel shadow-sm mb-6">
+              <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
+                Live Demand Signals — Last 24 Hours
+              </h3>
+              <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '6px', padding: '12px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Activity size={16} color="var(--accent-primary)" />
+                <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>
+                  Short-term forecast auto-adjusted based on early week actuals. Next update in 3h 42m.
+                </span>
+              </div>
+              
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th><th>SKU</th><th>Channel</th><th>Actual Sales</th><th>vs Forecast</th><th>Adjustment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { time: '2h ago', sku: selectedSku.id, channel: 'Retail', sales: 165, forecast: 158, delta: '+4.4%', adj: 'Upward revision applied' },
+                      { time: '5h ago', sku: selectedSku.id, channel: 'Online', sales: 142, forecast: 148, delta: '-4.1%', adj: 'Within tolerance' },
+                      { time: '8h ago', sku: selectedSku.id, channel: 'B2B', sales: 89, forecast: 95, delta: '-6.3%', adj: 'Monitoring' },
+                    ].map((sig, i) => (
+                      <tr key={i}>
+                        <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{sig.time}</td>
+                        <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sig.sku}</td>
+                        <td>{sig.channel}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{sig.sales.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', color: sig.delta.startsWith('+') ? 'var(--status-good)' : 'var(--status-warn)', fontWeight: 600 }}>{sig.delta}</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{sig.adj}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {can('upload:dataset') && (
+                <div className="flex gap-3 mt-4">
+                  <button className="btn btn-primary">
+                    <Upload size={14} className="mr-1" /> Ingest Live POS Data
+                  </button>
+                  <button className="btn btn-outline">
+                    <Settings size={14} className="mr-1" /> Configure Sensing Rules
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            CAUSAL FORECASTING TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'causal' && (
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2">
+              <div className="workspace-panel shadow-sm mb-6">
+                <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
+                  ARIMAX Causal Forecast — {selectedSku.name}
+                </h3>
+                <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  Causal forecasting incorporates <strong style={{ color: 'var(--text-main)' }}>exogenous variables</strong> (price, promotions, holidays, competitor activity) to capture external drivers of demand.
+                </div>
+                
+                <div style={{ height: '380px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={forecastData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                      <XAxis dataKey="period" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+                      <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                      <Legend />
+                      <Line type="monotone" dataKey="actual" stroke="var(--chart-actual)" strokeWidth={2} name="Actual" dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="forecast" stroke="var(--chart-forecast)" strokeWidth={2} strokeDasharray="4 4" name="Baseline (No Exog)" />
+                      <Line type="monotone" dataKey="consensusVolume" stroke="#7c3aed" strokeWidth={3} name="Causal (With Exog)" dot={{ r: 4 }} />
+                      <Bar dataKey="promo" fill="var(--status-warn)" opacity={0.3} name="Promo Periods" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="workspace-panel shadow-sm">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', margin: 0 }}>
+                  Exogenous Variables
+                </h3>
+                
+                {[
+                  { name: 'Price (ASP)', var: 'price', icon: <DollarSign size={16} />, current: selectedSku.asp },
+                  { name: 'Promotion Flag', var: 'promo', icon: <Tag size={16} />, current: 'Inactive' },
+                  { name: 'Holiday Indicator', var: 'holiday', icon: <Calendar size={16} />, current: 'No upcoming' },
+                  { name: 'Competitor Activity', var: 'competitor', icon: <TrendingDown size={16} />, current: 'Low' },
+                ].map(exog => (
+                  <div key={exog.var} style={{ marginBottom: '1rem', padding: '10px', background: 'var(--bg-hover)', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      {exog.icon}
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{exog.name}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Current: <strong style={{ color: 'var(--text-main)' }}>{exog.current}</strong>
+                    </div>
+                    {can('edit:forecast') && (
+                      <button className="btn btn-outline mt-2" style={{ width: '100%', padding: '0.4rem', fontSize: '0.75rem' }}>
+                        Configure {exog.name}
+                      </button>
+                    )}
+                  </div>
+                ))}
+                
+                <div className="ai-panel mt-4">
+                  <div className="flex items-center mb-2"><Sparkles size={14} color="var(--accent-primary)" className="mr-2" /><strong style={{ fontSize: '0.85rem' }}>Causal Insight</strong></div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                    Price elasticity for {selectedSku.name} is -1.8. A 10% price reduction would drive +18% volume increase.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            EVENT CALENDAR TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'events' && (
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2">
+              <div className="workspace-panel shadow-sm">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)' }}>Event Calendar — Forecast Impact</h3>
+                  {can('edit:forecast') && (
+                    <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+                      <Plus size={14} className="mr-1" /> Add Event
+                    </button>
+                  )}
+                </div>
+                
+                <div className="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Event Name</th><th>Type</th><th>Start Date</th><th>End Date</th><th>Impact</th><th>Affected</th><th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { name: 'Black Friday 2026', type: 'holiday', start: '2026-11-27', end: '2026-11-29', impact: '+45%', categories: ['Electronics', 'Furniture'], color: '#16a34a' },
+                        { name: 'Q4 Clearance Sale', type: 'promotion', start: '2026-12-01', end: '2026-12-31', impact: '+25%', categories: ['All'], color: '#d97706' },
+                        { name: 'New Year Holiday', type: 'holiday', start: '2027-01-01', end: '2027-01-02', impact: '-60%', categories: ['All'], color: '#dc2626' },
+                        { name: 'Spring Product Launch', type: 'launch', start: '2027-03-15', end: '2027-03-15', impact: '+120%', categories: ['Electronics'], color: '#7c3aed' },
+                      ].map((evt, i) => (
+                        <tr key={i}>
+                          <td style={{ fontWeight: 600 }}>{evt.name}</td>
+                          <td>
+                            <span className="badge badge-gray" style={{ textTransform: 'capitalize' }}>{evt.type}</span>
+                          </td>
+                          <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{evt.start}</td>
+                          <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{evt.end}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: evt.color }}>{evt.impact}</td>
+                          <td style={{ fontSize: '0.85rem' }}>{evt.categories.join(', ')}</td>
+                          <td>
+                            {can('edit:forecast') && (
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Edit</button>
+                                <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Delete</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="workspace-panel shadow-sm">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', margin: 0 }}>
+                  Event Impact Legend
+                </h3>
+                {[
+                  { type: 'Holiday', icon: <Calendar size={16} />, desc: 'Major holidays, non-working days', color: '#dc2626', impact: 'Typically -40% to -80%' },
+                  { type: 'Promotion', icon: <Tag size={16} />, desc: 'Sales events, discounts', color: '#d97706', impact: '+15% to +60%' },
+                  { type: 'Launch', icon: <Sparkles size={16} />, desc: 'New product releases', color: '#7c3aed', impact: '+50% to +200%' },
+                  { type: 'Disruption', icon: <AlertTriangle size={16} />, desc: 'Supply chain issues', color: '#dc2626', impact: '-20% to -100%' },
+                ].map(item => (
+                  <div key={item.type} style={{ padding: '10px', marginBottom: '8px', background: 'var(--bg-hover)', borderRadius: '6px', borderLeft: `3px solid ${item.color}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      {item.icon}
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{item.type}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '4px' }}>{item.desc}</div>
+                    <div style={{ fontSize: '0.7rem', color: item.color, fontWeight: 600 }}>Impact: {item.impact}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            PROMOTION PLANNING TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'promo' && (
+          <div>
+            <div className="grid grid-cols-4 mb-6">
+              {[
+                { label: 'Active Promotions', value: '3', color: 'var(--accent-primary)', sub: 'Running now' },
+                { label: 'Avg Promo Uplift', value: '+32%', color: 'var(--status-good)', sub: 'Historical avg' },
+                { label: 'Promo ROI', value: '2.4x', color: 'var(--text-main)', sub: 'Revenue vs discount cost' },
+                { label: 'Next Promo', value: '12 days', color: 'var(--accent-primary)', sub: 'Black Friday prep' },
+              ].map(kpi => (
+                <div key={kpi.label} className="kpi-infolet">
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="workspace-panel shadow-sm mb-6">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)' }}>Promotion Calendar</h3>
+                {can('edit:forecast') && (
+                  <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+                    <Plus size={14} className="mr-1" /> Plan New Promotion
+                  </button>
+                )}
+              </div>
+              
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr><th>Promotion Name</th><th>SKUs</th><th>Discount %</th><th>Period</th><th>Expected Uplift</th><th>Forecast Volume</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Summer Clearance', skus: '24 SKUs', discount: '20%', period: 'Jul 1-15', uplift: '+28%', volume: '3,450', status: 'Active', color: '#16a34a' },
+                      { name: 'Back to School', skus: '18 SKUs', discount: '15%', period: 'Aug 1-31', uplift: '+35%', volume: '4,200', status: 'Planned', color: '#2563eb' },
+                      { name: 'Black Friday', skus: 'All', discount: '30%', period: 'Nov 27-29', uplift: '+65%', volume: '12,800', status: 'Planned', color: '#2563eb' },
+                    ].map((promo, i) => (
+                      <tr key={i}>
+                        <td style={{ fontWeight: 600 }}>{promo.name}</td>
+                        <td>{promo.skus}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-warn)', fontWeight: 600 }}>{promo.discount}</td>
+                        <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{promo.period}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-good)', fontWeight: 700 }}>{promo.uplift}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{promo.volume}</td>
+                        <td>
+                          <span className="badge" style={{ background: promo.color + '20', color: promo.color, border: `1px solid ${promo.color}` }}>
+                            {promo.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div className="workspace-panel shadow-sm">
+              <h3 style={{ fontSize: '1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
+                Promotion Performance — Historical
+              </h3>
+              <div style={{ height: '280px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { name: 'Spring Sale', uplift: 28 },
+                    { name: 'Prime Day', uplift: 52 },
+                    { name: 'Cyber Monday', uplift: 68 },
+                    { name: 'Holiday Promo', uplift: 45 },
+                  ]} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                    <Bar dataKey="uplift" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SENSITIVITY ANALYSIS TAB */}
+        {activeTab === 'sensitivity' && (
+          <div>
+            <div className="workspace-panel shadow-sm mb-6">
+              <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
+                Parameter Sensitivity Analysis — {selectedSku.name}
+              </h3>
+              <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                Shows how forecast accuracy changes when model parameters vary. Helps identify optimal configuration.
+              </div>
+              <div className="table-container">
+                <table>
+                  <thead><tr><th>Parameter</th><th>Value</th><th>MAPE</th><th>Delta vs Baseline</th><th>Forecast Avg</th></tr></thead>
+                  <tbody>
+                    {[
+                      { param: 'n_estimators', value: 50, mape: 4.8, delta: '+0.6', avg: '1,180' },
+                      { param: 'n_estimators', value: 100, mape: 4.2, delta: '0.0 (baseline)', avg: '1,220' },
+                      { param: 'n_estimators', value: 200, mape: 4.0, delta: '-0.2', avg: '1,235' },
+                      { param: 'max_depth', value: 3, mape: 4.5, delta: '+0.3', avg: '1,195' },
+                      { param: 'max_depth', value: 5, mape: 4.2, delta: '0.0 (baseline)', avg: '1,220' },
+                      { param: 'max_depth', value: 7, mape: 4.1, delta: '-0.1', avg: '1,228' },
+                      { param: 'learning_rate', value: 0.01, mape: 5.1, delta: '+0.9', avg: '1,150' },
+                      { param: 'learning_rate', value: 0.1, mape: 4.2, delta: '0.0 (baseline)', avg: '1,220' },
+                      { param: 'learning_rate', value: 0.3, mape: 4.6, delta: '+0.4', avg: '1,242' },
+                      { param: 'horizon', value: 3, mape: 3.2, delta: '-1.0', avg: '1,245' },
+                      { param: 'horizon', value: 6, mape: 4.2, delta: '0.0 (baseline)', avg: '1,220' },
+                      { param: 'horizon', value: 12, mape: 5.4, delta: '+1.2', avg: '1,185' },
+                    ].map((row, i) => (
+                      <tr key={i} style={{ background: row.delta.includes('baseline') ? 'var(--accent-primary-light)' : undefined }}>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 600 }}>{row.param}</td>
+                        <td style={{ textAlign: 'right' }}>{row.value}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600, color: row.mape < 4.2 ? '#16a34a' : row.mape > 4.5 ? '#dc2626' : 'var(--text-main)' }}>{row.mape}%</td>
+                        <td style={{ textAlign: 'right', color: row.delta.startsWith('+') ? '#dc2626' : row.delta.startsWith('-') ? '#16a34a' : 'var(--text-muted)' }}>{row.delta}</td>
+                        <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>{row.avg}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FORECAST VERSIONING TAB */}
+        {activeTab === 'versions' && (
+          <div>
+            <div className="grid grid-cols-4 mb-6">
+              {[
+                { label: 'Saved Versions', value: '5', color: 'var(--accent-primary)', sub: 'For this SKU' },
+                { label: 'Latest Version MAPE', value: '4.2%', color: 'var(--status-good)', sub: 'v5 (Jun 12)' },
+                { label: 'Accuracy Trend', value: '-0.8pp', color: 'var(--status-good)', sub: 'Improving over 5 versions' },
+                { label: 'Days Since Last', value: '3 days', color: 'var(--text-main)', sub: 'Auto-save enabled' },
+              ].map(kpi => (
+                <div key={kpi.label} className="kpi-infolet">
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
+                </div>
+              ))}
+            </div>
+            <div className="workspace-panel shadow-sm">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Forecast Version History</h3>
+                {can('edit:forecast') && (
+                  <button className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>
+                    Save Current as New Version
+                  </button>
+                )}
+              </div>
+              <div className="table-container">
+                <table>
+                  <thead><tr><th>Version</th><th>Model</th><th>MAPE</th><th>Created</th><th>Created By</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {[
+                      { id: 'v5', model: 'XGBoost (tuned)', mape: 4.2, date: 'Jun 12, 2026', user: 'Raj Patel' },
+                      { id: 'v4', model: 'Ensemble', mape: 4.5, date: 'Jun 9, 2026', user: 'Sarah Chen' },
+                      { id: 'v3', model: 'XGBoost', mape: 5.0, date: 'Jun 1, 2026', user: 'Raj Patel' },
+                      { id: 'v2', model: 'ARIMA', mape: 6.2, date: 'May 15, 2026', user: 'System' },
+                      { id: 'v1', model: 'Holt-Winters', mape: 6.8, date: 'May 1, 2026', user: 'System' },
+                    ].map(v => (
+                      <tr key={v.id}>
+                        <td style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-primary)' }}>{v.id}</td>
+                        <td><span className="badge badge-gray">{v.model}</span></td>
+                        <td style={{ textAlign: 'right', fontWeight: 600, color: v.mape < 5 ? '#16a34a' : '#d97706' }}>{v.mape}%</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{v.date}</td>
+                        <td style={{ fontSize: '0.85rem' }}>{v.user}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Compare</button>
+                            <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Restore</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+
       </div>
     </ErrorBoundary>
   );

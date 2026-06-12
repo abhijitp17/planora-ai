@@ -357,6 +357,168 @@ export default function GlobalAnalyticsModule() {
              );
           })()}
 
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            PRESCRIPTIVE ACTIONS TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'prescriptive' && (
+          <div>
+            <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '8px', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <BrainCircuit size={20} color="var(--accent-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--accent-primary)', marginBottom: '4px' }}>
+                  AI-Generated Action Recommendations
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', lineHeight: 1.6, opacity: 0.9 }}>
+                  Ranked by confidence score · Automated analysis of forecasts, inventory, supplier performance, and financial metrics
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {[
+                { action: 'Switch SKU_ELE_TV_85 to Croston model', confidence: 92, impact: 'Improve MAPE by 15%', category: 'Forecasting', color: '#7c3aed', details: 'High CV (0.68) indicates intermittent demand pattern better suited for Croston/SBA' },
+                { action: 'Reduce safety stock for FUR_CHAIR_ERG by 12%', confidence: 88, impact: 'Free $4.2K working capital', category: 'Inventory', color: '#16a34a', details: 'Demand volatility decreased from CV 0.45 → 0.15 over last 3 months' },
+                { action: 'Enable autonomous planning for 42 low-MAPE SKUs', confidence: 85, impact: 'Save 8 hours/week planner time', category: 'Automation', color: '#2563eb', details: 'SKUs with MAPE <4% can run on autopilot with monthly review' },
+                { action: 'Escalate Apex Electronics lead time variance', confidence: 81, impact: 'Mitigate $180K revenue risk', category: 'Supply Chain', color: '#dc2626', details: 'LT variance breached 3-sigma (45±14 days) — Q4 monitor components at severe stockout risk' },
+                { action: 'Activate promotional liquidation for ACC_ORGANIZER', confidence: 78, impact: 'Recover $12K tied capital', category: 'Financial', color: '#d97706', details: 'Excess inventory (12 months DoS) on declining demand curve — 15% markdown recommended' },
+              ].map((rec, i) => (
+                <div key={i} style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--border-color)', borderRadius: '8px', padding: '1rem 1.25rem', borderLeft: `4px solid ${rec.color}` }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
+                        {rec.action}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '8px' }}>
+                        {rec.details}
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <span className="badge" style={{ background: rec.color + '20', color: rec.color, border: `1px solid ${rec.color}` }}>
+                          {rec.category}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          Impact: <strong style={{ color: 'var(--text-main)' }}>{rec.impact}</strong>
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 500, color: rec.color, marginBottom: '2px' }}>
+                        {rec.confidence}%
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Confidence
+                      </div>
+                      {can('edit:forecast') && (
+                        <button className="btn btn-primary mt-3" style={{ padding: '0.4rem 1rem', fontSize: '0.75rem' }}>
+                          Execute
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            AUTONOMOUS PLANNING TAB
+            ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'autonomous' && (
+          <div>
+            <div className="grid grid-cols-4 mb-6">
+              {[
+                { label: 'SKUs on Autopilot', value: '42', color: 'var(--accent-primary)', sub: 'Running autonomously' },
+                { label: 'Planner Time Saved', value: '8 hrs/wk', color: 'var(--status-good)', sub: 'Reallocated to exceptions' },
+                { label: 'Autopilot MAPE', value: '3.8%', color: 'var(--status-good)', sub: 'Better than manual' },
+                { label: 'Human Overrides', value: '2.1%', color: 'var(--text-main)', sub: 'Intervention rate' },
+              ].map(kpi => (
+                <div key={kpi.label} className="kpi-infolet">
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="workspace-panel shadow-sm mb-6">
+              <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
+                Autonomous Planning Configuration
+              </h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                    MAPE Threshold for Autopilot Eligibility
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input type="range" min="2" max="8" step="0.5" defaultValue="5" style={{ flex: 1 }} disabled={!can('manage:settings')} />
+                    <span style={{ fontSize: '1.25rem', fontWeight: 500, minWidth: '60px' }}>5.0%</span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.5 }}>
+                    SKUs with MAPE below this threshold will auto-generate forecasts monthly
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                    Minimum History Required (Months)
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input type="range" min="6" max="24" step="1" defaultValue="12" style={{ flex: 1 }} disabled={!can('manage:settings')} />
+                    <span style={{ fontSize: '1.25rem', fontWeight: 500, minWidth: '60px' }}>12</span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.5 }}>
+                    SKUs need this much historical data to qualify for autopilot
+                  </p>
+                </div>
+              </div>
+
+              {can('manage:settings') && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-primary">
+                    <CheckCircle2 size={14} className="mr-1" /> Enable Autonomous Planning
+                  </button>
+                  <button className="btn btn-outline">
+                    Review Qualifying SKUs (42)
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="workspace-panel shadow-sm">
+              <h3 style={{ fontSize: '1rem', margin: '0 0 1rem', fontWeight: 600 }}>
+                SKUs on Autopilot
+              </h3>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr><th>SKU</th><th>MAPE</th><th>Model</th><th>Last Auto-Run</th><th>Next Run</th><th>Override Rate</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {skuDatabase.slice(0, 6).map((sku, i) => (
+                      <tr key={sku.id}>
+                        <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sku.id}</td>
+                        <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 600 }}>{sku.sysMape.toFixed(1)}%</td>
+                        <td><span className="badge badge-gray">XGBoost</span></td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>2 days ago</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>In 28 days</td>
+                        <td style={{ textAlign: 'right' }}>{(sku.overrideRate * 100).toFixed(1)}%</td>
+                        <td>
+                          <span className="badge" style={{ background: '#eaf3de', color: '#16a34a' }}>
+                            <CheckCircle2 size={10} style={{ marginRight: '3px', verticalAlign: '-1px' }} />
+                            Active
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         </div>
     </ErrorBoundary>
   );

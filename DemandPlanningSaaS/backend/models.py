@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from database import Base
 
@@ -50,3 +51,62 @@ class AuditLog(Base):
     actionType = Column(String, nullable=False)
     dataset = Column(String, nullable=True)
     metadata_json = Column(JSON, default={})
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Demand Sensing & Event-Based Models
+# ═════════════════════════════════════════════════════════════════════════════
+
+class DemandSensingSignal(Base):
+    __tablename__ = "demand_sensing_signals"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, nullable=False, index=True)
+    sku = Column(String, nullable=False, index=True)
+    channel = Column(String, nullable=False)
+    actual_sales = Column(Float, nullable=False)
+    dataset_version = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    event_type = Column(String, nullable=False, index=True)  # holiday, promotion, launch, disruption
+    start_date = Column(DateTime, nullable=False, index=True)
+    end_date = Column(DateTime, nullable=False)
+    impact_pct = Column(Float, default=0.0)  # +25% for promo, -40% for disruption
+    affected_categories_json = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Workflow Approvals
+class ApprovalRequest(Base):
+    __tablename__ = "approval_requests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    requester_id = Column(String, nullable=False, index=True)
+    approval_type = Column(String, nullable=False, index=True)
+    payload_json = Column(JSON)
+    approver_role = Column(String, nullable=False)
+    approver_id = Column(String)
+    status = Column(String, default="PENDING", index=True)  # PENDING, APPROVED, REJECTED
+    created_at = Column(DateTime, default=datetime.utcnow)
+    approved_at = Column(DateTime)
+    comments = Column(String)
+
+# Master Data Management
+class SKUMaster(Base):
+    __tablename__ = "sku_master"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sku = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    category = Column(String, nullable=False, index=True)
+    unit_cost = Column(Float, nullable=False)
+    asp = Column(Float, nullable=False)  # Average selling price
+    lead_time = Column(Integer, nullable=False)  # Days
+    supplier = Column(String)
+    status = Column(String, default="ACTIVE", index=True)  # ACTIVE, DISCONTINUED, PENDING
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)

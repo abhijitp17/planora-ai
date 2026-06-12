@@ -4,7 +4,7 @@ import { usePlatform } from '@/store/PlatformContext';
 import { useAuth } from '@/store/AuthContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { DataTable, type TableColumn } from '@/components/ui/DataTable';
-import { buildExportUrl } from '@/lib/api';
+import { buildExportUrl, getCashFlow, getBudgetPlan, getProfitability, getWorkingCapital } from '@/lib/api';
 import { KPISkeletonRow } from '@/components/ui/Skeletons';
 import { formatCurrency, CURRENCIES } from '@/types';
 import {
@@ -343,7 +343,340 @@ export default function FinancialSimulationModule() {
           })()}
 
           {/* ========================================= */}
+
+          {activeTab === 'cashflow' && <CashFlowTab selectedDataset={state.selectedDataset} currencyCode={selectedCurrencyCode} />}
+          {activeTab === 'budget' && <BudgetTab selectedDataset={state.selectedDataset} currencyCode={selectedCurrencyCode} />}
+          {activeTab === 'profitability' && <ProfitabilityTab selectedDataset={state.selectedDataset} currencyCode={selectedCurrencyCode} />}
+          {activeTab === 'workingcapital' && <WorkingCapitalTab selectedDataset={state.selectedDataset} currencyCode={selectedCurrencyCode} />}
       </div>
     </ErrorBoundary>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CASH FLOW FORECAST — direct method with AR/AP timing
+// ═══════════════════════════════════════════════════════════════════════════════
+function CashFlowTab({ selectedDataset, currencyCode }: { selectedDataset: string; currencyCode: string }) {
+  const [data, setData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [dso, setDso] = React.useState(45);
+  const [dpo, setDpo] = React.useState(30);
+
+  React.useEffect(() => {
+    setLoading(true);
+    getCashFlow(selectedDataset, 12, dso, dpo).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [selectedDataset, dso, dpo]);
+
+  if (loading) return <KPISkeletonRow />;
+  if (!data?.flows) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load cash flow.</div>;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: '1.3rem', margin: '0 0 4px', color: 'var(--text-main)' }}>12-Month Cash Flow Forecast</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Direct method · collections lagged by DSO, payments by DPO</p>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>DSO
+            <input type="range" min="15" max="90" value={dso} onChange={e => setDso(Number(e.target.value))} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+            <span style={{ fontWeight: 600, marginLeft: '6px', color: 'var(--text-main)' }}>{dso}d</span>
+          </label>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>DPO
+            <input type="range" min="15" max="90" value={dpo} onChange={e => setDpo(Number(e.target.value))} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+            <span style={{ fontWeight: 600, marginLeft: '6px', color: 'var(--text-main)' }}>{dpo}d</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 mb-6">
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Opening Cash</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{formatCurrency(data.opening_cash, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Closing Cash</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(data.closing_cash, currencyCode, true)}</span></div>
+        <div className="kpi-infolet" style={{ border: data.cash_runway_healthy ? undefined : '1px solid var(--status-warn)' }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Minimum Cash</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.cash_runway_healthy ? 'var(--status-good)' : 'var(--status-warn)' }}>{formatCurrency(data.min_cash, currencyCode, true)}</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>at {data.min_cash_month}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Liquidity</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.cash_runway_healthy ? 'var(--status-good)' : 'var(--status-error)' }}>{data.cash_runway_healthy ? 'Healthy' : 'At Risk'}</span></div>
+      </div>
+
+      <div className="workspace-panel shadow-sm mb-6">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Closing Cash Position & Net Flow</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={data.flows} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+            <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <Legend />
+            <Bar dataKey="net_cash_flow" name="Net Cash Flow" radius={[3,3,0,0]}>
+              {data.flows.map((f: any, i: number) => <Cell key={i} fill={f.net_cash_flow >= 0 ? 'var(--status-good)' : 'var(--status-error)'} />)}
+            </Bar>
+            <Line type="monotone" dataKey="closing_cash" stroke="var(--accent-primary)" strokeWidth={2} name="Closing Cash" dot={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="workspace-panel shadow-sm">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Monthly Cash Flow Detail</h3>
+        <div className="table-container">
+          <table>
+            <thead><tr><th>Month</th><th>Revenue</th><th>Cash In</th><th>Cash Out</th><th>Net Flow</th><th>Closing Cash</th></tr></thead>
+            <tbody>
+              {data.flows.map((f: any) => (
+                <tr key={f.month} style={{ background: f.liquidity_alert ? 'var(--status-warn)15' : undefined }}>
+                  <td style={{ fontWeight: 600 }}>{f.month}</td>
+                  <td style={{ textAlign: 'right' }}>{formatCurrency(f.revenue, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', color: 'var(--status-good)' }}>{formatCurrency(f.cash_in, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', color: 'var(--status-error)' }}>{formatCurrency(f.cash_out, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600, color: f.net_cash_flow >= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>{f.net_cash_flow > 0 ? '+' : ''}{formatCurrency(f.net_cash_flow, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(f.closing_cash, currencyCode, true)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET PLANNING — Annual Operating Plan by category
+// ═══════════════════════════════════════════════════════════════════════════════
+function BudgetTab({ selectedDataset, currencyCode }: { selectedDataset: string; currencyCode: string }) {
+  const [data, setData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [growth, setGrowth] = React.useState(8);
+
+  React.useEffect(() => {
+    setLoading(true);
+    getBudgetPlan(selectedDataset, growth).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [selectedDataset, growth]);
+
+  if (loading) return <KPISkeletonRow />;
+  if (!data?.lines) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load budget.</div>;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: '1.3rem', margin: '0 0 4px', color: 'var(--text-main)' }}>Annual Operating Plan (Budget)</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Revenue, COGS, gross margin & operating profit by category</p>
+        </div>
+        <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Growth Target
+          <input type="range" min="0" max="25" value={growth} onChange={e => setGrowth(Number(e.target.value))} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+          <span style={{ fontWeight: 600, marginLeft: '6px', color: 'var(--accent-primary)' }}>+{growth}%</span>
+        </label>
+      </div>
+
+      <div className="grid grid-cols-4 mb-6">
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Budget Revenue</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{formatCurrency(data.totals.revenue, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Gross Margin</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.company_gm_pct}%</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Operating Profit</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-good)' }}>{formatCurrency(data.totals.operating_profit, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Operating Margin</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.company_op_margin_pct}%</span></div>
+      </div>
+
+      <div className="workspace-panel shadow-sm mb-6">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Revenue & Operating Profit by Category</h3>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+            <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <Legend />
+            <Bar dataKey="budget_revenue" fill="var(--accent-primary)" radius={[3,3,0,0]} name="Budget Revenue" />
+            <Bar dataKey="operating_profit" fill="#7c3aed" radius={[3,3,0,0]} name="Operating Profit" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="workspace-panel shadow-sm">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Budget Detail by Category</h3>
+        <div className="table-container">
+          <table>
+            <thead><tr><th>Category</th><th>Revenue</th><th>COGS</th><th>Gross Margin</th><th>GM %</th><th>Opex</th><th>Op. Profit</th><th>Op %</th></tr></thead>
+            <tbody>
+              {data.lines.map((l: any) => (
+                <tr key={l.category}>
+                  <td style={{ fontWeight: 600 }}>{l.category}</td>
+                  <td style={{ textAlign: 'right' }}>{formatCurrency(l.budget_revenue, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{formatCurrency(l.budget_cogs, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right' }}>{formatCurrency(l.gross_margin, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{l.gross_margin_pct}%</td>
+                  <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{formatCurrency(l.opex, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--status-good)' }}>{formatCurrency(l.operating_profit, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--accent-primary)' }}>{l.operating_margin_pct}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROFITABILITY MODELLING — contribution margin waterfall & tiering
+// ═══════════════════════════════════════════════════════════════════════════════
+function ProfitabilityTab({ selectedDataset, currencyCode }: { selectedDataset: string; currencyCode: string }) {
+  const [data, setData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    setLoading(true);
+    getProfitability(selectedDataset).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [selectedDataset]);
+
+  if (loading) return <KPISkeletonRow />;
+  if (!data?.lines) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load profitability.</div>;
+
+  const tierColors: Record<string, string> = { Star: '#16a34a', Core: '#2563eb', Drag: '#dc2626' };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.3rem', margin: '0 0 4px', color: 'var(--text-main)' }}>Profitability Modelling</h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Revenue → gross margin → contribution → operating profit, ranked by category</p>
+      </div>
+
+      <div className="grid grid-cols-3 mb-6">
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Total Revenue</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{formatCurrency(data.total_revenue, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Operating Profit</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-good)' }}>{formatCurrency(data.total_operating_profit, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Blended Op Margin</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.blended_operating_pct}%</span></div>
+      </div>
+
+      <div className="workspace-panel shadow-sm mb-6">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Margin Cascade by Category</h3>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+            <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <Legend />
+            <Bar dataKey="gross_margin" fill="var(--accent-primary)" radius={[3,3,0,0]} name="Gross Margin" />
+            <Bar dataKey="contribution_margin" fill="#2563eb" radius={[3,3,0,0]} name="Contribution Margin" />
+            <Bar dataKey="operating_profit" fill="#7c3aed" radius={[3,3,0,0]} name="Operating Profit" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="workspace-panel shadow-sm">
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Profitability Ranking</h3>
+        <div className="table-container">
+          <table>
+            <thead><tr><th>Rank</th><th>Category</th><th>Revenue</th><th>GM %</th><th>Contribution %</th><th>Operating %</th><th>Tier</th></tr></thead>
+            <tbody>
+              {data.lines.map((l: any) => (
+                <tr key={l.category}>
+                  <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-muted)' }}>#{l.profit_rank}</td>
+                  <td style={{ fontWeight: 600 }}>{l.category}</td>
+                  <td style={{ textAlign: 'right' }}>{formatCurrency(l.revenue, currencyCode, true)}</td>
+                  <td style={{ textAlign: 'right' }}>{l.gross_margin_pct}%</td>
+                  <td style={{ textAlign: 'right' }}>{l.contribution_pct}%</td>
+                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{l.operating_pct}%</td>
+                  <td><span className="badge" style={{ background: tierColors[l.tier] + '20', color: tierColors[l.tier], border: `1px solid ${tierColors[l.tier]}` }}>{l.tier}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORKING CAPITAL — inventory + AR - AP, Cash Conversion Cycle
+// ═══════════════════════════════════════════════════════════════════════════════
+function WorkingCapitalTab({ selectedDataset, currencyCode }: { selectedDataset: string; currencyCode: string }) {
+  const [data, setData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [dso, setDso] = React.useState(45);
+  const [dpo, setDpo] = React.useState(30);
+
+  React.useEffect(() => {
+    setLoading(true);
+    getWorkingCapital(selectedDataset, dso, dpo).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [selectedDataset, dso, dpo]);
+
+  if (loading) return <KPISkeletonRow />;
+  if (!data?.lines) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load working capital.</div>;
+
+  const cccData = [
+    { name: 'DIO', label: 'Days Inventory', value: data.dio_days, color: 'var(--accent-primary)' },
+    { name: 'DSO', label: 'Days Receivable', value: data.dso_days, color: '#2563eb' },
+    { name: 'DPO', label: 'Days Payable', value: -data.dpo_days, color: '#dc2626' },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: '1.3rem', margin: '0 0 4px', color: 'var(--text-main)' }}>Working Capital Plan</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>Inventory + receivables − payables · Cash Conversion Cycle</p>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>DSO
+            <input type="range" min="15" max="90" value={dso} onChange={e => setDso(Number(e.target.value))} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+            <span style={{ fontWeight: 600, marginLeft: '6px', color: 'var(--text-main)' }}>{dso}d</span>
+          </label>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>DPO
+            <input type="range" min="15" max="90" value={dpo} onChange={e => setDpo(Number(e.target.value))} style={{ marginLeft: '8px', verticalAlign: 'middle' }} />
+            <span style={{ fontWeight: 600, marginLeft: '6px', color: 'var(--text-main)' }}>{dpo}d</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 mb-6">
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Inventory Value</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{formatCurrency(data.inventory_value, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Accounts Receivable</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: '#2563eb' }}>{formatCurrency(data.accounts_receivable, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Net Working Capital</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(data.net_working_capital, currencyCode, true)}</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>{data.wc_as_pct_revenue}% of revenue</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Cash Conversion Cycle</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.cash_conversion_cycle > 60 ? 'var(--status-warn)' : 'var(--status-good)' }}>{data.cash_conversion_cycle} days</span></div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="workspace-panel shadow-sm">
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Cash Conversion Cycle Bridge</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={cccData} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
+              <XAxis type="number" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="label" stroke="var(--text-muted)" tick={{ fontSize: 11 }} width={100} />
+              <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => `${Math.abs(v)} days`} />
+              <Bar dataKey="value" radius={[0,3,3,0]}>
+                {cccData.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: 1.5 }}>
+            CCC = DIO ({data.dio_days}d) + DSO ({data.dso_days}d) − DPO ({data.dpo_days}d) = <strong style={{ color: 'var(--text-main)' }}>{data.cash_conversion_cycle} days</strong>. Lower is better — less cash tied up.
+          </p>
+        </div>
+
+        <div className="workspace-panel shadow-sm">
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Inventory by Category</h3>
+          <div className="table-container">
+            <table>
+              <thead><tr><th>Category</th><th>Inventory Value</th><th>DIO (days)</th></tr></thead>
+              <tbody>
+                {data.lines.map((l: any) => (
+                  <tr key={l.category}>
+                    <td style={{ fontWeight: 600 }}>{l.category}</td>
+                    <td style={{ textAlign: 'right' }}>{formatCurrency(l.inventory_value, currencyCode, true)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600, color: l.dio_days > 60 ? 'var(--status-warn)' : 'var(--text-main)' }}>{l.dio_days}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="ai-panel mt-4">
+            <strong style={{ display: 'flex', alignItems: 'center', color: 'var(--text-main)' }}><BrainCircuit size={16} className="mr-2" color="var(--accent-primary)"/> Working Capital Insight</strong>
+            <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+              {formatCurrency(data.net_working_capital, currencyCode, true)} is tied up in working capital ({data.wc_as_pct_revenue}% of revenue). Reducing DSO by 5 days would free roughly {formatCurrency(data.accounts_receivable * 5 / data.dso_days, currencyCode, true)} in cash.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

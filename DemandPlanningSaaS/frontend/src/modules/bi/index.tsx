@@ -1925,6 +1925,172 @@ export default function BIModule() {
           </div>
         )}
 
+
+        {/* SEMANTIC LAYER TAB */}
+        {activeTab === 'semantic' && (
+          <div style={{ padding: '1.5rem 2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Semantic Layer</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                A business-friendly abstraction over raw database tables. Defines dimensions, measures, and calculated fields so analysts work with concepts like "Revenue" instead of raw SQL.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              {/* Dimensions */}
+              <div className="workspace-panel shadow-sm">
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '4px', fontSize: '0.75rem' }}>DIM</span>
+                  Dimensions (Attributes)
+                </h4>
+                {[
+                  { name: 'SKU', table: 'demand_records', column: 'sku', description: 'Product identifier', type: 'string' },
+                  { name: 'Category', table: 'demand_records', column: 'category', description: 'Product line grouping', type: 'string' },
+                  { name: 'Location', table: 'demand_records', column: 'location', description: 'Warehouse / store', type: 'string' },
+                  { name: 'Channel', table: 'demand_records', column: 'channel', description: 'Sales channel', type: 'string' },
+                  { name: 'Date', table: 'demand_records', column: 'date', description: 'Transaction date', type: 'date' },
+                ].map(dim => (
+                  <div key={dim.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '6px', marginBottom: '6px' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{dim.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{dim.table}.{dim.column}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className="badge badge-gray" style={{ fontSize: '0.7rem' }}>{dim.type}</span>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '3px' }}>{dim.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Measures */}
+              <div className="workspace-panel shadow-sm">
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ padding: '2px 8px', background: '#7c3aed20', borderRadius: '4px', fontSize: '0.75rem', color: '#7c3aed' }}>MSR</span>
+                  Measures (Metrics)
+                </h4>
+                {[
+                  { name: 'Total Demand', formula: 'SUM(target_demand)', format: '#,##0', agg: 'SUM' },
+                  { name: 'Revenue', formula: 'SUM(target_demand × asp)', format: '$#,##0', agg: 'SUM' },
+                  { name: 'Avg Daily Demand', formula: 'AVG(target_demand)', format: '#,##0.0', agg: 'AVG' },
+                  { name: 'Demand Variability (CV)', formula: 'STDEV(demand) / AVG(demand)', format: '0.00%', agg: 'CALC' },
+                  { name: 'MAPE', formula: 'AVG(|actual − forecast| / actual)', format: '0.0%', agg: 'CALC' },
+                  { name: 'Inventory Value', formula: 'SUM(on_hand × unit_cost)', formula2: '', format: '$#,##0', agg: 'SUM' },
+                ].map(msr => (
+                  <div key={msr.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '6px', marginBottom: '6px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{msr.name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>{msr.formula}</div>
+                    </div>
+                    <div style={{ textAlign: 'right', display: 'flex', gap: '6px', flexShrink: 0 }}>
+                      <span className="badge" style={{ background: '#7c3aed20', color: '#7c3aed', border: '1px solid #7c3aed40', fontSize: '0.7rem' }}>{msr.agg}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Calculated fields */}
+            <div className="workspace-panel shadow-sm">
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#d97706', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ padding: '2px 8px', background: '#d9770620', borderRadius: '4px', fontSize: '0.75rem', color: '#d97706' }}>CALC</span>
+                Calculated Fields (Business Rules)
+              </h4>
+              <div className="table-container">
+                <table>
+                  <thead><tr><th>Field</th><th>Definition</th><th>Format</th><th>Used In</th></tr></thead>
+                  <tbody>
+                    {[
+                      { field: 'Days of Supply', def: 'on_hand / avg_daily_demand', fmt: '#0.0 days', used: 'Inventory dashboard' },
+                      { field: 'Gross Margin %', def: '(revenue − cogs) / revenue × 100', fmt: '0.0%', used: 'Finance, Category' },
+                      { field: 'ABC Class', def: 'Pareto classification on revenue contribution', fmt: 'A / B / C', used: 'Inventory, Category' },
+                      { field: 'Forecast Accuracy', def: '100 − MAPE', fmt: '0.0%', used: 'Demand, Analytics' },
+                      { field: 'Inventory Turns', def: 'annual_cogs / avg_inventory_value', fmt: '#0.0x', used: 'Inventory, Finance' },
+                      { field: 'Service Level', def: 'fill_rate / order_lines × 100', fmt: '0.0%', used: 'Analytics, S&OP' },
+                    ].map(row => (
+                      <tr key={row.field}>
+                        <td style={{ fontWeight: 600 }}>{row.field}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--text-muted)' }}>{row.def}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{row.fmt}</td>
+                        <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{row.used}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* METRIC CATALOGUE TAB */}
+        {activeTab === 'catalogue' && (
+          <div style={{ padding: '1.5rem 2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Metric Catalogue</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                Single source of truth for all platform KPIs. Defines each metric's formula, owner, refresh cadence, and target threshold.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-4 mb-6">
+              {[
+                { label: 'Total Metrics', value: '24', color: 'var(--accent-primary)' },
+                { label: 'Refreshed Daily', value: '16', color: '#16a34a' },
+                { label: 'With Targets Set', value: '18', color: '#2563eb' },
+                { label: 'Off-Target Now', value: '4', color: '#dc2626' },
+              ].map(kpi => (
+                <div key={kpi.label} className="kpi-infolet">
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="workspace-panel shadow-sm">
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr><th>Metric</th><th>Domain</th><th>Formula</th><th>Owner</th><th>Refresh</th><th>Target</th><th>Current</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'System MAPE', domain: 'Forecasting', formula: 'Mean Absolute % Error', owner: 'Demand Planner', refresh: 'Daily', target: '<5%', current: '4.2%', status: 'On Target' },
+                      { name: 'Forecast Coverage', domain: 'Forecasting', formula: 'SKUs with active forecast / total SKUs', owner: 'Demand Planner', refresh: 'Daily', target: '>95%', current: '88%', status: 'Below' },
+                      { name: 'OTIF', domain: 'Service', formula: 'On-Time In-Full orders / total orders', owner: 'Supply Chain', refresh: 'Weekly', target: '>95%', current: '94.1%', status: 'Below' },
+                      { name: 'Inventory Turns', domain: 'Inventory', formula: 'Annual COGS / Avg Inventory Value', owner: 'Inventory Mgr', refresh: 'Monthly', target: '>8x', current: '9.2x', status: 'On Target' },
+                      { name: 'Days of Supply', domain: 'Inventory', formula: 'On-Hand / Avg Daily Demand', owner: 'Inventory Mgr', refresh: 'Daily', target: '20–45 days', current: '34 days', status: 'On Target' },
+                      { name: 'Gross Margin %', domain: 'Finance', formula: '(Revenue − COGS) / Revenue', owner: 'Finance', refresh: 'Monthly', target: '>40%', current: '42.3%', status: 'On Target' },
+                      { name: 'Stockout Rate', domain: 'Inventory', formula: 'SKUs in stockout / total SKUs', owner: 'Supply Chain', refresh: 'Daily', target: '<2%', current: '3.1%', status: 'Below' },
+                      { name: 'Planner Value Add', domain: 'Forecasting', formula: 'System MAPE − Human MAPE', owner: 'Demand Planner', refresh: 'Monthly', target: '>0%', current: '+0.4%', status: 'On Target' },
+                      { name: 'ABC-A Coverage', domain: 'Inventory', formula: 'A-class SKUs with SS ≥ target / total A-class', owner: 'Inventory Mgr', refresh: 'Weekly', target: '>98%', current: '99.1%', status: 'On Target' },
+                      { name: 'Supplier OTIF', domain: 'Supply', formula: 'Supplier deliveries on-time / total', owner: 'Procurement', refresh: 'Weekly', target: '>90%', current: '88.4%', status: 'Below' },
+                    ].map(metric => {
+                      const isOnTarget = metric.status === 'On Target';
+                      return (
+                        <tr key={metric.name}>
+                          <td style={{ fontWeight: 600 }}>{metric.name}</td>
+                          <td><span className="badge badge-gray">{metric.domain}</span></td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '180px' }}>{metric.formula}</td>
+                          <td style={{ fontSize: '0.82rem' }}>{metric.owner}</td>
+                          <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{metric.refresh}</td>
+                          <td style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{metric.target}</td>
+                          <td style={{ fontFamily: 'monospace', fontWeight: 700, color: isOnTarget ? '#16a34a' : '#dc2626' }}>{metric.current}</td>
+                          <td>
+                            <span className="badge" style={{ background: isOnTarget ? '#eaf3de' : '#fef2f2', color: isOnTarget ? '#16a34a' : '#dc2626', border: `1px solid ${isOnTarget ? '#16a34a' : '#dc2626'}` }}>
+                              {metric.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+
       </div>
     </ErrorBoundary>
   );

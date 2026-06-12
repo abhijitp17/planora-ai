@@ -21,7 +21,7 @@ export interface AuthSession {
 }
 
 // ── Platform ──────────────────────────────────────────────────────────────────
-export type ModuleId = 'demand' | 'inventory' | 'diagnostics' | 'sop' | 'finance' | 'analytics' | 'bi' | 'twin' | 'retail';
+export type ModuleId = 'demand' | 'inventory' | 'diagnostics' | 'sop' | 'finance' | 'analytics' | 'bi' | 'twin' | 'retail' | 'pricing' | 'execution' | 'governance';
 
 export interface ModuleDef {
   id: ModuleId;
