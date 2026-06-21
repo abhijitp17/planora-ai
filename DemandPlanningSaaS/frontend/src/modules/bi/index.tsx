@@ -47,7 +47,7 @@ const DEFAULT_SOURCES = [
   { id: 'postgres_replica', name: 'PostgreSQL Production Replica', type: 'PostgreSQL', status: 'Configured', tables: [], size: '—' }
 ];
 
-const COLORS = ['#064e3b', '#d4af37', '#f97316', '#2563eb', '#7c3aed', '#10b981', '#ef4444'];
+const COLORS = ['#3D6B35', '#C2640C', '#8A8678', '#15171A', '#5A564B', '#2D4E27', '#A3291E'];
 
 const MEASURE_LABELS: Record<string, string> = {
   onHand: 'Sum of On-Hand Quantity',
@@ -911,9 +911,9 @@ export default function BIModule() {
             </span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {isEditingLayout ? (
-              <div className="flex items-center gap-1 bg-gray-50 p-1 rounded" style={{ backgroundColor: 'var(--bg-hover)', borderRadius: '4px' }}>
+              <div className="flex items-center gap-1 bg-gray-50 p-1" style={{ backgroundColor: 'var(--bg-hover)', borderRadius: '0px' }}>
                 <button onClick={() => toggleWidgetWidth(q.id)} className="btn btn-outline" style={{ padding: '2px 6px', fontSize: '0.65rem' }}>
                   {isFullWidth ? 'Make Split' : 'Make Full'}
                 </button>
@@ -928,19 +928,16 @@ export default function BIModule() {
                     <Edit2 size={11} />
                   </button>
                 )}
-                <button onClick={() => deleteQuery(q.id)} className="btn btn-outline" style={{ padding: '2px 4px', color: 'var(--status-error)' }}>
+                <button onClick={() => deleteQuery(q.id)} className="btn btn-outline" style={{ padding: '2px 4px', color: 'var(--status-error)' }} title="Delete Widget">
                   <Trash2 size={11} />
                 </button>
               </div>
             ) : (
-              <button 
-                onClick={() => exportToCSV(q.sqlQuery ? sqlResult?.data : data, `${q.name.toLowerCase().replace(/\s+/g, '_')}.csv`)} 
-                className="btn btn-outline" 
-                style={{ padding: '3px 6px', fontSize: '0.7rem' }}
-                title="Export Widget Data to CSV"
-              >
-                <Download size={12} className="mr-1" /> CSV
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={() => exportToCSV(q.sqlQuery ? sqlResult?.data : data, `${q.name.toLowerCase().replace(/\s+/g, '_')}.csv`)} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>
+                  <Download size={11} />
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -955,8 +952,8 @@ export default function BIModule() {
               No matches found for the active filter set.
             </div>
           ) : q.chartType === 'table' && q.sqlQuery ? (
-            <div className="table-container" style={{ maxHeight: '250px', overflowY: 'auto', fontSize: '0.75rem' }}>
-              <table style={{ margin: 0 }}>
+            <div className="table-container" style={{ flex: 1, maxHeight: '240px', overflowY: 'auto' }}>
+              <table>
                 <thead>
                   <tr>
                     {columnsList.map(col => <th key={col}>{col}</th>)}
@@ -984,15 +981,15 @@ export default function BIModule() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
-                  <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={{ r: 3 }} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
+                  <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={false} />
                 </LineChart>
               ) : q.chartType === 'area' ? (
                 <AreaChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
                   <Area type="monotone" dataKey="value" fill="var(--accent-primary-light)" stroke="var(--accent-primary)" strokeWidth={2} />
                 </AreaChart>
               ) : q.chartType === 'pie' ? (
@@ -1000,7 +997,7 @@ export default function BIModule() {
                   <Pie data={data} cx="50%" cy="45%" innerRadius={42} outerRadius={68} paddingAngle={3} dataKey="value">
                     {data.map((entry, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
                   </Pie>
-                  <RechartsTooltip formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
                   <Legend wrapperStyle={{ fontSize: '9px', marginTop: '10px' }} />
                 </PieChart>
               ) : (
@@ -1008,8 +1005,8 @@ export default function BIModule() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
-                  <Bar dataKey="value" fill="var(--accent-primary)" radius={[3, 3, 0, 0]} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancial ? [formatCurrency(val, selectedCurrencyCode), 'Value'] : [val.toLocaleString(), 'Value']} />
+                  <Bar dataKey="value" fill="var(--accent-primary)" radius={0} />
                 </BarChart>
               )}
             </ResponsiveContainer>
@@ -1352,7 +1349,7 @@ export default function BIModule() {
                 {vizTab === 'chart' && (
                   <div>
                     {queryResult.length === 0 ? (
-                      <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '6px' }}>
+                      <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '0px' }}>
                         <HelpCircle size={32} style={{ opacity: 0.5, marginBottom: '8px' }} />
                         <p style={{ fontSize: '0.85rem' }}>Select grouping dimensions and query parameters to render the visual model.</p>
                       </div>
@@ -1364,15 +1361,15 @@ export default function BIModule() {
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
-                              <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4 }} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                              <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={3} dot={false} />
                             </LineChart>
                           ) : chartType === 'area' ? (
                             <AreaChart data={queryResult}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
                               <Area type="monotone" dataKey="value" fill="var(--accent-primary-light)" stroke="var(--accent-primary)" strokeWidth={3} />
                             </AreaChart>
                           ) : chartType === 'pie' ? (
@@ -1380,7 +1377,7 @@ export default function BIModule() {
                               <Pie data={queryResult} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value">
                                 {queryResult.map((entry, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
                               </Pie>
-                              <RechartsTooltip formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
                               <Legend />
                             </PieChart>
                           ) : (
@@ -1388,8 +1385,8 @@ export default function BIModule() {
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
-                              <Bar dataKey="value" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} barSize={40} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isFinancialMeasure(measure) ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                              <Bar dataKey="value" fill="var(--accent-primary)" radius={0} barSize={40} />
                             </BarChart>
                           )}
                         </ResponsiveContainer>
@@ -1408,7 +1405,7 @@ export default function BIModule() {
                       backgroundColor: 'var(--bg-hover)',
                       color: 'var(--text-main)',
                       padding: '16px',
-                      borderRadius: '6px',
+                      borderRadius: '0px',
                       fontFamily: 'monospace',
                       fontSize: '0.85rem',
                       lineHeight: '1.45',
@@ -1467,17 +1464,17 @@ export default function BIModule() {
                           </div>
 
                           {sqlConsoleResult.error ? (
-                            <div style={{ padding: '12px', border: '1px solid var(--status-error)', backgroundColor: 'rgba(239, 68, 68, 0.05)', color: 'var(--status-error)', borderRadius: '4px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                            <div style={{ padding: '12px', border: '1px solid var(--status-error)', backgroundColor: 'rgba(239, 68, 68, 0.05)', color: 'var(--status-error)', borderRadius: '0px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
                               ⚠️ {sqlConsoleResult.error}
                             </div>
                           ) : sqlConsoleResult.data.length === 0 ? (
-                            <div style={{ padding: '12px', textAlign: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem', borderRadius: '4px' }}>
+                            <div style={{ padding: '12px', textAlign: 'center', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem', borderRadius: '0px' }}>
                               Empty set returned. 0 matching records.
                             </div>
                           ) : (
                             <div className="flex flex-col gap-4">
                               {/* Save to Dashboard controls */}
-                              <div className="flex items-center gap-3 bg-gray-50 p-3 rounded" style={{ backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)' }}>
+                              <div className="flex items-center gap-3 bg-gray-50 p-3" style={{ backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', borderRadius: '0px' }}>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', width: '100%' }}>
                                   <div className="flex items-center gap-1">
                                     <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Widget Title:</span>
@@ -1487,60 +1484,33 @@ export default function BIModule() {
                                       className="form-control"
                                       value={consoleWidgetName}
                                       onChange={e => setConsoleWidgetName(e.target.value)}
-                                      style={{ width: '150px', padding: '4px 8px', fontSize: '0.75rem' }}
+                                      style={{ width: '150px', padding: '3px 6px', fontSize: '0.75rem' }}
                                     />
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Chart Type:</span>
+                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Display:</span>
                                     <select
+                                      className="form-control"
                                       value={consoleChartType}
                                       onChange={e => setConsoleChartType(e.target.value as any)}
-                                      className="form-control"
-                                      style={{ width: '110px', padding: '4px 8px', fontSize: '0.75rem' }}
+                                      style={{ width: '120px', padding: '2px 4px', fontSize: '0.75rem' }}
                                     >
-                                      <option value="table">Table Grid</option>
+                                      <option value="table">Table Ledger</option>
                                       <option value="bar">Bar Chart</option>
-                                      <option value="line">Line Chart</option>
-                                      <option value="area">Area Chart</option>
+                                      <option value="line">Line Graph</option>
+                                      <option value="area">Area Graph</option>
                                       <option value="pie">Pie Chart</option>
                                     </select>
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Dashboard:</span>
-                                    <select
-                                      value={saveTargetDashboardId}
-                                      onChange={e => setSaveTargetDashboardId(e.target.value)}
-                                      className="form-control"
-                                      style={{ width: '150px', padding: '4px 8px', fontSize: '0.75rem' }}
-                                    >
-                                      {dashboards.map(d => (
-                                        <option key={d.id} value={d.id}>{d.name}</option>
-                                      ))}
-                                      <option value="new_dashboard">+ New Dashboard...</option>
-                                    </select>
-                                  </div>
-                                  {saveTargetDashboardId === 'new_dashboard' && (
-                                    <div className="flex items-center gap-1">
-                                      <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>New Name:</span>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="New Dashboard Name"
-                                        value={saveNewDashboardName}
-                                        onChange={e => setSaveNewDashboardName(e.target.value)}
-                                        style={{ width: '130px', padding: '4px 8px', fontSize: '0.75rem' }}
-                                      />
-                                    </div>
-                                  )}
-                                  <button className="btn btn-primary" onClick={saveConsoleWidget} style={{ padding: '5px 12px', fontSize: '0.75rem', marginLeft: 'auto' }}>
-                                    <Save size={13} className="mr-1" /> Save to Dashboard
+                                  <button className="btn btn-outline" onClick={saveConsoleWidget} style={{ padding: '3px 8px', fontSize: '0.75rem', marginLeft: 'auto' }}>
+                                    <Save size={12} className="mr-1" /> Save to Dashboard
                                   </button>
                                 </div>
                               </div>
 
                               {/* Visualization output */}
                               {consoleChartType === 'table' ? (
-                                <div className="table-container" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                <div className="table-container" style={{ maxHeight: '250px', overflowY: 'auto' }}>
                                   <table>
                                     <thead>
                                       <tr>
@@ -1563,22 +1533,22 @@ export default function BIModule() {
                                   </table>
                                 </div>
                               ) : (
-                                <div style={{ height: '250px', width: '100%', padding: '10px 0', border: '1px solid var(--border-color)', borderRadius: '6px', backgroundColor: 'var(--bg-panel)' }}>
+                                <div style={{ height: '250px', width: '100%', padding: '10px 0', border: '1px solid var(--border-color)', borderRadius: '0px', backgroundColor: 'var(--bg-panel)' }}>
                                   <ResponsiveContainer width="100%" height="100%">
                                     {consoleChartType === 'line' ? (
                                       <LineChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
-                                        <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={{ r: 3 }} />
+                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                                        <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={false} />
                                       </LineChart>
                                     ) : consoleChartType === 'area' ? (
                                       <AreaChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
                                         <Area type="monotone" dataKey="value" fill="var(--accent-primary-light)" stroke="var(--accent-primary)" strokeWidth={2} />
                                       </AreaChart>
                                     ) : consoleChartType === 'pie' ? (
@@ -1586,7 +1556,7 @@ export default function BIModule() {
                                         <Pie data={mappedConsoleData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3} dataKey="value">
                                           {mappedConsoleData.map((entry, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
                                         </Pie>
-                                        <RechartsTooltip formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
                                         <Legend />
                                       </PieChart>
                                     ) : (
@@ -1594,8 +1564,8 @@ export default function BIModule() {
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
-                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
-                                        <Bar dataKey="value" fill="var(--accent-primary)" radius={[3, 3, 0, 0]} barSize={35} />
+                                        <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }} formatter={(val: any) => isConsoleFinancial ? [`${activeCurrencySymbol}${val.toLocaleString()}`, 'Value'] : [val.toLocaleString(), 'Value']} />
+                                        <Bar dataKey="value" fill="var(--accent-primary)" radius={0} barSize={35} />
                                       </BarChart>
                                     )}
                                   </ResponsiveContainer>
@@ -1887,7 +1857,7 @@ export default function BIModule() {
 
             {/* Dashboard grid panel */}
             {savedQueries.length === 0 ? (
-              <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '8px', background: 'var(--bg-panel)' }}>
+              <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)', borderRadius: '0px', background: 'var(--bg-panel)' }}>
                 <LayoutGrid size={40} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
                 <h4 style={{ color: 'var(--text-main)', margin: '0 0 4px', fontSize: '1rem' }}>No Custom Widgets Configured</h4>
                 <p style={{ fontSize: '0.85rem', margin: '0 0 16px' }}>Create and save a query in the Visual Query Builder tab to build your custom sheets.</p>
@@ -1940,7 +1910,7 @@ export default function BIModule() {
               {/* Dimensions */}
               <div className="workspace-panel shadow-sm">
                 <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '4px', fontSize: '0.75rem' }}>DIM</span>
+                  <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem' }}>DIM</span>
                   Dimensions (Attributes)
                 </h4>
                 {[
@@ -1950,7 +1920,7 @@ export default function BIModule() {
                   { name: 'Channel', table: 'demand_records', column: 'channel', description: 'Sales channel', type: 'string' },
                   { name: 'Date', table: 'demand_records', column: 'date', description: 'Transaction date', type: 'date' },
                 ].map(dim => (
-                  <div key={dim.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '6px', marginBottom: '6px' }}>
+                  <div key={dim.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '0px', marginBottom: '6px' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{dim.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{dim.table}.{dim.column}</div>
@@ -1965,8 +1935,8 @@ export default function BIModule() {
 
               {/* Measures */}
               <div className="workspace-panel shadow-sm">
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ padding: '2px 8px', background: '#7c3aed20', borderRadius: '4px', fontSize: '0.75rem', color: '#7c3aed' }}>MSR</span>
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ padding: '2px 8px', background: 'var(--bg-hover)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>MSR</span>
                   Measures (Metrics)
                 </h4>
                 {[
@@ -1977,13 +1947,13 @@ export default function BIModule() {
                   { name: 'MAPE', formula: 'AVG(|actual − forecast| / actual)', format: '0.0%', agg: 'CALC' },
                   { name: 'Inventory Value', formula: 'SUM(on_hand × unit_cost)', formula2: '', format: '$#,##0', agg: 'SUM' },
                 ].map(msr => (
-                  <div key={msr.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '6px', marginBottom: '6px' }}>
+                  <div key={msr.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '0px', marginBottom: '6px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{msr.name}</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>{msr.formula}</div>
                     </div>
                     <div style={{ textAlign: 'right', display: 'flex', gap: '6px', flexShrink: 0 }}>
-                      <span className="badge" style={{ background: '#7c3aed20', color: '#7c3aed', border: '1px solid #7c3aed40', fontSize: '0.7rem' }}>{msr.agg}</span>
+                      <span className="badge" style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', fontSize: '0.7rem' }}>{msr.agg}</span>
                     </div>
                   </div>
                 ))}
@@ -1992,8 +1962,8 @@ export default function BIModule() {
 
             {/* Calculated fields */}
             <div className="workspace-panel shadow-sm">
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: '#d97706', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ padding: '2px 8px', background: '#d9770620', borderRadius: '4px', fontSize: '0.75rem', color: '#d97706' }}>CALC</span>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--accent-primary)' }}>CALC</span>
                 Calculated Fields (Business Rules)
               </h4>
               <div className="table-container">
@@ -2035,13 +2005,13 @@ export default function BIModule() {
             <div className="grid grid-cols-4 mb-6">
               {[
                 { label: 'Total Metrics', value: '24', color: 'var(--accent-primary)' },
-                { label: 'Refreshed Daily', value: '16', color: '#16a34a' },
-                { label: 'With Targets Set', value: '18', color: '#2563eb' },
-                { label: 'Off-Target Now', value: '4', color: '#dc2626' },
+                { label: 'Refreshed Daily', value: '16', color: 'var(--status-good)' },
+                { label: 'With Targets Set', value: '18', color: 'var(--text-main)' },
+                { label: 'Off-Target Now', value: '4', color: 'var(--status-error)' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span className="mono" style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
                 </div>
               ))}
             </div>

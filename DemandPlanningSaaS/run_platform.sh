@@ -13,8 +13,7 @@ echo "[1/2] Starting Python FastAPI Backend (Port 8000)..."
 cd backend
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt &> /dev/null
-uvicorn main:app --port 8000 &
+./venv/bin/python -m uvicorn main:app --port 8000 &
 cd ..
 
 echo "[2/2] Starting React Next.js Frontend (Port 3000)..."

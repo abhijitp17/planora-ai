@@ -38,32 +38,32 @@ export default function InventoryOptimizationModule() {
           {/*        INVENTORY OPTIMIZATION MODULE      */}
           {/* ========================================= */}
           
-          {/* I-TAB 1: NETWORK DASHBOARD */}
+           {/* I-TAB 1: NETWORK DASHBOARD */}
           {activeTab === 'overview' && (
             <div>
               <div className="grid grid-cols-4 mb-6">
                  <div className="kpi-infolet">
-                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Total Network Value (On-Hand)</span>
-                   <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>
+                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Total Network Value (On-Hand)</span>
+                   <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>
                      {formatCurrency(skuDatabase.reduce((acc, sku) => acc + (sku.onHand * sku.unitCost), 0), selectedCurrencyCode)}
                    </span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Capital Invested</span>
                  </div>
                  <div className="kpi-infolet">
-                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>In-Transit Value</span>
-                   <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--accent-primary)' }}>
+                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>In-Transit Value</span>
+                   <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
                      {formatCurrency(skuDatabase.reduce((acc, sku) => acc + (sku.inTransit * sku.unitCost), 0), selectedCurrencyCode)}
                    </span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Pipeline</span>
                  </div>
                  <div className="kpi-infolet">
-                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Avg Lead Time</span>
-                   <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>38 Days</span>
+                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Avg Lead Time</span>
+                   <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>38 Days</span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Across suppliers</span>
                  </div>
                  <div className="kpi-infolet">
-                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>At-Risk Stockouts</span>
-                   <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--status-error)' }}>1</span>
+                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>At-Risk Stockouts</span>
+                   <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>1</span>
                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Requires expedite</span>
                  </div>
               </div>
@@ -89,22 +89,31 @@ export default function InventoryOptimizationModule() {
                          const avgDailyDemand = sku.base / 30;
                          const dos = Math.round(sku.onHand / avgDailyDemand);
                          let status = 'Healthy'; let color = 'var(--status-good)';
-                         if (dos < sku.leadTime) { status = 'Stockout Risk'; color = 'var(--status-error)'; }
-                         else if (dos > sku.leadTime * 3) { status = 'Excess (E&O)'; color = 'var(--status-warn)'; }
+                         let badgeBg = 'var(--status-good-bg)';
+                         if (dos < sku.leadTime) { 
+                           status = 'Stockout Risk'; 
+                           color = 'var(--status-error)'; 
+                           badgeBg = 'var(--status-error-bg)';
+                         }
+                         else if (dos > sku.leadTime * 3) { 
+                           status = 'Excess (E&O)'; 
+                           color = 'var(--status-warn)'; 
+                           badgeBg = 'var(--accent-primary-light)';
+                         }
 
                          return (
                            <tr key={sku.id}>
                              <td>
-                               <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sku.id}</div>
+                               <div style={{ fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{sku.id}</div>
                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.name}</div>
                              </td>
-                             <td style={{ fontWeight: 600 }}>{sku.onHand.toLocaleString()}</td>
-                             <td>{sku.inTransit.toLocaleString()}</td>
-                             <td>{formatCurrency(sku.unitCost, selectedCurrencyCode)}</td>
-                             <td>{formatCurrency(sku.onHand * sku.unitCost, selectedCurrencyCode)}</td>
-                             <td>{avgDailyDemand.toFixed(1)}</td>
-                             <td style={{ fontWeight: 600, color }}>{dos} Days</td>
-                             <td><span className="badge" style={{ background: color + '20', color, border: `1px solid ${color}` }}>{status}</span></td>
+                             <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{sku.onHand.toLocaleString()}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{sku.inTransit.toLocaleString()}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(sku.unitCost, selectedCurrencyCode)}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(sku.onHand * sku.unitCost, selectedCurrencyCode)}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{avgDailyDemand.toFixed(1)}</td>
+                             <td style={{ fontWeight: 500, color, fontFamily: 'var(--font-mono)' }}>{dos} Days</td>
+                             <td><span className="badge" style={{ background: badgeBg, color, border: `1px solid ${color}` }}>{status}</span></td>
                            </tr>
                          )
                       })}
@@ -140,7 +149,7 @@ export default function InventoryOptimizationModule() {
                      <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', margin: '0 0 0.5rem' }}>{targetServiceLevel.toFixed(1)}% Target Service Level</h2>
                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Adjust slider to recalculate stock boundaries based on Amazon flow algorithms.</p>
                      
-                     <div style={{ margin: '2rem 0' }}>
+                      <div style={{ margin: '2rem 0' }}>
                         <input 
                           type="range" 
                           min="80" max="99.9" step="0.1" 
@@ -148,18 +157,18 @@ export default function InventoryOptimizationModule() {
                           onChange={(e) => dispatch({ type: 'SET_SERVICE_LEVEL', payload: Number(e.target.value) })} 
                           style={{ width: '100%', accentColor: 'var(--accent-primary)' }}
                         />
-                     </div>
-                     
-                     <div className="grid grid-cols-2 gap-4 text-left">
-                       <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                         <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Req. Safety Stock</div>
-                         <div style={{ fontSize: '1.5rem', color: 'var(--accent-primary)', fontWeight: 300 }}>{ssUnits.toLocaleString()} <span style={{fontSize:'0.8rem'}}>u</span></div>
-                       </div>
-                       <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                         <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Capital Tied Up</div>
-                         <div style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: 300 }}>{formatCurrency(ssCapital, selectedCurrencyCode)}</div>
-                       </div>
-                     </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-left">
+                        <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '0px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Req. Safety Stock</div>
+                          <div style={{ fontSize: '1.5rem', color: 'var(--accent-primary)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{ssUnits.toLocaleString()} <span style={{fontSize:'0.8rem'}}>u</span></div>
+                        </div>
+                        <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '0px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Capital Tied Up</div>
+                          <div style={{ fontSize: '1.5rem', color: 'var(--text-main)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{formatCurrency(ssCapital, selectedCurrencyCode)}</div>
+                        </div>
+                      </div>
                   </div>
                 </div>
 
@@ -234,15 +243,15 @@ export default function InventoryOptimizationModule() {
                          const needsOrder = sku.onHand + sku.inTransit <= rop;
 
                          return (
-                           <tr key={sku.id} style={{ background: needsOrder ? 'var(--status-warn)20' : 'transparent' }}>
-                             <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sku.id}</td>
-                             <td>{sku.onHand.toLocaleString()}</td>
-                             <td style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{rop.toLocaleString()}</td>
-                             <td>{eoq.toLocaleString()}</td>
-                             <td>{(rop + eoq).toLocaleString()}</td>
+                           <tr key={sku.id} style={{ background: needsOrder ? 'var(--accent-primary-light)' : 'transparent' }}>
+                             <td style={{ fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{sku.id}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{sku.onHand.toLocaleString()}</td>
+                             <td style={{ fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{rop.toLocaleString()}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{eoq.toLocaleString()}</td>
+                             <td style={{ fontFamily: 'var(--font-mono)' }}>{(rop + eoq).toLocaleString()}</td>
                              <td>
                                {needsOrder 
-                                  ? <span className="badge" style={{ background: 'var(--status-error)', color: 'white' }}>Order Needed</span> 
+                                  ? <span className="badge" style={{ background: 'var(--status-error-bg)', color: 'var(--status-error)', borderColor: 'var(--status-error)', border: '1px solid var(--status-error)' }}>Order Needed</span> 
                                   : <span className="badge badge-gray">Sufficient</span>}
                              </td>
                              <td>
@@ -264,14 +273,14 @@ export default function InventoryOptimizationModule() {
           <div>
             <div className="grid grid-cols-4 mb-6">
               {[
-                { label: 'A Items (80% Revenue)', value: '18', color: '#16a34a', sub: 'High value, tight control' },
-                { label: 'B Items (15% Revenue)', value: '24', color: '#d97706', sub: 'Moderate control' },
-                { label: 'C Items (5% Revenue)', value: '46', color: '#64748b', sub: 'Loose control' },
+                { label: 'A Items (80% Revenue)', value: '18', color: 'var(--status-good)', sub: 'High value, tight control' },
+                { label: 'B Items (15% Revenue)', value: '24', color: 'var(--status-warn)', sub: 'Moderate control' },
+                { label: 'C Items (5% Revenue)', value: 'var(--text-muted)', sub: 'Loose control' },
                 { label: 'AX Sweet Spot', value: '12', color: 'var(--accent-primary)', sub: 'High value + predictable' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -300,19 +309,19 @@ export default function InventoryOptimizationModule() {
                       const xyz = sku.cv < 0.2 ? 'X' : sku.cv < 0.5 ? 'Y' : 'Z';
                       const segment = abc + xyz;
                       const segmentColors: Record<string, string> = {
-                        'AX': '#16a34a', 'AY': '#84cc16', 'AZ': '#eab308',
-                        'BX': '#06b6d4', 'BY': '#3b82f6', 'BZ': '#6366f1',
-                        'CX': '#64748b', 'CY': '#71717a', 'CZ': '#a1a1aa',
+                        'AX': 'var(--status-good)', 'AY': 'var(--status-good)', 'AZ': 'var(--status-warn)',
+                        'BX': 'var(--status-warn)', 'BY': 'var(--accent-primary)', 'BZ': 'var(--accent-primary)',
+                        'CX': 'var(--text-muted)', 'CY': 'var(--text-muted)', 'CZ': 'var(--text-muted)',
                       };
                       return (
                         <tr key={sku.id}>
-                          <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sku.id}</td>
+                          <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{sku.id}</td>
                           <td>{sku.category}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 600 }}>${(sku.base * sku.asp).toLocaleString()}</td>
-                          <td style={{ textAlign: 'right' }}>{sku.cv.toFixed(2)}</td>
-                          <td><span className="badge" style={{ background: abc === 'A' ? '#eaf3de' : abc === 'B' ? '#fef3ec' : '#f1f5f9', color: abc === 'A' ? '#16a34a' : abc === 'B' ? '#d97706' : '#64748b' }}>{abc}</span></td>
-                          <td><span className="badge" style={{ background: xyz === 'X' ? '#eaf3de' : xyz === 'Y' ? '#fef3ec' : '#fef2f2', color: xyz === 'X' ? '#16a34a' : xyz === 'Y' ? '#d97706' : '#dc2626' }}>{xyz}</span></td>
-                          <td><span className="badge" style={{ background: (segmentColors[segment] || '#f1f5f9') + '20', color: segmentColors[segment] || '#64748b', border: `1px solid ${segmentColors[segment] || '#64748b'}`, fontWeight: 700 }}>{segment}</span></td>
+                          <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>${(sku.base * sku.asp).toLocaleString()}</td>
+                          <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{sku.cv.toFixed(2)}</td>
+                          <td><span className="badge" style={{ background: abc === 'A' ? 'var(--status-good-bg)' : abc === 'B' ? 'var(--accent-primary-light)' : 'var(--bg-hover)', color: abc === 'A' ? 'var(--status-good)' : abc === 'B' ? 'var(--status-warn)' : 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{abc}</span></td>
+                          <td><span className="badge" style={{ background: xyz === 'X' ? 'var(--status-good-bg)' : xyz === 'Y' ? 'var(--accent-primary-light)' : 'var(--status-error-bg)', color: xyz === 'X' ? 'var(--status-good)' : xyz === 'Y' ? 'var(--status-warn)' : 'var(--status-error)', border: '1px solid var(--border-color)' }}>{xyz}</span></td>
+                          <td><span className="badge" style={{ background: 'var(--bg-hover)', color: segmentColors[segment] || 'var(--text-muted)', border: `1px solid ${segmentColors[segment] || 'var(--border-color)'}`, fontWeight: 500 }}>{segment}</span></td>
                           <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                             {segment === 'AX' && 'Continuous review, high safety stock'}
                             {segment === 'AZ' && 'Focus forecasting effort here'}
@@ -434,14 +443,14 @@ export default function InventoryOptimizationModule() {
                       { node: 'STORE_NYC_42', type: 'Retail Store', demand: 85, lt: 28, ss: 95, cost: '$285', status: 'Review' },
                     ].map((loc, i) => (
                       <tr key={i}>
-                        <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{loc.node}</td>
+                        <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{loc.node}</td>
                         <td>{loc.type}</td>
-                        <td style={{ textAlign: 'right' }}>{loc.demand.toLocaleString()}</td>
-                        <td style={{ textAlign: 'right' }}>{loc.lt} days</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--accent-primary)' }}>{loc.ss.toLocaleString()}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{loc.cost}</td>
+                        <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{loc.demand.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{loc.lt} days</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{loc.ss.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{loc.cost}</td>
                         <td>
-                          <span className="badge" style={{ background: loc.status === 'Optimal' ? '#eaf3de' : '#fef3ec', color: loc.status === 'Optimal' ? '#16a34a' : '#d97706' }}>
+                          <span className="badge" style={{ background: loc.status === 'Optimal' ? 'var(--status-good-bg)' : 'var(--accent-primary-light)', color: loc.status === 'Optimal' ? 'var(--status-good)' : 'var(--status-warn)', border: `1px solid ${loc.status === 'Optimal' ? 'var(--status-good)' : 'var(--status-warn)'}` }}>
                             {loc.status}
                           </span>
                         </td>
@@ -467,8 +476,8 @@ export default function InventoryOptimizationModule() {
                 { label: 'Balanced Locations', value: '12/20', color: 'var(--text-main)', sub: 'Within target DoS' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -489,13 +498,13 @@ export default function InventoryOptimizationModule() {
                       { from: 'DC_CENTRAL', to: 'STORE_NYC_42', sku: selectedSku.id, qty: 180, fromDos: 45, toDos: 12, savings: '$540', priority: 'Medium' },
                     ].map((rec, i) => (
                       <tr key={i}>
-                        <td style={{ fontWeight: 600 }}>{rec.from}</td>
-                        <td style={{ fontWeight: 600 }}>{rec.to}</td>
-                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{rec.sku}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--accent-primary)' }}>{rec.qty.toLocaleString()}</td>
-                        <td style={{ textAlign: 'right', color: '#dc2626' }}>{rec.fromDos} days</td>
-                        <td style={{ textAlign: 'right', color: '#16a34a' }}>{rec.toDos} days</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{rec.savings}</td>
+                        <td style={{ fontWeight: 500 }}>{rec.from}</td>
+                        <td style={{ fontWeight: 500 }}>{rec.to}</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{rec.sku}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{rec.qty.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>{rec.fromDos} days</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-good)', fontFamily: 'var(--font-mono)' }}>{rec.toDos} days</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{rec.savings}</td>
                         <td>
                           {can('edit:forecast') && (
                             <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
@@ -521,13 +530,13 @@ export default function InventoryOptimizationModule() {
             <div className="grid grid-cols-4 mb-6">
               {[
                 { label: 'Portfolio Health', value: '72/100', color: 'var(--accent-primary)', sub: 'Grade B — Good' },
-                { label: 'A-Grade SKUs', value: '18', color: '#16a34a', sub: 'Score 80+' },
-                { label: 'At-Risk SKUs', value: '6', color: '#dc2626', sub: 'Score below 40' },
+                { label: 'A-Grade SKUs', value: '18', color: 'var(--status-good)', sub: 'Score 80+' },
+                { label: 'At-Risk SKUs', value: '6', color: 'var(--status-error)', sub: 'Score below 40' },
                 { label: 'Avg DoS', value: '34 days', color: 'var(--text-main)', sub: 'Target: 30 days' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -544,28 +553,29 @@ export default function InventoryOptimizationModule() {
                     {skuDatabase.slice(0, 8).map((sku, i) => {
                       const score = 40 + Math.round(sku.cv < 0.3 ? 45 : sku.cv < 0.5 ? 30 : 15);
                       const grade = score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D';
-                      const gradeColor = score >= 80 ? '#16a34a' : score >= 60 ? '#2563eb' : score >= 40 ? '#d97706' : '#dc2626';
+                      const gradeColor = score >= 80 ? 'var(--status-good)' : score >= 60 ? 'var(--accent-primary)' : score >= 40 ? 'var(--status-warn)' : 'var(--status-error)';
+                      const gradeBg = score >= 80 ? 'var(--status-good-bg)' : score >= 60 ? 'var(--accent-primary-light)' : score >= 40 ? 'var(--accent-primary-light)' : 'var(--status-error-bg)';
                       return (
                         <tr key={sku.id}>
-                          <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sku.id}</td>
+                          <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{sku.id}</td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
-                              <div style={{ width: '60px', height: '6px', background: 'var(--bg-hover)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: score + '%', height: '100%', background: gradeColor, borderRadius: '3px' }} />
+                              <div style={{ width: '60px', height: '6px', background: 'var(--bg-hover)', borderRadius: '0px', overflow: 'hidden' }}>
+                                <div style={{ width: score + '%', height: '100%', background: gradeColor, borderRadius: '0px' }} />
                               </div>
-                              <span style={{ fontWeight: 700, color: gradeColor, minWidth: '30px' }}>{score}</span>
+                              <span style={{ fontWeight: 500, color: gradeColor, minWidth: '30px', fontFamily: 'var(--font-mono)' }}>{score}</span>
                             </div>
                           </td>
-                          <td><span className="badge" style={{ background: gradeColor + '20', color: gradeColor, border: '1px solid ' + gradeColor, fontWeight: 700 }}>{grade}</span></td>
-                          <td style={{ textAlign: 'right' }}>{Math.round(score * 0.85)}</td>
-                          <td style={{ textAlign: 'right' }}>{Math.round(score * 0.75)}</td>
-                          <td style={{ textAlign: 'right' }}>{Math.round(score * 0.90)}</td>
-                          <td style={{ textAlign: 'right' }}>{Math.round(score * 0.65)}</td>
+                          <td><span className="badge" style={{ background: gradeBg, color: gradeColor, border: '1px solid ' + gradeColor, fontWeight: 500 }}>{grade}</span></td>
+                          <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(score * 0.85)}</td>
+                          <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(score * 0.75)}</td>
+                          <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(score * 0.90)}</td>
+                          <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(score * 0.65)}</td>
                           <td>
-                            {grade === 'D' && <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>Review urgently</span>}
-                            {grade === 'C' && <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>Optimize SS</span>}
-                            {grade === 'B' && <span style={{ fontSize: '0.75rem', color: '#2563eb' }}>Monitor</span>}
-                            {grade === 'A' && <span style={{ fontSize: '0.75rem', color: '#16a34a' }}>Optimal</span>}
+                            {grade === 'D' && <span style={{ fontSize: '0.75rem', color: 'var(--status-error)', fontWeight: 500 }}>Review urgently</span>}
+                            {grade === 'C' && <span style={{ fontSize: '0.75rem', color: 'var(--status-warn)', fontWeight: 500 }}>Optimize SS</span>}
+                            {grade === 'B' && <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)' }}>Monitor</span>}
+                            {grade === 'A' && <span style={{ fontSize: '0.75rem', color: 'var(--status-good)' }}>Optimal</span>}
                           </td>
                         </tr>
                       );

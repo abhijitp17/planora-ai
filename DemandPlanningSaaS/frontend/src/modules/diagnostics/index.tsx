@@ -58,13 +58,13 @@ export default function SupplyChainDiagnosticsModule() {
                        </div>
 
                        <div className="grid grid-cols-2 gap-4 mt-6 text-left">
-                         <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '6px' }}>
+                         <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '0px' }}>
                            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Planner Override Rate</div>
-                           <div style={{ fontSize: '1.25rem', color: 'var(--status-warn)', fontWeight: 300 }}>{avgHOTW}%</div>
+                           <div className="mono" style={{ fontSize: '1.25rem', color: 'var(--status-warn)', fontWeight: 300 }}>{avgHOTW}%</div>
                          </div>
-                         <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '6px' }}>
+                         <div style={{ background: 'var(--bg-hover)', padding: '1rem', borderRadius: '0px' }}>
                            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>Positive Value Add</div>
-                           <div style={{ fontSize: '1.25rem', color: 'var(--status-good)', fontWeight: 300 }}>{overrideValue}%</div>
+                           <div className="mono" style={{ fontSize: '1.25rem', color: 'var(--status-good)', fontWeight: 300 }}>{overrideValue}%</div>
                          </div>
                        </div>
                     </div>
@@ -92,14 +92,14 @@ export default function SupplyChainDiagnosticsModule() {
                              return (
                                <tr key={sku.id}>
                                  <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{sku.id}</td>
-                                 <td style={{ color: 'var(--text-muted)' }}>{sku.sysMape}%</td>
-                                 <td style={{ color: 'var(--text-muted)' }}>{sku.humMape}%</td>
+                                 <td className="mono" style={{ color: 'var(--text-muted)' }}>{sku.sysMape}%</td>
+                                 <td className="mono" style={{ color: 'var(--text-muted)' }}>{sku.humMape}%</td>
                                  <td>
                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                     <div style={{ width: '40px', background: 'var(--bg-hover)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                                     <div style={{ width: '40px', background: 'var(--bg-hover)', height: '6px', borderRadius: '0px', overflow: 'hidden' }}>
                                        <div style={{ background: 'var(--text-muted)', height: '100%', width: `${sku.overrideRate}%` }} />
                                      </div>
-                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.overrideRate}%</span>
+                                     <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.overrideRate}%</span>
                                    </div>
                                  </td>
                                  <td style={{ color: fvaColor, fontWeight: 600 }}>
@@ -160,7 +160,7 @@ export default function SupplyChainDiagnosticsModule() {
                            <XAxis type="number" dataKey="x" name="ADI" tick={{ fontSize: 12 }} stroke="var(--text-muted)" />
                            <YAxis type="number" dataKey="y" name="CV" tick={{ fontSize: 12 }} stroke="var(--text-muted)" />
                            <ZAxis type="number" dataKey="z" range={[100, 1000]} name="Volume" />
-                           <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }} />
+                           <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: '0px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }} />
                            <Scatter name="SKUs" data={scatterData} fill="var(--accent-primary)" />
                          </ScatterChart>
                        </ResponsiveContainer>
@@ -179,27 +179,27 @@ export default function SupplyChainDiagnosticsModule() {
                       <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Portfolio Entropy</h3>
                       
                       <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between p-3 rounded" style={{ border: '1px solid var(--border-color)' }}>
+                        <div className="flex items-center justify-between p-3" style={{ border: '1px solid var(--border-color)', borderRadius: '0px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Smooth</span>
                           <span className="badge" style={{ background: 'var(--status-good)20', color: 'var(--status-good)' }}>{scatterData.filter(d => d.class==='Smooth').length} SKUs</span>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded" style={{ border: '1px solid var(--border-color)' }}>
+                        <div className="flex items-center justify-between p-3" style={{ border: '1px solid var(--border-color)', borderRadius: '0px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Intermittent</span>
                           <span className="badge" style={{ background: 'var(--accent-primary)20', color: 'var(--accent-primary)' }}>{scatterData.filter(d => d.class==='Intermittent').length} SKUs</span>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded" style={{ border: '1px solid var(--border-color)' }}>
+                        <div className="flex items-center justify-between p-3" style={{ border: '1px solid var(--border-color)', borderRadius: '0px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Erratic</span>
                           <span className="badge" style={{ background: 'var(--status-warn)20', color: 'var(--status-warn)' }}>{scatterData.filter(d => d.class==='Erratic').length} SKUs</span>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded" style={{ border: '1px solid var(--border-color)' }}>
+                        <div className="flex items-center justify-between p-3" style={{ border: '1px solid var(--border-color)', borderRadius: '0px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>Lumpy</span>
                           <span className="badge" style={{ background: 'var(--status-error)20', color: 'var(--status-error)' }}>{scatterData.filter(d => d.class==='Lumpy').length} SKUs</span>
                         </div>
                       </div>
                       
-                      <div className="mt-8 p-4 rounded text-center" style={{ background: 'var(--bg-hover)' }}>
+                      <div className="mt-8 p-4 text-center" style={{ background: 'var(--bg-hover)', borderRadius: '0px' }}>
                          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem' }}>Portfolio Forecastability Score</div>
-                         <div style={{ fontSize: '2.5rem', fontWeight: 300, color: 'var(--accent-primary)' }}>B+</div>
+                         <div className="mono" style={{ fontSize: '2.5rem', fontWeight: 300, color: 'var(--accent-primary)' }}>B+</div>
                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Highly automatable portfolio using standard ML algos.</div>
                       </div>
                     </div>

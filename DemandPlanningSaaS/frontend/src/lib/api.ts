@@ -91,6 +91,14 @@ export async function listRecords(params: {
   return res.json();
 }
 
+export async function listDatasets(): Promise<{ datasets: string[] }> {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/datasets`);
+  if (!res.ok) {
+    throw new Error('Failed to list datasets');
+  }
+  return res.json();
+}
+
 export async function getDatasetSummary(version: string): Promise<DatasetSummary> {
   const url = `${NEXT_PUBLIC_API_URL}/api/datasets/${encodeURIComponent(version)}/summary`;
   const res = await fetch(url);

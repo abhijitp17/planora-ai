@@ -61,8 +61,8 @@ export default function DemandModule() {
                 { label: 'Consensus Delta', value: '+2.4%', color: 'var(--text-main)', sub: 'Vs Statistical Baseline' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -71,13 +71,13 @@ export default function DemandModule() {
               <div className="workspace-panel shadow-sm">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Category Volume Distribution</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={skuDatabase}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip cursor={{fill:'var(--bg-hover)'}} contentStyle={{ borderRadius:'4px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Bar dataKey="base" fill="var(--accent-primary)" radius={[4,4,0,0]} barSize={40} /></BarChart>
+                  <BarChart data={skuDatabase}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip cursor={{fill:'var(--bg-hover)'}} contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Bar dataKey="base" fill="var(--accent-primary)" radius={0} barSize={40} /></BarChart>
                 </ResponsiveContainer>
               </div>
               <div className="workspace-panel shadow-sm">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Historical Aggregate Demand</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={forecastData.filter((d: any) => d.isHistorical)}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip contentStyle={{ borderRadius:'4px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Line type="monotone" dataKey="actual" stroke="var(--accent-primary)" strokeWidth={2} dot={false} /></LineChart>
+                  <LineChart data={forecastData.filter((d: any) => d.isHistorical)}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Line type="monotone" dataKey="actual" stroke="var(--accent-primary)" strokeWidth={2} dot={false} /></LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function DemandModule() {
                   <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)', display:'flex', alignItems:'center', gap:'8px' }}>
                     <BarChartIcon size={20} color="var(--accent-primary)" /> Statistical vs Probabilistic Forecast
                   </h3>
-                  {apiForecastData && <span style={{ fontSize:'0.75rem', background:'var(--accent-primary-light)', color:'var(--accent-primary)', padding:'3px 10px', borderRadius:'4px', fontWeight:600 }}>✓ Live API Data</span>}
+                  {apiForecastData && <span style={{ fontSize:'0.75rem', background:'var(--accent-primary-light)', color:'var(--accent-primary)', padding:'3px 10px', borderRadius:'0px', border:'1px solid var(--accent-primary)', fontWeight:500, fontFamily:'var(--font-mono)' }}>✓ Live API Data</span>}
                 </div>
                 <div style={{ height: '400px', width: '100%', position: 'relative' }}>
                   {isForecastLoading && (
@@ -104,7 +104,7 @@ export default function DemandModule() {
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                       <XAxis dataKey="period" stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                       <YAxis stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                      <RechartsTooltip contentStyle={{ borderRadius:'4px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }} />
+                      <RechartsTooltip contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }} />
                       <Legend wrapperStyle={{ paddingTop: '10px' }}/>
                       <ReferenceLine x={forecastData.find((d:any) => !d.isHistorical)?.period} stroke="var(--text-main)" strokeDasharray="4 4" label={{ position:'top', value:'Today', fill:'var(--text-main)', fontSize:12 }} />
                       <Line type="step" dataKey="upperBound" stroke="var(--status-warn)" strokeDasharray="3 3" strokeWidth={1} dot={false} legendType="none" />
@@ -119,11 +119,11 @@ export default function DemandModule() {
               {/* Pivot grid */}
               <div className="table-container shadow-sm mb-6">
                 <table>
-                  <thead><tr><th className="sticky-left" style={{ minWidth:'220px' }}>Planning Metric</th>{forecastData.map((d:any,i:number) => <th key={i} style={{ textAlign:'center' }}>{d.period}</th>)}</tr></thead>
+                  <thead><tr><th className="sticky-left" style={{ minWidth:'220px', fontFamily:'var(--font-mono)', fontWeight:500 }}>Planning Metric</th>{forecastData.map((d:any,i:number) => <th key={i} style={{ textAlign:'center', fontFamily:'var(--font-mono)', fontWeight:500 }}>{d.period}</th>)}</tr></thead>
                   <tbody>
-                    <tr><td className="sticky-left">Actual Historical Demand</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', fontWeight:600 }}>{d.isHistorical ? d.actual?.toLocaleString() : '-'}</td>)}</tr>
-                    <tr><td className="sticky-left">Statistical ML Baseline</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', color:'var(--text-muted)' }}>{d.forecast?.toLocaleString()}</td>)}</tr>
-                    <tr><td className="sticky-left" style={{ fontSize:'0.8rem', color:'var(--text-muted)' }}>Bounds (95% CI)</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', color:'var(--text-muted)', fontSize:'0.8rem' }}>{d.isHistorical ? '-' : `[${d.lowerBound} – ${d.upperBound}]`}</td>)}</tr>
+                    <tr><td className="sticky-left">Actual Historical Demand</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', fontWeight:500, fontFamily:'var(--font-mono)' }}>{d.isHistorical ? d.actual?.toLocaleString() : '-'}</td>)}</tr>
+                    <tr><td className="sticky-left">Statistical ML Baseline</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{d.forecast?.toLocaleString()}</td>)}</tr>
+                    <tr><td className="sticky-left" style={{ fontSize:'0.8rem', color:'var(--text-muted)' }}>Bounds (95% CI)</td>{forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', color:'var(--text-muted)', fontSize:'0.8rem', fontFamily:'var(--font-mono)' }}>{d.isHistorical ? '-' : `[${d.lowerBound} – ${d.upperBound}]`}</td>)}</tr>
                     {can('edit:consensus') && (
                       <tr style={{ background:'var(--bg-hover)' }}>
                         <td className="sticky-left" style={{ background:'var(--bg-hover)', color:'var(--accent-primary)' }}>Consensus Uplift/Down (%)</td>
@@ -134,9 +134,9 @@ export default function DemandModule() {
                         ))}
                       </tr>
                     )}
-                    <tr style={{ background:'var(--accent-secondary)', borderTop:'2px solid var(--border-color)' }}>
-                      <td className="sticky-left" style={{ background:'var(--accent-secondary)', fontSize:'1rem' }}>Final Forecast Volume</td>
-                      {forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', fontWeight:700, fontSize:'1rem', color: !d.isHistorical && consensusAdjustments[d.period] ? 'var(--accent-primary)' : 'var(--text-main)' }}>{d.isHistorical ? d.actual?.toLocaleString() : d.consensusVolume?.toLocaleString()}</td>)}
+                    <tr style={{ background:'var(--accent-primary-light)', borderTop:'2px solid var(--border-color)' }}>
+                      <td className="sticky-left" style={{ background:'var(--accent-primary-light)', fontSize:'1rem', fontWeight:500 }}>Final Forecast Volume</td>
+                      {forecastData.map((d:any,i:number) => <td key={i} style={{ textAlign:'right', fontWeight:500, fontSize:'1rem', fontFamily:'var(--font-mono)', color: !d.isHistorical && consensusAdjustments[d.period] ? 'var(--accent-primary)' : 'var(--text-main)' }}>{d.isHistorical ? d.actual?.toLocaleString() : d.consensusVolume?.toLocaleString()}</td>)}
                     </tr>
                   </tbody>
                 </table>
@@ -180,16 +180,16 @@ export default function DemandModule() {
           <div className="workspace-panel shadow-sm">
             <h3 style={{ fontSize:'1.2rem', marginBottom:'1.5rem', margin:0, color:'var(--text-main)' }}>Algorithm Performance</h3>
             {apiForecastMetrics && (
-              <div style={{ background:'var(--accent-primary-light)', border:'1px solid var(--accent-primary)', borderRadius:'6px', padding:'1rem 1.25rem', marginBottom:'1.5rem', marginTop:'1rem' }}>
-                <div style={{ fontSize:'0.8rem', fontWeight:700, color:'var(--accent-primary)', marginBottom:'0.75rem', display:'flex', alignItems:'center', gap:'6px' }}>
+              <div style={{ background:'var(--accent-primary-light)', border:'1px solid var(--accent-primary)', borderRadius:'0px', padding:'1rem 1.25rem', marginBottom:'1.5rem', marginTop:'1rem' }}>
+                <div style={{ fontSize:'0.8rem', fontWeight:500, color:'var(--accent-primary)', marginBottom:'0.75rem', display:'flex', alignItems:'center', gap:'6px' }}>
                   <CheckCircle2 size={14}/> Live Backtest Metrics from FastAPI Engine
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'1rem' }}>
                   {Object.entries(apiForecastMetrics).map(([name, metrics]: [string, any]) => (
-                    <div key={name} style={{ background:'var(--bg-panel)', borderRadius:'6px', padding:'0.75rem', border:'1px solid var(--border-color)' }}>
-                      <div style={{ fontSize:'0.7rem', textTransform:'uppercase', color:'var(--text-muted)', fontWeight:700, marginBottom:'4px' }}>{name}</div>
-                      <div style={{ fontSize:'0.85rem', fontWeight:600, color:'var(--text-main)' }}>MAPE: {typeof metrics.mape === 'number' ? metrics.mape.toFixed(1) : 'N/A'}%</div>
-                      <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>MAE: {typeof metrics.mae === 'number' ? metrics.mae.toFixed(0) : 'N/A'}</div>
+                    <div key={name} style={{ background:'var(--bg-panel)', borderRadius:'0px', padding:'0.75rem', border:'1px solid var(--border-color)' }}>
+                      <div style={{ fontSize:'0.7rem', textTransform:'uppercase', color:'var(--text-muted)', fontWeight:500, marginBottom:'4px', fontFamily:'var(--font-mono)' }}>{name}</div>
+                      <div style={{ fontSize:'0.85rem', fontWeight:500, color:'var(--text-main)', fontFamily:'var(--font-mono)' }}>MAPE: {typeof metrics.mape === 'number' ? metrics.mape.toFixed(1) : 'N/A'}%</div>
+                      <div style={{ fontSize:'0.75rem', color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>MAE: {typeof metrics.mae === 'number' ? metrics.mae.toFixed(0) : 'N/A'}</div>
                     </div>
                   ))}
                 </div>
@@ -201,10 +201,11 @@ export default function DemandModule() {
                 <tbody>
                   {ERROR_ANALYSIS_MODELS.map(m => (
                     <tr key={m.id}>
-                      <td style={{ fontWeight:600, color:'var(--accent-primary)' }}>{m.name}</td>
+                      <td style={{ fontWeight:500, color:'var(--accent-primary)', fontFamily:'var(--font-mono)' }}>{m.name}</td>
                       <td><span className="badge badge-gray">{m.type}</span></td>
-                      <td>{m.mae}</td><td>{m.rmse}</td>
-                      <td style={{ fontWeight:m.mape<5?700:400, color:m.mape<5?'var(--status-good)':'inherit' }}>{m.mape}</td>
+                      <td style={{ fontFamily:'var(--font-mono)' }}>{m.mae}</td>
+                      <td style={{ fontFamily:'var(--font-mono)' }}>{m.rmse}</td>
+                      <td style={{ fontWeight: 500, color:m.mape<5?'var(--status-good)':'inherit', fontFamily:'var(--font-mono)' }}>{m.mape}</td>
                       <td>{m.mape<5?<span className="badge" style={{ background:'var(--status-good-bg)', color:'var(--status-good)', border:'1px solid var(--status-good)' }}>Primary Fit</span>:<span className="badge badge-gray">Discarded</span>}</td>
                     </tr>
                   ))}
@@ -248,8 +249,8 @@ export default function DemandModule() {
                 { label: 'Coverage', value: '85%', color: 'var(--accent-primary)', sub: 'SKUs with live signals' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -259,7 +260,7 @@ export default function DemandModule() {
               <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
                 Live Demand Signals — Last 24 Hours
               </h3>
-              <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '6px', padding: '12px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '0px', padding: '12px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Activity size={16} color="var(--accent-primary)" />
                 <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>
                   Short-term forecast auto-adjusted based on early week actuals. Next update in 3h 42m.
@@ -281,10 +282,10 @@ export default function DemandModule() {
                     ].map((sig, i) => (
                       <tr key={i}>
                         <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{sig.time}</td>
-                        <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sig.sku}</td>
+                        <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{sig.sku}</td>
                         <td>{sig.channel}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{sig.sales.toLocaleString()}</td>
-                        <td style={{ textAlign: 'right', color: sig.delta.startsWith('+') ? 'var(--status-good)' : 'var(--status-warn)', fontWeight: 600 }}>{sig.delta}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{sig.sales.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', color: sig.delta.startsWith('+') ? 'var(--status-good)' : 'var(--status-warn)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{sig.delta}</td>
                         <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{sig.adj}</td>
                       </tr>
                     ))}
@@ -316,7 +317,7 @@ export default function DemandModule() {
                 <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
                   ARIMAX Causal Forecast — {selectedSku.name}
                 </h3>
-                <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '0px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                   Causal forecasting incorporates <strong style={{ color: 'var(--text-main)' }}>exogenous variables</strong> (price, promotions, holidays, competitor activity) to capture external drivers of demand.
                 </div>
                 
@@ -326,11 +327,11 @@ export default function DemandModule() {
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                       <XAxis dataKey="period" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
                       <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
-                      <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                      <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
                       <Legend />
                       <Line type="monotone" dataKey="actual" stroke="var(--chart-actual)" strokeWidth={2} name="Actual" dot={{ r: 3 }} />
                       <Line type="monotone" dataKey="forecast" stroke="var(--chart-forecast)" strokeWidth={2} strokeDasharray="4 4" name="Baseline (No Exog)" />
-                      <Line type="monotone" dataKey="consensusVolume" stroke="#7c3aed" strokeWidth={3} name="Causal (With Exog)" dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="consensusVolume" stroke="var(--accent-primary)" strokeWidth={3} name="Causal (With Exog)" dot={{ r: 4 }} />
                       <Bar dataKey="promo" fill="var(--status-warn)" opacity={0.3} name="Promo Periods" />
                     </ComposedChart>
                   </ResponsiveContainer>
@@ -350,13 +351,13 @@ export default function DemandModule() {
                   { name: 'Holiday Indicator', var: 'holiday', icon: <Calendar size={16} />, current: 'No upcoming' },
                   { name: 'Competitor Activity', var: 'competitor', icon: <TrendingDown size={16} />, current: 'Low' },
                 ].map(exog => (
-                  <div key={exog.var} style={{ marginBottom: '1rem', padding: '10px', background: 'var(--bg-hover)', borderRadius: '6px' }}>
+                  <div key={exog.var} style={{ marginBottom: '1rem', padding: '10px', background: 'var(--bg-hover)', borderRadius: '0px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                       {exog.icon}
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{exog.name}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-main)' }}>{exog.name}</span>
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Current: <strong style={{ color: 'var(--text-main)' }}>{exog.current}</strong>
+                      Current: <strong style={{ color: 'var(--text-main)', fontFamily: typeof exog.current === 'number' ? 'var(--font-mono)' : 'inherit' }}>{exog.current}</strong>
                     </div>
                     {can('edit:forecast') && (
                       <button className="btn btn-outline mt-2" style={{ width: '100%', padding: '0.4rem', fontSize: '0.75rem' }}>
@@ -402,19 +403,19 @@ export default function DemandModule() {
                     </thead>
                     <tbody>
                       {[
-                        { name: 'Black Friday 2026', type: 'holiday', start: '2026-11-27', end: '2026-11-29', impact: '+45%', categories: ['Electronics', 'Furniture'], color: '#16a34a' },
-                        { name: 'Q4 Clearance Sale', type: 'promotion', start: '2026-12-01', end: '2026-12-31', impact: '+25%', categories: ['All'], color: '#d97706' },
-                        { name: 'New Year Holiday', type: 'holiday', start: '2027-01-01', end: '2027-01-02', impact: '-60%', categories: ['All'], color: '#dc2626' },
-                        { name: 'Spring Product Launch', type: 'launch', start: '2027-03-15', end: '2027-03-15', impact: '+120%', categories: ['Electronics'], color: '#7c3aed' },
+                        { name: 'Black Friday 2026', type: 'holiday', start: '2026-11-27', end: '2026-11-29', impact: '+45%', categories: ['Electronics', 'Furniture'], color: 'var(--status-good)' },
+                        { name: 'Q4 Clearance Sale', type: 'promotion', start: '2026-12-01', end: '2026-12-31', impact: '+25%', categories: ['All'], color: 'var(--status-warn)' },
+                        { name: 'New Year Holiday', type: 'holiday', start: '2027-01-01', end: '2027-01-02', impact: '-60%', categories: ['All'], color: 'var(--status-error)' },
+                        { name: 'Spring Product Launch', type: 'launch', start: '2027-03-15', end: '2027-03-15', impact: '+120%', categories: ['Electronics'], color: 'var(--accent-primary)' },
                       ].map((evt, i) => (
                         <tr key={i}>
-                          <td style={{ fontWeight: 600 }}>{evt.name}</td>
+                          <td style={{ fontWeight: 500 }}>{evt.name}</td>
                           <td>
                             <span className="badge badge-gray" style={{ textTransform: 'capitalize' }}>{evt.type}</span>
                           </td>
-                          <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{evt.start}</td>
-                          <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{evt.end}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: evt.color }}>{evt.impact}</td>
+                          <td style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>{evt.start}</td>
+                          <td style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>{evt.end}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 500, color: evt.color, fontFamily: 'var(--font-mono)' }}>{evt.impact}</td>
                           <td style={{ fontSize: '0.85rem' }}>{evt.categories.join(', ')}</td>
                           <td>
                             {can('edit:forecast') && (
@@ -438,12 +439,12 @@ export default function DemandModule() {
                   Event Impact Legend
                 </h3>
                 {[
-                  { type: 'Holiday', icon: <Calendar size={16} />, desc: 'Major holidays, non-working days', color: '#dc2626', impact: 'Typically -40% to -80%' },
-                  { type: 'Promotion', icon: <Tag size={16} />, desc: 'Sales events, discounts', color: '#d97706', impact: '+15% to +60%' },
-                  { type: 'Launch', icon: <Sparkles size={16} />, desc: 'New product releases', color: '#7c3aed', impact: '+50% to +200%' },
-                  { type: 'Disruption', icon: <AlertTriangle size={16} />, desc: 'Supply chain issues', color: '#dc2626', impact: '-20% to -100%' },
+                  { type: 'Holiday', icon: <Calendar size={16} />, desc: 'Major holidays, non-working days', color: 'var(--status-error)', impact: 'Typically -40% to -80%' },
+                  { type: 'Promotion', icon: <Tag size={16} />, desc: 'Sales events, discounts', color: 'var(--status-warn)', impact: '+15% to +60%' },
+                  { type: 'Launch', icon: <Sparkles size={16} />, desc: 'New product releases', color: 'var(--accent-primary)', impact: '+50% to +200%' },
+                  { type: 'Disruption', icon: <AlertTriangle size={16} />, desc: 'Supply chain issues', color: 'var(--status-error)', impact: '-20% to -100%' },
                 ].map(item => (
-                  <div key={item.type} style={{ padding: '10px', marginBottom: '8px', background: 'var(--bg-hover)', borderRadius: '6px', borderLeft: `3px solid ${item.color}` }}>
+                  <div key={item.type} style={{ padding: '10px', marginBottom: '8px', background: 'var(--bg-hover)', borderRadius: '0px', borderLeft: `3px solid ${item.color}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                       {item.icon}
                       <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{item.type}</span>
@@ -470,8 +471,8 @@ export default function DemandModule() {
                 { label: 'Next Promo', value: '12 days', color: 'var(--accent-primary)', sub: 'Black Friday prep' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
@@ -494,19 +495,19 @@ export default function DemandModule() {
                   </thead>
                   <tbody>
                     {[
-                      { name: 'Summer Clearance', skus: '24 SKUs', discount: '20%', period: 'Jul 1-15', uplift: '+28%', volume: '3,450', status: 'Active', color: '#16a34a' },
-                      { name: 'Back to School', skus: '18 SKUs', discount: '15%', period: 'Aug 1-31', uplift: '+35%', volume: '4,200', status: 'Planned', color: '#2563eb' },
-                      { name: 'Black Friday', skus: 'All', discount: '30%', period: 'Nov 27-29', uplift: '+65%', volume: '12,800', status: 'Planned', color: '#2563eb' },
+                      { name: 'Summer Clearance', skus: '24 SKUs', discount: '20%', period: 'Jul 1-15', uplift: '+28%', volume: '3,450', status: 'Active', isPromoActive: true },
+                      { name: 'Back to School', skus: '18 SKUs', discount: '15%', period: 'Aug 1-31', uplift: '+35%', volume: '4,200', status: 'Planned', isPromoActive: false },
+                      { name: 'Black Friday', skus: 'All', discount: '30%', period: 'Nov 27-29', uplift: '+65%', volume: '12,800', status: 'Planned', isPromoActive: false },
                     ].map((promo, i) => (
                       <tr key={i}>
-                        <td style={{ fontWeight: 600 }}>{promo.name}</td>
-                        <td>{promo.skus}</td>
-                        <td style={{ textAlign: 'right', color: 'var(--status-warn)', fontWeight: 600 }}>{promo.discount}</td>
-                        <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{promo.period}</td>
-                        <td style={{ textAlign: 'right', color: 'var(--status-good)', fontWeight: 700 }}>{promo.uplift}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{promo.volume}</td>
+                        <td style={{ fontWeight: 500 }}>{promo.name}</td>
+                        <td style={{ fontFamily: 'var(--font-mono)' }}>{promo.skus}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-warn)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{promo.discount}</td>
+                        <td style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>{promo.period}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--status-good)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{promo.uplift}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{promo.volume}</td>
                         <td>
-                          <span className="badge" style={{ background: promo.color + '20', color: promo.color, border: `1px solid ${promo.color}` }}>
+                          <span className={promo.isPromoActive ? 'badge badge-primary' : 'badge badge-gray'}>
                             {promo.status}
                           </span>
                         </td>
@@ -517,7 +518,7 @@ export default function DemandModule() {
               </div>
             </div>
             
-            <div className="workspace-panel shadow-sm">
+            <div className="workspace-panel">
               <h3 style={{ fontSize: '1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
                 Promotion Performance — Historical
               </h3>
@@ -531,9 +532,9 @@ export default function DemandModule() {
                   ]} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
-                    <Bar dataKey="uplift" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
+                    <YAxis tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
+                    <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
+                    <Bar dataKey="uplift" fill="var(--accent-primary)" radius={0} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -544,11 +545,11 @@ export default function DemandModule() {
         {/* SENSITIVITY ANALYSIS TAB */}
         {activeTab === 'sensitivity' && (
           <div>
-            <div className="workspace-panel shadow-sm mb-6">
+            <div className="workspace-panel mb-6">
               <h3 style={{ fontSize: '1.1rem', margin: '0 0 1rem', color: 'var(--text-main)' }}>
                 Parameter Sensitivity Analysis — {selectedSku.name}
               </h3>
-              <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '6px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: '0px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                 Shows how forecast accuracy changes when model parameters vary. Helps identify optimal configuration.
               </div>
               <div className="table-container">
@@ -570,11 +571,11 @@ export default function DemandModule() {
                       { param: 'horizon', value: 12, mape: 5.4, delta: '+1.2', avg: '1,185' },
                     ].map((row, i) => (
                       <tr key={i} style={{ background: row.delta.includes('baseline') ? 'var(--accent-primary-light)' : undefined }}>
-                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 600 }}>{row.param}</td>
-                        <td style={{ textAlign: 'right' }}>{row.value}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 600, color: row.mape < 4.2 ? '#16a34a' : row.mape > 4.5 ? '#dc2626' : 'var(--text-main)' }}>{row.mape}%</td>
-                        <td style={{ textAlign: 'right', color: row.delta.startsWith('+') ? '#dc2626' : row.delta.startsWith('-') ? '#16a34a' : 'var(--text-muted)' }}>{row.delta}</td>
-                        <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>{row.avg}</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 500 }}>{row.param}</td>
+                        <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{row.value}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 500, color: row.mape < 4.2 ? 'var(--status-good)' : row.mape > 4.5 ? 'var(--status-error)' : 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{row.mape}%</td>
+                        <td style={{ textAlign: 'right', color: row.delta.startsWith('+') ? 'var(--status-error)' : row.delta.startsWith('-') ? 'var(--status-good)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{row.delta}</td>
+                        <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{row.avg}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -594,14 +595,14 @@ export default function DemandModule() {
                 { label: 'Accuracy Trend', value: '-0.8pp', color: 'var(--status-good)', sub: 'Improving over 5 versions' },
                 { label: 'Days Since Last', value: '3 days', color: 'var(--text-main)', sub: 'Auto-save enabled' },
               ].map(kpi => (
-                <div key={kpi.label} className="kpi-infolet">
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 300, color: kpi.color }}>{kpi.value}</span>
+                <div key={kpi.label} className="kpi-infolet" style={{ borderRadius: '0' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{kpi.label}</span>
+                  <span style={{ fontSize: '1.75rem', fontWeight: 500, color: kpi.color, fontFamily: 'var(--font-mono)' }}>{kpi.value}</span>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>{kpi.sub}</span>
                 </div>
               ))}
             </div>
-            <div className="workspace-panel shadow-sm">
+            <div className="workspace-panel">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Forecast Version History</h3>
                 {can('edit:forecast') && (

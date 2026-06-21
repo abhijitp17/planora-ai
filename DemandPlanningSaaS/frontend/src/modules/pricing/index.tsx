@@ -57,7 +57,7 @@ function ElasticityView({ dataset, cur }: { dataset: string; cur: string }) {
       <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {data.categories.map((c: any, i: number) => (
           <button key={c.category} onClick={() => setSelected(i)} style={{
-            padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+            padding: '8px 16px', borderRadius: '0px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
             border: selected === i ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
             background: selected === i ? 'var(--accent-primary-light)' : 'var(--bg-panel)',
             color: selected === i ? 'var(--accent-primary)' : 'var(--text-main)',
@@ -79,10 +79,10 @@ function ElasticityView({ dataset, cur }: { dataset: string; cur: string }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="price_change_pct" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, cur, true)} labelFormatter={(l) => `Price change: ${l > 0 ? '+' : ''}${l}%`} />
+            <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => formatCurrency(v, cur, true)} labelFormatter={(l) => `Price change: ${l > 0 ? '+' : ''}${l}%`} />
             <Legend />
             <ReferenceLine x={cat.optimal_price_change_pct} stroke="var(--accent-primary)" strokeDasharray="4 4" label={{ value: 'Optimal', fontSize: 10, fill: 'var(--accent-primary)' }} />
-            <Area type="monotone" dataKey="revenue" fill="#2563eb" fillOpacity={0.1} stroke="#2563eb" strokeWidth={2} name="Revenue" />
+            <Area type="monotone" dataKey="revenue" fill="var(--chart-actual)" fillOpacity={0.1} stroke="var(--chart-actual)" strokeWidth={2} name="Revenue" />
             <Line type="monotone" dataKey="profit" stroke="var(--accent-primary)" strokeWidth={2.5} name="Profit" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -263,20 +263,20 @@ function DynamicPricingView({ dataset, cur }: { dataset: string; cur: string }) 
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(r.recommended_price, cur)}</span>
+              <span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(r.recommended_price, cur)}</span>
               {r.recommended_move_pct !== 0 && (
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: actionColors[r.action] }}>{r.recommended_move_pct > 0 ? '+' : ''}{r.recommended_move_pct}%</span>
+                <span className="mono" style={{ fontSize: '0.85rem', fontWeight: 600, color: actionColors[r.action] }}>{r.recommended_move_pct > 0 ? '+' : ''}{r.recommended_move_pct}%</span>
               )}
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: r.recommended_move_pct !== 0 ? 'line-through' : 'none' }}>{formatCurrency(r.current_price, cur)}</span>
+              <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: r.recommended_move_pct !== 0 ? 'line-through' : 'none' }}>{formatCurrency(r.current_price, cur)}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-              <div style={{ background: 'var(--bg-hover)', padding: '6px 8px', borderRadius: '6px' }}>
+              <div style={{ background: 'var(--bg-hover)', padding: '6px 8px', borderRadius: '0px' }}>
                 <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Weeks Cover</div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>{r.weeks_cover}</div>
+                <div className="mono" style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>{r.weeks_cover}</div>
               </div>
-              <div style={{ background: 'var(--bg-hover)', padding: '6px 8px', borderRadius: '6px' }}>
+              <div style={{ background: 'var(--bg-hover)', padding: '6px 8px', borderRadius: '0px' }}>
                 <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Margin</div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>{r.margin_pct}%</div>
+                <div className="mono" style={{ fontSize: '0.85rem', fontWeight: 600, marginTop: '2px' }}>{r.margin_pct}%</div>
               </div>
             </div>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{r.rationale}</p>

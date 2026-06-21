@@ -54,9 +54,9 @@ function MessageBubble({ msg, providerColor }: { msg: ChatMessage; providerColor
     return (
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
         <div style={{
-          maxWidth: '80%', background: 'var(--accent-primary)', color: '#fff',
-          borderRadius: '14px 14px 2px 14px', padding: '10px 14px',
-          fontSize: '0.875rem', lineHeight: 1.55,
+          maxWidth: '80%', background: 'var(--text-main)', color: 'var(--bg-main)',
+          border: '1px solid var(--border-color)', borderRadius: '0', padding: '10px 14px',
+          fontSize: '12.5px', lineHeight: 1.55,
         }}>
           {msg.content}
         </div>
@@ -67,18 +67,18 @@ function MessageBubble({ msg, providerColor }: { msg: ChatMessage; providerColor
   return (
     <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'flex-start' }}>
       <div style={{
-        width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-        background: providerColor + '22', border: `1.5px solid ${providerColor}`,
+        width: '28px', height: '28px', borderRadius: '0', flexShrink: 0,
+        background: 'var(--bg-hover)', border: `1px solid var(--border-color)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '12px', color: providerColor, fontWeight: 700, marginTop: '2px',
+        fontSize: '12px', color: 'var(--text-main)', fontWeight: 500, marginTop: '2px',
       }}>
         {msg.provider ? (PROVIDER_MAP[msg.provider]?.logo ?? '◆') : '◆'}
       </div>
       <div style={{ flex: 1 }}>
         <div style={{
           background: 'var(--bg-panel)', border: '1px solid var(--border-color)',
-          borderRadius: '2px 14px 14px 14px', padding: '10px 14px',
-          fontSize: '0.875rem', lineHeight: 1.65, color: 'var(--text-main)',
+          borderRadius: '0', padding: '10px 14px',
+          fontSize: '12.5px', lineHeight: 1.65, color: 'var(--text-main)',
           whiteSpace: 'pre-wrap', wordBreak: 'break-word',
         }}>
           {msg.content || <span style={{ color: 'var(--text-muted)' }}>…</span>}
@@ -465,8 +465,8 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 9998,
-          background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(2px)',
-          animation: 'fadeIn 0.2s ease',
+          background: 'rgba(21, 23, 26, 0.15)', backdropFilter: 'none',
+          animation: 'fadeIn 150ms ease-out',
         }}
       />
 
@@ -476,8 +476,9 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
         width: '440px', background: 'var(--bg-panel)',
         borderLeft: '1px solid var(--border-color)',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '-8px 0 32px rgba(0,0,0,0.12)',
-        animation: 'slideInRight 0.28s cubic-bezier(0.16,1,0.3,1)',
+        boxShadow: 'none',
+        borderRadius: '0',
+        animation: 'slideInRight 150ms ease-out',
       }}>
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -710,24 +711,24 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
               {/* Suggestion chips — show when no user messages */}
               {isConfigured && messages.filter(m => m.role === 'user').length === 0 && (
                 <div style={{ marginTop: '8px' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Suggested prompts</div>
+                  <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 500, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>Suggested Actions</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {suggestions.map(s => (
                       <button
                         key={s}
                         onClick={() => { setInput(s); inputRef.current?.focus(); }}
                         style={{
-                          textAlign: 'left', padding: '8px 12px', borderRadius: '8px',
+                          textAlign: 'left', padding: '8px 12px', borderRadius: '0',
                           border: '1px solid var(--border-color)', background: 'var(--bg-panel)',
-                          color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.8rem',
+                          color: 'var(--text-main)', cursor: 'pointer', fontSize: '11.5px',
+                          fontFamily: 'var(--font-mono)', textTransform: 'uppercase',
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          transition: 'border-color 0.15s, background 0.15s',
+                          transition: 'border-color 150ms ease-out, background 150ms ease-out',
                         }}
-                        onMouseOver={e => { e.currentTarget.style.borderColor = activeProviderMeta.color; e.currentTarget.style.background = 'var(--bg-hover)'; }}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
                         onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-panel)'; }}
                       >
-                        <span>{s}</span>
-                        <ChevronRight size={13} color="var(--text-muted)" />
+                        <span>{s} →</span>
                       </button>
                     ))}
                   </div>

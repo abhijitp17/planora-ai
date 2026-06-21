@@ -51,31 +51,31 @@ export default function SOPIBPModule() {
             const aopVariance = constrainedSupply - aopRevenue;
             const marginVariance = supplyMargin - aopMargin;
 
-            return (
+             return (
               <div>
                 <div className="grid grid-cols-4 mb-6">
                     <div className="kpi-infolet">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>AOP Revenue Target (Fy26)</span>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(aopRevenue, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>AOP Revenue Target (Fy26)</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(aopRevenue, selectedCurrencyCode, true)}</span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Annual Operating Plan</span>
                     </div>
                     <div className="kpi-infolet">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Constrained LE Revenue</span>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(constrainedSupply, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Constrained LE Revenue</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(constrainedSupply, selectedCurrencyCode, true)}</span>
                       <span style={{ fontSize: '0.7rem', color: aopVariance > 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
                         {aopVariance > 0 ? 'Trending Above AOP' : 'Trending Below AOP'}
                       </span>
                     </div>
                     <div className="kpi-infolet">
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Gross Margin (LE)</span>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(supplyMargin, selectedCurrencyCode, true)}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Gross Margin (LE)</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(supplyMargin, selectedCurrencyCode, true)}</span>
                       <span style={{ fontSize: '0.7rem', color: marginVariance >= 0 ? 'var(--status-good)' : 'var(--status-error)', marginTop: '0.5rem' }}>
                         Var vs AOP: {formatCurrency(marginVariance, selectedCurrencyCode, true)}
                       </span>
                     </div>
-                    <div className="kpi-infolet" style={{ border: '1px solid var(--status-warn)', background: 'var(--status-warn)10' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Revenue at Risk</span>
-                      <span style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--status-warn)' }}>{formatCurrency(revenueShortfall, selectedCurrencyCode, true)}</span>
+                    <div className="kpi-infolet" style={{ border: '1px solid var(--status-warn)', background: 'var(--accent-primary-light)' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Revenue at Risk</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 500, color: 'var(--status-warn)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(revenueShortfall, selectedCurrencyCode, true)}</span>
                       <span style={{ fontSize: '0.7rem', color: 'var(--status-warn)', marginTop: '0.5rem' }}>Unconstrained Demand &gt; Supply</span>
                     </div>
                 </div>
@@ -95,7 +95,7 @@ export default function SOPIBPModule() {
                           </tr>
                         </thead>
                         <tbody>
-                          {['Accessories', 'Electronics', 'Furniture'].map(cat => {
+                           {['Accessories', 'Electronics', 'Furniture'].map(cat => {
                             const catSkus = skuDatabase.filter(s => s.category === cat);
                             const tAop = catSkus.reduce((a, s) => a + (s.aopVolume * s.asp), 0);
                             const tDem = catSkus.reduce((a, s) => a + (s.base * s.asp), 0);
@@ -104,11 +104,11 @@ export default function SOPIBPModule() {
                             
                             return (
                               <tr key={cat}>
-                                 <td style={{ fontWeight: 600 }}>{cat}</td>
-                                 <td>{formatCurrency(tAop, selectedCurrencyCode, true)}</td>
-                                 <td>{formatCurrency(tDem, selectedCurrencyCode, true)}</td>
-                                 <td>{formatCurrency(tSup, selectedCurrencyCode, true)}</td>
-                                 <td style={{ color: risk > 0 ? 'var(--status-error)' : 'var(--status-good)' }}>
+                                 <td style={{ fontWeight: 500 }}>{cat}</td>
+                                 <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(tAop, selectedCurrencyCode, true)}</td>
+                                 <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(tDem, selectedCurrencyCode, true)}</td>
+                                 <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(tSup, selectedCurrencyCode, true)}</td>
+                                 <td style={{ color: risk > 0 ? 'var(--status-error)' : 'var(--status-good)', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
                                    {formatCurrency(risk, selectedCurrencyCode, true)}
                                  </td>
                               </tr>
@@ -126,12 +126,12 @@ export default function SOPIBPModule() {
                         { name: 'Gross Margin', AOP: aopMargin, ConstrainedLE: supplyMargin }
                       ]} barGap={10} barSize={40}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: 'var(--text-main)', fontWeight: 600 }}/>
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(val) => formatCurrency(val, selectedCurrencyCode, true)}/>
-                        <RechartsTooltip cursor={{fill: 'var(--bg-hover)'}} contentStyle={{ borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }}/>
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: 'var(--text-main)', fontWeight: 500 }}/>
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} tickFormatter={(val) => formatCurrency(val, selectedCurrencyCode, true)}/>
+                        <RechartsTooltip cursor={{fill: 'var(--bg-hover)'}} contentStyle={{ borderRadius: '0px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }}/>
                         <Legend />
-                        <Bar dataKey="AOP" fill="var(--text-muted)" radius={[4, 4, 0, 0]} name="AOP Budget" />
-                        <Bar dataKey="ConstrainedLE" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} name="Operational LE" />
+                        <Bar dataKey="AOP" fill="var(--text-muted)" radius={0} name="AOP Budget" />
+                        <Bar dataKey="ConstrainedLE" fill="var(--accent-primary)" radius={0} name="Operational LE" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -173,35 +173,35 @@ export default function SOPIBPModule() {
                          </tr>
                        </thead>
                        <tbody>
-                         {skuDatabase.map(sku => {
-                            const unconstrainedRev = sku.base * sku.asp;
-                            const constrainedRev = Math.min(sku.base, sku.supplyCapacity) * sku.asp;
-                            const aopRev = sku.aopVolume * sku.asp;
-                            const variance = constrainedRev - aopRev;
-                            const cogs = Math.min(sku.base, sku.supplyCapacity) * sku.unitCost;
-                            const gmPct = ((constrainedRev - cogs) / constrainedRev) * 100;
+                          {skuDatabase.map(sku => {
+                             const unconstrainedRev = sku.base * sku.asp;
+                             const constrainedRev = Math.min(sku.base, sku.supplyCapacity) * sku.asp;
+                             const aopRev = sku.aopVolume * sku.asp;
+                             const variance = constrainedRev - aopRev;
+                             const cogs = Math.min(sku.base, sku.supplyCapacity) * sku.unitCost;
+                             const gmPct = ((constrainedRev - cogs) / constrainedRev) * 100;
 
-                            return (
-                              <tr key={sku.id}>
-                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                                   {sku.name} 
-                                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sku.id}</div>
-                                </td>
-                                 <td style={{ color: 'var(--text-muted)' }}>{formatCurrency(unconstrainedRev, selectedCurrencyCode)}</td>
-                                 <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{formatCurrency(constrainedRev, selectedCurrencyCode)}</td>
-                                 <td>{formatCurrency(aopRev, selectedCurrencyCode)}</td>
-                                 <td style={{ color: variance >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 600 }}>
+                             return (
+                               <tr key={sku.id}>
+                                 <td style={{ fontWeight: 500, color: 'var(--text-main)' }}>
+                                    {sku.name} 
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{sku.id}</div>
+                                 </td>
+                                 <td style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(unconstrainedRev, selectedCurrencyCode)}</td>
+                                 <td style={{ fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(constrainedRev, selectedCurrencyCode)}</td>
+                                 <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(aopRev, selectedCurrencyCode)}</td>
+                                 <td style={{ color: variance >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
                                    {variance > 0 ? '+' : ''}{formatCurrency(variance, selectedCurrencyCode)}
                                  </td>
-                                 <td>{formatCurrency(cogs, selectedCurrencyCode)}</td>
-                                <td>
-                                   <span className="badge" style={{ background: gmPct > 40 ? 'var(--status-good)20' : 'var(--status-warn)20', color: gmPct > 40 ? 'var(--status-good)' : 'var(--status-warn)' }}>
-                                     {gmPct.toFixed(1)}%
-                                   </span>
-                                </td>
-                              </tr>
-                            )
-                         })}
+                                 <td style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(cogs, selectedCurrencyCode)}</td>
+                                 <td>
+                                    <span className="badge" style={{ background: gmPct > 40 ? 'var(--status-good-bg)' : 'var(--accent-primary-light)', color: gmPct > 40 ? 'var(--status-good)' : 'var(--status-warn)', border: `1px solid ${gmPct > 40 ? 'var(--status-good)' : 'var(--status-warn)'}` }}>
+                                      {gmPct.toFixed(1)}%
+                                    </span>
+                                 </td>
+                               </tr>
+                             )
+                          })}
                        </tbody>
                      </table>
                   </div>
@@ -270,19 +270,19 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
         {recon && (
           <div className="mb-6" style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 18px', borderRadius: '8px',
-            background: recon.plan_status === 'BALANCED' ? 'var(--status-good)15' : 'var(--status-warn)15',
+            padding: '14px 18px', borderRadius: '0px',
+            background: recon.plan_status === 'BALANCED' ? 'var(--status-good-bg)' : 'var(--accent-primary-light)',
             border: `1px solid ${recon.plan_status === 'BALANCED' ? 'var(--status-good)' : 'var(--status-warn)'}`,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {recon.plan_status === 'BALANCED'
                 ? <CircleCheck size={20} color="var(--status-good)" />
                 : <AlertTriangle size={20} color="var(--status-warn)" />}
-              <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+              <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>
                 Plan Status: {recon.plan_status === 'BALANCED' ? 'Balanced' : 'Supply-Constrained'}
               </span>
             </div>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               Capacity uplift: <strong style={{ color: 'var(--accent-primary)' }}>+{recon.levers.capacity_uplift_pct}%</strong>
               {recon.levers.margin_penalty_pct > 0 && <> · Margin cost: <strong style={{ color: 'var(--status-error)' }}>−{recon.levers.margin_penalty_pct}%</strong></>}
             </span>
@@ -293,20 +293,20 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
         {t && (
           <div className="grid grid-cols-4 mb-6">
             <div className="kpi-infolet">
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Unconstrained Demand</span>
-              <span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(t.unconstrained_demand_revenue, selectedCurrencyCode, true)}</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Unconstrained Demand</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(t.unconstrained_demand_revenue, selectedCurrencyCode, true)}</span>
             </div>
             <div className="kpi-infolet">
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Constrained Supply (LE)</span>
-              <span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(t.constrained_supply_revenue, selectedCurrencyCode, true)}</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Constrained Supply (LE)</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(t.constrained_supply_revenue, selectedCurrencyCode, true)}</span>
             </div>
             <div className="kpi-infolet" style={{ border: '1px solid var(--status-warn)' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Revenue at Risk</span>
-              <span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-warn)' }}>{formatCurrency(t.revenue_at_risk, selectedCurrencyCode, true)}</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--status-warn)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Revenue at Risk</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--status-warn)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(t.revenue_at_risk, selectedCurrencyCode, true)}</span>
             </div>
             <div className="kpi-infolet">
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Margin Erosion</span>
-              <span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-error)' }}>{formatCurrency(t.margin_erosion, selectedCurrencyCode, true)}</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Margin Erosion</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(t.margin_erosion, selectedCurrencyCode, true)}</span>
             </div>
           </div>
         )}
@@ -318,8 +318,8 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
               <ComposedChart data={monthlyData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="month" stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <YAxis stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <RechartsTooltip contentStyle={{ borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }} />
+                <YAxis stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontFamily: 'var(--font-mono)' }} />
+                <RechartsTooltip contentStyle={{ borderRadius: '0px', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }} />
                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
                 <Area type="monotone" dataKey="demand" fill="var(--accent-primary)" fillOpacity={0.12} stroke="var(--accent-primary)" strokeWidth={2} name="Unconstrained Demand" />
                 <Line type="stepAfter" dataKey="capacity" stroke="var(--status-warn)" strokeWidth={3} name="Supply Capacity Limit" dot={false} />
@@ -338,17 +338,17 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
                 <tbody>
                   {recon.reconciliation.map((r: any) => (
                     <tr key={r.category}>
-                      <td style={{ fontWeight: 600 }}>{r.category}</td>
-                      <td style={{ textAlign: 'right' }}>{Math.round(r.demand_volume).toLocaleString()}</td>
-                      <td style={{ textAlign: 'right' }}>{Math.round(r.supply_volume).toLocaleString()}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 600, color: r.fill_rate >= 98 ? 'var(--status-good)' : r.fill_rate >= 90 ? 'var(--status-warn)' : 'var(--status-error)' }}>{r.fill_rate}%</td>
-                      <td style={{ textAlign: 'right' }}>{formatCurrency(r.supply_revenue, selectedCurrencyCode, true)}</td>
-                      <td style={{ textAlign: 'right', color: r.gap_to_aop >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 600 }}>
+                      <td style={{ fontWeight: 500 }}>{r.category}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(r.demand_volume).toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{Math.round(r.supply_volume).toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 500, color: r.fill_rate >= 98 ? 'var(--status-good)' : r.fill_rate >= 90 ? 'var(--status-warn)' : 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>{r.fill_rate}%</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{formatCurrency(r.supply_revenue, selectedCurrencyCode, true)}</td>
+                      <td style={{ textAlign: 'right', color: r.gap_to_aop >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
                         {r.gap_to_aop > 0 ? '+' : ''}{formatCurrency(r.gap_to_aop, selectedCurrencyCode, true)}
                       </td>
-                      <td style={{ textAlign: 'right' }}>{r.margin_pct}%</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{r.margin_pct}%</td>
                       <td>
-                        <span className="badge" style={{ background: r.constrained ? 'var(--status-warn)20' : 'var(--status-good)20', color: r.constrained ? 'var(--status-warn)' : 'var(--status-good)' }}>
+                        <span className="badge" style={{ background: r.constrained ? 'var(--accent-primary-light)' : 'var(--status-good-bg)', color: r.constrained ? 'var(--status-warn)' : 'var(--status-good)', border: `1px solid ${r.constrained ? 'var(--status-warn)' : 'var(--status-good)'}` }}>
                           {r.constrained ? 'Constrained' : 'Met'}
                         </span>
                       </td>
@@ -369,17 +369,17 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
             Toggle levers to re-run the reconciliation engine and rebalance demand against supply in real time.
           </p>
 
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: airFreight ? 'var(--accent-primary-light)' : 'var(--bg-hover)', borderRadius: '6px', marginBottom: '10px', cursor: canEdit ? 'pointer' : 'not-allowed' }}>
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: airFreight ? 'var(--accent-primary-light)' : 'var(--bg-hover)', borderRadius: '0px', marginBottom: '10px', cursor: canEdit ? 'pointer' : 'not-allowed' }}>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)' }}>Expedite Air Freight</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-main)' }}>Expedite Air Freight</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>+8% capacity · −1.5% margin</div>
             </div>
             <input type="checkbox" checked={airFreight} disabled={!canEdit} onChange={e => setAirFreight(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }} />
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: subFlex ? 'var(--accent-primary-light)' : 'var(--bg-hover)', borderRadius: '6px', marginBottom: '1rem', cursor: canEdit ? 'pointer' : 'not-allowed' }}>
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: subFlex ? 'var(--accent-primary-light)' : 'var(--bg-hover)', borderRadius: '0px', marginBottom: '1rem', cursor: canEdit ? 'pointer' : 'not-allowed' }}>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)' }}>Subcontractor Flex</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-main)' }}>Subcontractor Flex</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>+15% capacity · −2% margin</div>
             </div>
             <input type="checkbox" checked={subFlex} disabled={!canEdit} onChange={e => setSubFlex(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: 'var(--accent-primary)' }} />
@@ -418,9 +418,9 @@ function IBPCycleView({ selectedCurrencyCode, selectedDataset }: { selectedCurre
   if (!cycle) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load IBP cycle.</div>;
 
   const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
-    complete: { icon: CircleCheck, color: '#16a34a', label: 'Complete' },
-    in_progress: { icon: Clock, color: '#d97706', label: 'In Progress' },
-    pending: { icon: CircleDashed, color: '#94a3b8', label: 'Pending' },
+    complete: { icon: CircleCheck, color: 'var(--status-good)', label: 'Complete' },
+    in_progress: { icon: Clock, color: 'var(--status-warn)', label: 'In Progress' },
+    pending: { icon: CircleDashed, color: 'var(--text-muted)', label: 'Pending' },
   };
 
   return (
@@ -438,25 +438,25 @@ function IBPCycleView({ selectedCurrencyCode, selectedDataset }: { selectedCurre
         </div>
       </div>
 
-      {/* Process flow timeline */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem' }}>
         {cycle.steps.map((step: any, i: number) => {
-          const cfg = statusConfig[step.status];
+          const cfg = statusConfig[step.status] || statusConfig.pending;
           const Icon = cfg.icon;
+          const isCurrent = step.status === 'in_progress';
           return (
             <div key={step.step} style={{ flex: 1, position: 'relative' }}>
               <div style={{
-                background: step.status === 'in_progress' ? cfg.color + '12' : 'var(--bg-panel)',
-                border: `1.5px solid ${step.status === 'in_progress' ? cfg.color : 'var(--border-color)'}`,
-                borderRadius: '8px', padding: '14px', height: '100%',
+                background: isCurrent ? 'var(--accent-primary-light)' : 'var(--bg-panel)',
+                border: `1.5px solid ${isCurrent ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                borderRadius: '0px', padding: '14px', height: '100%',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                   <Icon size={18} color={cfg.color} />
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: cfg.color, textTransform: 'uppercase' }}>Step {step.step}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 500, color: cfg.color, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Step {step.step}</span>
                 </div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px', lineHeight: 1.3 }}>{step.name}</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-main)', marginBottom: '4px', lineHeight: 1.3 }}>{step.name}</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{step.window}</div>
-                <span className="badge" style={{ background: cfg.color + '20', color: cfg.color, fontSize: '0.68rem' }}>{cfg.label}</span>
+                <span className={isCurrent ? 'badge badge-primary' : 'badge badge-gray'} style={{ fontSize: '0.68rem' }}>{cfg.label}</span>
               </div>
             </div>
           );
@@ -466,14 +466,16 @@ function IBPCycleView({ selectedCurrencyCode, selectedDataset }: { selectedCurre
       {/* Detailed step breakdown */}
       <div className="grid grid-cols-1 gap-4">
         {cycle.steps.map((step: any) => {
-          const cfg = statusConfig[step.status];
+          const cfg = statusConfig[step.status] || statusConfig.pending;
+          const isCurrent = step.status === 'in_progress';
+          const badgeClass = isCurrent ? 'badge badge-primary' : 'badge badge-gray';
           return (
-            <div key={step.step} className="workspace-panel shadow-sm" style={{ borderLeft: `4px solid ${cfg.color}` }}>
+            <div key={step.step} className="workspace-panel shadow-sm" style={{ borderLeft: `4px solid ${cfg.color}`, borderRadius: '0px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)' }}>Step {step.step}: {step.name}</span>
-                    <span className="badge" style={{ background: cfg.color + '20', color: cfg.color }}>{cfg.label}</span>
+                    <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-main)' }}>Step {step.step}: {step.name}</span>
+                    <span className={badgeClass}>{cfg.label}</span>
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Users size={13} /> {step.owner} · <Calendar size={13} /> {step.window}
@@ -483,7 +485,7 @@ function IBPCycleView({ selectedCurrencyCode, selectedDataset }: { selectedCurre
               <p style={{ fontSize: '0.88rem', color: 'var(--text-main)', marginBottom: '12px', lineHeight: 1.5 }}>{step.purpose}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Inputs</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Inputs</div>
                   {step.inputs.map((inp: string, j: number) => (
                     <div key={j} style={{ fontSize: '0.8rem', color: 'var(--text-main)', padding: '3px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <ArrowRightLeft size={11} color="var(--text-muted)" /> {inp}
@@ -491,7 +493,7 @@ function IBPCycleView({ selectedCurrencyCode, selectedDataset }: { selectedCurre
                   ))}
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Outputs</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>Outputs</div>
                   {step.outputs.map((out: string, j: number) => (
                     <div key={j} style={{ fontSize: '0.8rem', color: 'var(--text-main)', padding: '3px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <CheckCircle2 size={11} color={cfg.color} /> {out}
@@ -533,13 +535,13 @@ function ScenarioSOPView({ selectedCurrencyCode, selectedDataset, canEdit }: { s
       {/* Scenario cards */}
       <div className="grid grid-cols-2 gap-6 mb-6">
         {data.scenarios.map((s: any) => (
-          <div key={s.scenario} className="workspace-panel shadow-sm" style={{ border: s.recommended ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)' }}>
+          <div key={s.scenario} className="workspace-panel shadow-sm" style={{ border: s.recommended ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)', borderRadius: '0px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
               <div>
-                <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>{s.scenario}</span>
-                {s.recommended && <span className="badge" style={{ background: 'var(--accent-primary-light)', color: 'var(--accent-primary)', marginLeft: '8px', fontSize: '0.68rem' }}>RECOMMENDED</span>}
+                <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-main)' }}>{s.scenario}</span>
+                {s.recommended && <span className="badge badge-primary" style={{ marginLeft: '8px', fontSize: '0.68rem' }}>RECOMMENDED</span>}
               </div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: s.revenue_vs_base >= 0 ? 'var(--status-good)' : 'var(--status-error)' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 500, color: s.revenue_vs_base >= 0 ? 'var(--status-good)' : 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>
                 {s.revenue_vs_base > 0 ? '+' : ''}{s.revenue_vs_base}%
               </span>
             </div>
@@ -550,9 +552,9 @@ function ScenarioSOPView({ selectedCurrencyCode, selectedDataset, canEdit }: { s
                 { label: 'Margin %', value: `${s.margin_pct}%` },
                 { label: 'Service', value: `${s.service_level}%` },
               ].map(m => (
-                <div key={m.label} style={{ background: 'var(--bg-hover)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '3px' }}>{m.label}</div>
-                  <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-main)' }}>{m.value}</div>
+                <div key={m.label} style={{ background: 'var(--bg-hover)', padding: '8px', borderRadius: '0px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500, marginBottom: '3px', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{m.label}</div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 500, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>{m.value}</div>
                 </div>
               ))}
             </div>
@@ -567,13 +569,13 @@ function ScenarioSOPView({ selectedCurrencyCode, selectedDataset, canEdit }: { s
           <ComposedChart data={data.scenarios} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="scenario" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <YAxis yAxisId="left" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" tick={{ fontSize: 11 }} domain={[0, 100]} />
-            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+            <YAxis yAxisId="left" stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
+            <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} domain={[0, 100]} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
             <Legend />
-            <Bar yAxisId="left" dataKey="revenue" fill="var(--accent-primary)" radius={[4,4,0,0]} name="Revenue" />
-            <Bar yAxisId="left" dataKey="margin" fill="#7c3aed" radius={[4,4,0,0]} name="Margin" />
-            <Line yAxisId="right" type="monotone" dataKey="service_level" stroke="#d97706" strokeWidth={2} name="Service Level %" />
+            <Bar yAxisId="left" dataKey="revenue" fill="var(--accent-primary)" radius={0} name="Revenue" />
+            <Bar yAxisId="left" dataKey="margin" fill="var(--text-muted)" radius={0} name="Margin" />
+            <Line yAxisId="right" type="monotone" dataKey="service_level" stroke="var(--status-warn)" strokeWidth={2} name="Service Level %" />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -616,8 +618,8 @@ function StrategicHorizonView({ selectedCurrencyCode, selectedDataset }: { selec
       <div className="grid grid-cols-4 mb-6">
         {Object.entries(data.growth_assumptions).map(([k, v]: any) => (
           <div key={k} className="kpi-infolet">
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'capitalize', fontWeight: 700, marginBottom: '0.5rem' }}>{k.replace('_', ' ')}</span>
-            <span style={{ fontSize: '1.6rem', fontWeight: 300, color: v.startsWith('-') ? 'var(--status-error)' : 'var(--status-good)' }}>{v}</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'capitalize', fontWeight: 500, marginBottom: '0.5rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.5px' }}>{k.replace('_', ' ')}</span>
+            <span style={{ fontSize: '1.6rem', fontWeight: 500, color: v.startsWith('-') ? 'var(--status-error)' : 'var(--status-good)', fontFamily: 'var(--font-mono)' }}>{v}</span>
             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>annual contribution</span>
           </div>
         ))}
@@ -648,11 +650,11 @@ function StrategicHorizonView({ selectedCurrencyCode, selectedDataset }: { selec
             <tbody>
               {data.strategic_initiatives.map((init: any, i: number) => (
                 <tr key={i}>
-                  <td style={{ fontWeight: 600 }}>{init.initiative}</td>
-                  <td>Year {init.year}</td>
-                  <td style={{ fontWeight: 600 }}>{formatCurrency(init.investment, selectedCurrencyCode, true)}</td>
-                  <td>{init.roi_months} months</td>
-                  <td><span className="badge" style={{ background: 'var(--accent-primary-light)', color: 'var(--accent-primary)' }}>Planned</span></td>
+                  <td style={{ fontWeight: 500 }}>{init.initiative}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)' }}>Year {init.year}</td>
+                  <td style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>{formatCurrency(init.investment, selectedCurrencyCode, true)}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)' }}>{init.roi_months} months</td>
+                  <td><span className="badge badge-primary">Planned</span></td>
                 </tr>
               ))}
             </tbody>

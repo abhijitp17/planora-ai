@@ -74,8 +74,8 @@ export default function GlobalAnalyticsModule() {
                            <YAxis stroke="var(--text-muted)" fontSize={12} />
                            <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} />
                            <Legend />
-                           <Bar dataKey="actual" name="Actual Sales" fill="var(--accent-secondary)" stroke="var(--accent-primary)" strokeWidth={1} radius={[4, 4, 0, 0]} />
-                           <Line type="monotone" dataKey="forecast" name="Consensus Forecast" stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4 }} />
+                           <Bar dataKey="actual" name="Actual Sales" fill="var(--accent-secondary)" stroke="var(--accent-primary)" strokeWidth={1} radius={0} />
+                           <Line type="monotone" dataKey="forecast" name="Consensus Forecast" stroke="var(--accent-primary)" strokeWidth={3} dot={false} />
                         </ComposedChart>
                      </ResponsiveContainer>
                   </div>
@@ -98,25 +98,25 @@ export default function GlobalAnalyticsModule() {
                <div>
                   <div className="grid grid-cols-4 gap-4 mb-6">
                     <div className="kpi-infolet">
-                      <span className="label">Global Inventory Turns</span>
-                      <span className="value">{turns.toFixed(1)}x</span>
-                      <span className="subtext" style={{ color: turns >= 6 ? 'var(--status-good)' : 'var(--status-warn)' }}>Target: 6.0x</span>
-                    </div>
-                    <div className="kpi-infolet">
-                      <span className="label">Days of Inventory (DOH)</span>
-                      <span className="value">{doh.toFixed(0)} Days</span>
-                      <span className="subtext" style={{ color: 'var(--text-muted)' }}>Average Network</span>
-                    </div>
-                     <div className="kpi-infolet">
-                       <span className="label">Excess & Obsolete (E&O)</span>
-                       <span className="value">{formatCurrency(eoValue, selectedCurrencyCode, true)}</span>
-                       <span className="subtext" style={{ color: 'var(--status-error)' }}>At-Risk Capital</span>
+                       <span className="label">Global Inventory Turns</span>
+                       <span className="value mono">{turns.toFixed(1)}x</span>
+                       <span className="subtext" style={{ color: turns >= 6 ? 'var(--status-good)' : 'var(--status-warn)' }}>Target: 6.0x</span>
                      </div>
-                    <div className="kpi-infolet">
-                      <span className="label">Stockouts (Last 30D)</span>
-                      <span className="value">{STOCKOUT_EVENTS} Events</span>
-                      <span className="subtext" style={{ color: 'var(--status-warn)' }}>Affecting SLA</span>
-                    </div>
+                     <div className="kpi-infolet">
+                       <span className="label">Days of Inventory (DOH)</span>
+                       <span className="value mono">{doh.toFixed(0)} Days</span>
+                       <span className="subtext" style={{ color: 'var(--text-muted)' }}>Average Network</span>
+                     </div>
+                      <div className="kpi-infolet">
+                        <span className="label">Excess & Obsolete (E&O)</span>
+                        <span className="value mono">{formatCurrency(eoValue, selectedCurrencyCode, true)}</span>
+                        <span className="subtext" style={{ color: 'var(--status-error)' }}>At-Risk Capital</span>
+                      </div>
+                     <div className="kpi-infolet">
+                       <span className="label">Stockouts (Last 30D)</span>
+                       <span className="value mono">{STOCKOUT_EVENTS} Events</span>
+                       <span className="subtext" style={{ color: 'var(--status-warn)' }}>Affecting SLA</span>
+                     </div>
                   </div>
 
                   <div className="workspace-panel shadow-sm">
@@ -168,21 +168,21 @@ export default function GlobalAnalyticsModule() {
              return (
                <div>
                   <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="kpi-infolet" style={{ borderTop: '4px solid var(--accent-primary)' }}>
-                      <span className="label">Global OTIF (On-Time In-Full)</span>
-                      <span className="value">93.4%</span>
-                      <span className="subtext" style={{ color: 'var(--status-warn)' }}>Target: 96.0%</span>
-                    </div>
-                    <div className="kpi-infolet">
-                      <span className="label">Order Fill Rate</span>
-                      <span className="value">97.8%</span>
-                      <span className="subtext" style={{ color: 'var(--status-good)' }}>Target: 97.5%</span>
-                    </div>
-                     <div className="kpi-infolet">
-                       <span className="label">Estimated Lost Sales ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</span>
-                       <span className="value">{formatCurrency(432500, selectedCurrencyCode)}</span>
-                       <span className="subtext" style={{ color: 'var(--status-error)' }}>Due to shorting / backorders</span>
+                     <div className="kpi-infolet" style={{ borderTop: '4px solid var(--accent-primary)' }}>
+                       <span className="label">Global OTIF (On-Time In-Full)</span>
+                       <span className="value mono">93.4%</span>
+                       <span className="subtext" style={{ color: 'var(--status-warn)' }}>Target: 96.0%</span>
                      </div>
+                     <div className="kpi-infolet">
+                       <span className="label">Order Fill Rate</span>
+                       <span className="value mono">97.8%</span>
+                       <span className="subtext" style={{ color: 'var(--status-good)' }}>Target: 97.5%</span>
+                     </div>
+                      <div className="kpi-infolet">
+                        <span className="label">Estimated Lost Sales ({CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})</span>
+                        <span className="value mono">{formatCurrency(432500, selectedCurrencyCode)}</span>
+                        <span className="subtext" style={{ color: 'var(--status-error)' }}>Due to shorting / backorders</span>
+                      </div>
                   </div>
 
                   <div className="workspace-panel shadow-sm">
@@ -231,13 +231,13 @@ export default function GlobalAnalyticsModule() {
                              <td>{sup.leadTimeAvg} Days</td>
                              <td style={{ color: sup.leadTimeVar > 10 ? 'var(--status-error)' : 'var(--text-main)' }}>±{sup.leadTimeVar} Days</td>
                              <td>
-                                <div className="flex items-center gap-2">
-                                  <div style={{ flex: 1, background: 'var(--bg-hover)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                                    <div style={{ width: `${sup.otif}%`, height: '100%', background: sup.otif > 95 ? 'var(--status-good)' : sup.otif > 90 ? 'var(--status-warn)' : 'var(--status-error)' }}></div>
-                                  </div>
-                                  <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{sup.otif}%</span>
-                                </div>
-                             </td>
+                                 <div className="flex items-center gap-2">
+                                   <div style={{ flex: 1, background: 'var(--bg-hover)', height: '6px', borderRadius: '0px', overflow: 'hidden' }}>
+                                     <div style={{ width: `${sup.otif}%`, height: '100%', background: sup.otif > 95 ? 'var(--status-good)' : sup.otif > 90 ? 'var(--status-warn)' : 'var(--status-error)' }}></div>
+                                   </div>
+                                   <span className="mono" style={{ fontSize: '0.75rem', fontWeight: 600 }}>{sup.otif}%</span>
+                                 </div>
+                              </td>
                              <td>{sup.util}%</td>
                              <td style={{ textAlign: 'right', fontWeight: 700, color: sup.risk === 'High' ? 'var(--status-error)' : sup.risk === 'Medium' ? 'var(--status-warn)' : 'var(--status-good)' }}>{sup.risk}</td>
                            </tr>
@@ -278,7 +278,7 @@ export default function GlobalAnalyticsModule() {
                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)"/>
                             <XAxis type="number" dataKey="x" name={`Working Cap Built (${CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})`} unit={CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'} stroke="var(--text-muted)" fontSize={12} />
                             <YAxis type="number" dataKey="y" name="Gross Margin Yield (%)" unit="%" stroke="var(--text-muted)" fontSize={12} />
-                            <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}/>
+                            <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }}/>
                             <Scatter name="SKUs" data={skuDatabase.map(s => {
                               const cur = CURRENCIES.find(c => c.code === selectedCurrencyCode) || CURRENCIES[0];
                               return { x: s.onHand * s.unitCost * cur.rate, y: ((s.asp - s.unitCost)/s.asp)*100, name: s.name };
@@ -303,7 +303,7 @@ export default function GlobalAnalyticsModule() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
                       Historical volatility for <strong>Ergonomic Office Chair</strong> has smoothed (CV dropped from 0.45 to 0.15). The current Safety Stock of robust 250 units is excessive for the new demand profile.
                     </p>
-                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '0px', fontSize: '0.85rem', fontWeight: 600 }}>
                        💡 <span style={{ color: 'var(--text-main)' }}>AI Recommendation: </span>
                        <span style={{ color: 'var(--accent-primary)' }}>Reduce safety stock by 12% to free up $14,000 in working capital without impacting service levels.</span>
                     </div>
@@ -318,7 +318,7 @@ export default function GlobalAnalyticsModule() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
                       External signals (promotional data pull) suggest a 35% spike expected next week for <strong>Wireless Gaming Mouse</strong>.
                     </p>
-                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '0px', fontSize: '0.85rem', fontWeight: 600 }}>
                        ⚠️ <span style={{ color: 'var(--text-main)' }}>Action Required: </span>
                        <span style={{ color: 'var(--status-warn)' }}>Potential stockout in exactly 5 days. Expedite inbound PO #4992 immediately.</span>
                     </div>
@@ -333,7 +333,7 @@ export default function GlobalAnalyticsModule() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
                       Lead time variability for <strong>Apex Electronics Mfg</strong> has breached 3-sigma thresholds (Avg 45 days ± 14 days). This systemic delay puts the Q4 High-End Monitor components at severe risk.
                     </p>
-                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '0px', fontSize: '0.85rem', fontWeight: 600 }}>
                        🚨 <span style={{ color: 'var(--text-main)' }}>Executive Recommendation: </span>
                        <span style={{ color: 'var(--status-error)' }}>Shift 30% of allocation to Tech Assembly Partners to de-risk Q4 Revenue target.</span>
                     </div>
@@ -348,7 +348,7 @@ export default function GlobalAnalyticsModule() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
                       Inventory too high for SKU <strong>Desk Organizer</strong>. Current On-Hand hits 12 months of supply (1,500 units) against a declining demand curve.
                     </p>
-                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div style={{ background: 'var(--bg-hover)', padding: '0.75rem', borderRadius: '0px', fontSize: '0.85rem', fontWeight: 600 }}>
                        💰 <span style={{ color: 'var(--text-main)' }}>Financial Recommendation: </span>
                        <span style={{ color: 'var(--text-main)' }}>Activate 15% promotional liquidation markdown to recover capital and eliminate carrying overhead.</span>
                     </div>
@@ -363,7 +363,7 @@ export default function GlobalAnalyticsModule() {
             ═══════════════════════════════════════════════════════════════════ */}
         {activeTab === 'prescriptive' && (
           <div>
-            <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '8px', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <div style={{ background: 'var(--accent-primary-light)', border: '1px solid var(--accent-primary)', borderRadius: '0px', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               <BrainCircuit size={20} color="var(--accent-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
                 <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--accent-primary)', marginBottom: '4px' }}>
@@ -377,13 +377,13 @@ export default function GlobalAnalyticsModule() {
 
             <div className="grid grid-cols-1 gap-4">
               {[
-                { action: 'Switch SKU_ELE_TV_85 to Croston model', confidence: 92, impact: 'Improve MAPE by 15%', category: 'Forecasting', color: '#7c3aed', details: 'High CV (0.68) indicates intermittent demand pattern better suited for Croston/SBA' },
-                { action: 'Reduce safety stock for FUR_CHAIR_ERG by 12%', confidence: 88, impact: 'Free $4.2K working capital', category: 'Inventory', color: '#16a34a', details: 'Demand volatility decreased from CV 0.45 → 0.15 over last 3 months' },
-                { action: 'Enable autonomous planning for 42 low-MAPE SKUs', confidence: 85, impact: 'Save 8 hours/week planner time', category: 'Automation', color: '#2563eb', details: 'SKUs with MAPE <4% can run on autopilot with monthly review' },
-                { action: 'Escalate Apex Electronics lead time variance', confidence: 81, impact: 'Mitigate $180K revenue risk', category: 'Supply Chain', color: '#dc2626', details: 'LT variance breached 3-sigma (45±14 days) — Q4 monitor components at severe stockout risk' },
-                { action: 'Activate promotional liquidation for ACC_ORGANIZER', confidence: 78, impact: 'Recover $12K tied capital', category: 'Financial', color: '#d97706', details: 'Excess inventory (12 months DoS) on declining demand curve — 15% markdown recommended' },
+                { action: 'Switch SKU_ELE_TV_85 to Croston model', confidence: 92, impact: 'Improve MAPE by 15%', category: 'Forecasting', color: 'var(--accent-primary)', details: 'High CV (0.68) indicates intermittent demand pattern better suited for Croston/SBA' },
+                { action: 'Reduce safety stock for FUR_CHAIR_ERG by 12%', confidence: 88, impact: 'Free $4.2K working capital', category: 'Inventory', color: 'var(--status-good)', details: 'Demand volatility decreased from CV 0.45 → 0.15 over last 3 months' },
+                { action: 'Enable autonomous planning for 42 low-MAPE SKUs', confidence: 85, impact: 'Save 8 hours/week planner time', category: 'Automation', color: 'var(--text-main)', details: 'SKUs with MAPE <4% can run on autopilot with monthly review' },
+                { action: 'Escalate Apex Electronics lead time variance', confidence: 81, impact: 'Mitigate $180K revenue risk', category: 'Supply Chain', color: 'var(--status-error)', details: 'LT variance breached 3-sigma (45±14 days) — Q4 monitor components at severe stockout risk' },
+                { action: 'Activate promotional liquidation for ACC_ORGANIZER', confidence: 78, impact: 'Recover $12K tied capital', category: 'Financial', color: 'var(--status-warn)', details: 'Excess inventory (12 months DoS) on declining demand curve — 15% markdown recommended' },
               ].map((rec, i) => (
-                <div key={i} style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--border-color)', borderRadius: '8px', padding: '1rem 1.25rem', borderLeft: `4px solid ${rec.color}` }}>
+                <div key={i} style={{ background: 'var(--bg-panel)', border: '0.5px solid var(--border-color)', borderRadius: '0px', padding: '1rem 1.25rem', borderLeft: `4px solid ${rec.color}` }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
@@ -402,7 +402,7 @@ export default function GlobalAnalyticsModule() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 500, color: rec.color, marginBottom: '2px' }}>
+                      <div className="mono" style={{ fontSize: '1.5rem', fontWeight: 500, color: rec.color, marginBottom: '2px' }}>
                         {rec.confidence}%
                       </div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -499,13 +499,13 @@ export default function GlobalAnalyticsModule() {
                     {skuDatabase.slice(0, 6).map((sku, i) => (
                       <tr key={sku.id}>
                         <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.85rem' }}>{sku.id}</td>
-                        <td style={{ textAlign: 'right', color: '#16a34a', fontWeight: 600 }}>{sku.sysMape.toFixed(1)}%</td>
+                        <td className="mono" style={{ textAlign: 'right', color: 'var(--status-good)', fontWeight: 600 }}>{sku.sysMape.toFixed(1)}%</td>
                         <td><span className="badge badge-gray">XGBoost</span></td>
                         <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>2 days ago</td>
-                        <td style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>In 28 days</td>
-                        <td style={{ textAlign: 'right' }}>{(sku.overrideRate * 100).toFixed(1)}%</td>
+                        <td className="mono" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 500 }}>In 28 days</td>
+                        <td className="mono" style={{ textAlign: 'right' }}>{(sku.overrideRate * 100).toFixed(1)}%</td>
                         <td>
-                          <span className="badge" style={{ background: '#eaf3de', color: '#16a34a' }}>
+                          <span className="badge" style={{ background: 'var(--status-good-bg)', color: 'var(--status-good)' }}>
                             <CheckCircle2 size={10} style={{ marginRight: '3px', verticalAlign: '-1px' }} />
                             Active
                           </span>

@@ -403,9 +403,9 @@ function CashFlowTab({ selectedDataset, currencyCode }: { selectedDataset: strin
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
             <Legend />
-            <Bar dataKey="net_cash_flow" name="Net Cash Flow" radius={[3,3,0,0]}>
+            <Bar dataKey="net_cash_flow" name="Net Cash Flow" radius={0}>
               {data.flows.map((f: any, i: number) => <Cell key={i} fill={f.net_cash_flow >= 0 ? 'var(--status-good)' : 'var(--status-error)'} />)}
             </Bar>
             <Line type="monotone" dataKey="closing_cash" stroke="var(--accent-primary)" strokeWidth={2} name="Closing Cash" dot={false} />
@@ -480,10 +480,10 @@ function BudgetTab({ selectedDataset, currencyCode }: { selectedDataset: string;
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
             <Legend />
-            <Bar dataKey="budget_revenue" fill="var(--accent-primary)" radius={[3,3,0,0]} name="Budget Revenue" />
-            <Bar dataKey="operating_profit" fill="#7c3aed" radius={[3,3,0,0]} name="Operating Profit" />
+            <Bar dataKey="budget_revenue" fill="var(--accent-primary)" radius={0} name="Budget Revenue" />
+            <Bar dataKey="operating_profit" fill="var(--chart-actual)" radius={0} name="Operating Profit" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -529,7 +529,7 @@ function ProfitabilityTab({ selectedDataset, currencyCode }: { selectedDataset: 
   if (loading) return <KPISkeletonRow />;
   if (!data?.lines) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load profitability.</div>;
 
-  const tierColors: Record<string, string> = { Star: '#16a34a', Core: '#2563eb', Drag: '#dc2626' };
+  const tierColors: Record<string, string> = { Star: 'var(--status-good)', Core: 'var(--text-muted)', Drag: 'var(--status-error)' };
 
   return (
     <div>
@@ -551,11 +551,11 @@ function ProfitabilityTab({ selectedDataset, currencyCode }: { selectedDataset: 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
+            <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => formatCurrency(v, currencyCode, true)} />
             <Legend />
-            <Bar dataKey="gross_margin" fill="var(--accent-primary)" radius={[3,3,0,0]} name="Gross Margin" />
-            <Bar dataKey="contribution_margin" fill="#2563eb" radius={[3,3,0,0]} name="Contribution Margin" />
-            <Bar dataKey="operating_profit" fill="#7c3aed" radius={[3,3,0,0]} name="Operating Profit" />
+            <Bar dataKey="gross_margin" fill="var(--accent-primary)" radius={0} name="Gross Margin" />
+            <Bar dataKey="contribution_margin" fill="var(--chart-actual)" radius={0} name="Contribution Margin" />
+            <Bar dataKey="operating_profit" fill="var(--chart-forecast)" radius={0} name="Operating Profit" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -604,8 +604,8 @@ function WorkingCapitalTab({ selectedDataset, currencyCode }: { selectedDataset:
 
   const cccData = [
     { name: 'DIO', label: 'Days Inventory', value: data.dio_days, color: 'var(--accent-primary)' },
-    { name: 'DSO', label: 'Days Receivable', value: data.dso_days, color: '#2563eb' },
-    { name: 'DPO', label: 'Days Payable', value: -data.dpo_days, color: '#dc2626' },
+    { name: 'DSO', label: 'Days Receivable', value: data.dso_days, color: 'var(--chart-actual)' },
+    { name: 'DPO', label: 'Days Payable', value: -data.dpo_days, color: 'var(--status-error)' },
   ];
 
   return (
@@ -629,7 +629,7 @@ function WorkingCapitalTab({ selectedDataset, currencyCode }: { selectedDataset:
 
       <div className="grid grid-cols-4 mb-6">
         <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Inventory Value</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{formatCurrency(data.inventory_value, currencyCode, true)}</span></div>
-        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Accounts Receivable</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: '#2563eb' }}>{formatCurrency(data.accounts_receivable, currencyCode, true)}</span></div>
+        <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Accounts Receivable</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--text-main)' }}>{formatCurrency(data.accounts_receivable, currencyCode, true)}</span></div>
         <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Net Working Capital</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{formatCurrency(data.net_working_capital, currencyCode, true)}</span><span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>{data.wc_as_pct_revenue}% of revenue</span></div>
         <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Cash Conversion Cycle</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.cash_conversion_cycle > 60 ? 'var(--status-warn)' : 'var(--status-good)' }}>{data.cash_conversion_cycle} days</span></div>
       </div>
@@ -642,8 +642,8 @@ function WorkingCapitalTab({ selectedDataset, currencyCode }: { selectedDataset:
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
               <XAxis type="number" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="label" stroke="var(--text-muted)" tick={{ fontSize: 11 }} width={100} />
-              <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => `${Math.abs(v)} days`} />
-              <Bar dataKey="value" radius={[0,3,3,0]}>
+              <RechartsTooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => `${Math.abs(v)} days`} />
+              <Bar dataKey="value" radius={0}>
                 {cccData.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
             </BarChart>

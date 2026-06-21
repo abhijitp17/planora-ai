@@ -121,10 +121,10 @@ function NetworkTopologyFlow({ nodes, edges }: { nodes: NetworkNode[], edges: Ne
         },
         style: {
           background: '#ffffff',
-          border: `3px solid ${n.status === 'critical' ? '#dc2626' : n.status === 'warning' ? '#d97706' : '#16a34a'}`,
-          borderRadius: '10px',
+          border: `3px solid ${n.status === 'critical' ? 'var(--status-error)' : n.status === 'warning' ? 'var(--status-warn)' : 'var(--status-good)'}`,
+          borderRadius: '0px',
           padding: 0,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          boxShadow: 'none',
         },
         sourcePosition: Position.Bottom,
         targetPosition: Position.Top,
@@ -137,11 +137,11 @@ function NetworkTopologyFlow({ nodes, edges }: { nodes: NetworkNode[], edges: Ne
       target: e.target,
       label: `${e.leadTimeDays} days`,
       animated: e.status === 'delayed',
-      style: { stroke: e.status === 'delayed' ? '#dc2626' : e.status === 'blocked' ? '#a1a1aa' : '#64748b', strokeWidth: 3 },
-      labelStyle: { fontSize: 12, fontWeight: 600, fill: '#1f2937', background: '#fff', padding: '2px 6px', borderRadius: '4px' },
+      style: { stroke: e.status === 'delayed' ? 'var(--status-error)' : e.status === 'blocked' ? 'var(--border-color)' : 'var(--text-muted)', strokeWidth: 2 },
+      labelStyle: { fontSize: 11, fontWeight: 600, fill: 'var(--text-main)', background: 'var(--bg-main)', padding: '2px 6px', borderRadius: '0px' },
       labelBgPadding: [4, 4],
-      labelBgBorderRadius: 4,
-      labelBgStyle: { fill: '#fff' },
+      labelBgBorderRadius: 0,
+      labelBgStyle: { fill: 'var(--bg-main)' },
     }));
 
     setRfNodes(flowNodes);
@@ -153,11 +153,11 @@ function NetworkTopologyFlow({ nodes, edges }: { nodes: NetworkNode[], edges: Ne
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Supply Network Digital Twin</h3>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span className="badge" style={{ background: '#eaf3de', color: '#16a34a' }}><Network size={10} style={{ marginRight: '3px', verticalAlign: '-1px' }} /> {nodes.length} nodes</span>
-          <span className="badge" style={{ background: '#eff6ff', color: '#2563eb' }}>{edges.length} connections</span>
+          <span className="badge" style={{ background: 'var(--status-good-bg)', color: 'var(--status-good)' }}><Network size={10} style={{ marginRight: '3px', verticalAlign: '-1px' }} /> <span className="mono">{nodes.length}</span> nodes</span>
+          <span className="badge" style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}><span className="mono">{edges.length}</span> connections</span>
         </div>
       </div>
-      <div style={{ height: '560px', background: '#fafafa', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+      <div style={{ height: '560px', background: 'var(--bg-panel)', borderRadius: '0px', border: '1px solid var(--border-color)' }}>
         <ReactFlow nodes={rfNodes} edges={rfEdges} fitView>
           <Background color="#e5e7eb" gap={16} />
           <Controls />
@@ -208,7 +208,7 @@ function ScenarioSandbox({ scenarios, setScenarios, activeScenarioId, setActiveS
       </div>
       
       {scenarios.length === 0 ? (
-        <div style={{ background: 'var(--color-background-primary)', border: '1px dashed var(--border-color)', borderRadius: '8px', padding: '2rem', textAlign: 'center' }}>
+        <div style={{ background: 'var(--bg-panel)', border: '1px dashed var(--border-color)', borderRadius: '0px', padding: '2rem', textAlign: 'center' }}>
           <GitMerge size={40} style={{ margin: '0 auto 1.5rem', opacity: 0.5, color: 'var(--text-muted)' }} />
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Start with a scenario template:</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', maxWidth: '800px', margin: '0 auto' }}>
@@ -229,7 +229,7 @@ function ScenarioSandbox({ scenarios, setScenarios, activeScenarioId, setActiveS
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {scenarios.map((s: Scenario) => (
-            <div key={s.id} style={{ padding: '1.25rem', background: 'var(--color-background-primary)', border: s.isActive ? '2px solid var(--accent-primary)' : '0.5px solid var(--border-color)', borderRadius: '8px' }}>
+            <div key={s.id} style={{ padding: '1.25rem', background: 'var(--bg-panel)', border: s.isActive ? '2px solid var(--accent-primary)' : '0.5px solid var(--border-color)', borderRadius: '0px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, marginBottom: '4px' }}>{s.name}</div>
@@ -287,14 +287,14 @@ function ImpactAnalysis({ simulationResults, isSimulating, activeScenario }: any
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
         {[
-          { label: 'Inventory Cost Delta', value: `$${(delta.inventory_cost/1000000).toFixed(2)}M`, base: `$${(baseline.inventory_cost/1000000).toFixed(1)}M`, scen: `$${(scenario.inventory_cost/1000000).toFixed(1)}M`, color: delta.inventory_cost > 0 ? '#dc2626' : '#16a34a' },
-          { label: 'Service Level Impact', value: `${(delta.service_level * 100).toFixed(1)}%`, base: `${(baseline.service_level * 100).toFixed(1)}%`, scen: `${(scenario.service_level * 100).toFixed(1)}%`, color: delta.service_level < 0 ? '#dc2626' : '#16a34a' },
-          { label: 'Projected Stockouts', value: `${delta.stockouts > 0 ? '+' : ''}${delta.stockouts.toLocaleString()}`, base: '0', scen: scenario.stockouts.toLocaleString(), color: '#dc2626' },
+          { label: 'Inventory Cost Delta', value: `$${(delta.inventory_cost/1000000).toFixed(2)}M`, base: `$${(baseline.inventory_cost/1000000).toFixed(1)}M`, scen: `$${(scenario.inventory_cost/1000000).toFixed(1)}M`, color: delta.inventory_cost > 0 ? 'var(--status-error)' : 'var(--status-good)' },
+          { label: 'Service Level Impact', value: `${(delta.service_level * 100).toFixed(1)}%`, base: `${(baseline.service_level * 100).toFixed(1)}%`, scen: `${(scenario.service_level * 100).toFixed(1)}%`, color: delta.service_level < 0 ? 'var(--status-error)' : 'var(--status-good)' },
+          { label: 'Projected Stockouts', value: `${delta.stockouts > 0 ? '+' : ''}${delta.stockouts.toLocaleString()}`, base: '0', scen: scenario.stockouts.toLocaleString(), color: 'var(--status-error)' },
         ].map(metric => (
-          <div key={metric.label} className="kpi-infolet" style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--border-color)', padding: '1.25rem' }}>
+          <div key={metric.label} className="kpi-infolet" style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '0px' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.75rem' }}>{metric.label}</span>
-            <span style={{ fontSize: '2rem', fontWeight: 500, color: metric.color, display: 'block', marginBottom: '0.5rem' }}>{metric.value}</span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Base: {metric.base} → {metric.scen}</span>
+            <span className="mono" style={{ fontSize: '2rem', fontWeight: 500, color: metric.color, display: 'block', marginBottom: '0.5rem' }}>{metric.value}</span>
+            <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Base: {metric.base} → {metric.scen}</span>
           </div>
         ))}
       </div>
@@ -310,10 +310,10 @@ function ImpactAnalysis({ simulationResults, isSimulating, activeScenario }: any
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
               <XAxis dataKey="metric" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+              <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
               <Legend />
-              <Bar dataKey="Baseline" fill="#64748b" radius={[4,4,0,0]} />
-              <Bar dataKey="Scenario" fill="var(--accent-primary)" radius={[4,4,0,0]} />
+              <Bar dataKey="Baseline" fill="var(--chart-forecast)" radius={0} />
+              <Bar dataKey="Scenario" fill="var(--accent-primary)" radius={0} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -360,7 +360,7 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '1rem' }}>
           {shockTypes.map(st => (
             <button key={st.id} disabled={!canEdit} onClick={() => setShockType(st.id)} style={{
-              padding: '12px', borderRadius: '8px', textAlign: 'left', cursor: canEdit ? 'pointer' : 'not-allowed',
+              padding: '12px', borderRadius: '0px', textAlign: 'left', cursor: canEdit ? 'pointer' : 'not-allowed',
               border: shockType === st.id ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
               background: shockType === st.id ? 'var(--accent-primary-light)' : 'var(--bg-panel)',
             }}>
@@ -384,10 +384,10 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
       {loading || !data?.summary ? <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Running simulation…</div> : (
         <>
           <div className="grid grid-cols-4 mb-6">
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Min Fill Rate</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.summary.min_fill_rate >= 95 ? 'var(--status-good)' : data.summary.min_fill_rate >= 80 ? 'var(--status-warn)' : 'var(--status-error)' }}>{data.summary.min_fill_rate}%</span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Total Stockout</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-error)' }}>{data.summary.total_stockout_units.toLocaleString()}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> units</span></span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Bullwhip Ratio</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: data.summary.bullwhip_ratio > 2 ? 'var(--status-warn)' : 'var(--text-main)' }}>{data.summary.bullwhip_ratio}×</span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Recovery Week</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.summary.recovery_week ? `W${data.summary.recovery_week}` : 'N/A'}</span></div>
+            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Min Fill Rate</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: data.summary.min_fill_rate >= 95 ? 'var(--status-good)' : data.summary.min_fill_rate >= 80 ? 'var(--status-warn)' : 'var(--status-error)' }}>{data.summary.min_fill_rate}%</span></div>
+            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Total Stockout</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-error)' }}>{data.summary.total_stockout_units.toLocaleString()}<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> units</span></span></div>
+            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Bullwhip Ratio</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: data.summary.bullwhip_ratio > 2 ? 'var(--status-warn)' : 'var(--text-main)' }}>{data.summary.bullwhip_ratio}×</span></div>
+            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Recovery Week</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.summary.recovery_week ? `W${data.summary.recovery_week}` : 'N/A'}</span></div>
           </div>
 
           <div className="workspace-panel shadow-sm mb-6">
@@ -397,11 +397,11 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="week" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(w) => `W${w}`} />
                 <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
                 <Legend />
                 <Area type="monotone" dataKey="inventory" fill="var(--accent-primary)" fillOpacity={0.12} stroke="var(--accent-primary)" strokeWidth={2} name="Inventory" />
                 <Line type="monotone" dataKey="demand" stroke="var(--status-error)" strokeWidth={2} name="Demand" dot={false} />
-                <Line type="monotone" dataKey="order_placed" stroke="#7c3aed" strokeWidth={2} strokeDasharray="5 5" name="Orders Placed" dot={false} />
+                <Line type="monotone" dataKey="order_placed" stroke="var(--chart-forecast)" strokeWidth={2} strokeDasharray="5 5" name="Orders Placed" dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -413,9 +413,9 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="week" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(w) => `W${w}`} />
                 <YAxis domain={[0, 100]} stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} formatter={(v: any) => `${v}%`} />
+                <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} formatter={(v: any) => `${v}%`} />
                 <ReferenceLine y={95} stroke="var(--status-good)" strokeDasharray="3 3" />
-                <Bar dataKey="fill_rate" radius={[3,3,0,0]} name="Fill Rate %">
+                <Bar dataKey="fill_rate" radius={0} name="Fill Rate %">
                   {data.weeks.map((w: any, i: number) => <Cell key={i} fill={w.fill_rate >= 95 ? 'var(--status-good)' : w.fill_rate >= 80 ? 'var(--status-warn)' : 'var(--status-error)'} />)}
                 </Bar>
               </BarChart>
@@ -481,10 +481,10 @@ function MonteCarloView({ selectedDataset, canEdit }: { selectedDataset: string;
       {loading || !data?.results ? <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Running {iterations.toLocaleString()} iterations…</div> : (
         <>
           <div className="grid grid-cols-4 mb-6">
-            <div className="kpi-infolet" style={{ border: `1px solid ${riskColors[data.risk_rating]}` }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Stockout Probability</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: riskColors[data.risk_rating] }}>{data.results.stockout_probability}%</span><span style={{ fontSize: '0.68rem', color: riskColors[data.risk_rating], marginTop: '0.4rem', fontWeight: 600 }}>{data.risk_rating} risk</span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Expected Service</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.results.expected_service_level}%</span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Service P5 (worst case)</span><span style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-warn)' }}>{data.results.service_p5}%</span></div>
-            <div className="kpi-infolet"><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Safety Stock</span><span style={{ fontSize: '1.4rem', fontWeight: 300 }}>{data.safety_stock.toLocaleString()}</span></div>
+            <div className="kpi-infolet" style={{ border: `1px solid ${riskColors[data.risk_rating]}`, borderRadius: '0px' }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Stockout Probability</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: riskColors[data.risk_rating] }}>{data.results.stockout_probability}%</span><span style={{ fontSize: '0.68rem', color: riskColors[data.risk_rating], marginTop: '0.4rem', fontWeight: 600 }}>{data.risk_rating} risk</span></div>
+            <div className="kpi-infolet" style={{ borderRadius: '0px' }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Expected Service</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--accent-primary)' }}>{data.results.expected_service_level}%</span></div>
+            <div className="kpi-infolet" style={{ borderRadius: '0px' }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Service P5 (worst case)</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300, color: 'var(--status-warn)' }}>{data.results.service_p5}%</span></div>
+            <div className="kpi-infolet" style={{ borderRadius: '0px' }}><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>Safety Stock</span><span className="mono" style={{ fontSize: '1.4rem', fontWeight: 300 }}>{data.safety_stock.toLocaleString()}</span></div>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
@@ -495,8 +495,8 @@ function MonteCarloView({ selectedDataset, canEdit }: { selectedDataset: string;
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="bucket" stroke="var(--text-muted)" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" height={50} />
                   <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
-                  <Bar dataKey="count" fill="var(--accent-primary)" radius={[3,3,0,0]} name="Iterations" />
+                  <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '0px' }} />
+                  <Bar dataKey="count" fill="var(--accent-primary)" radius={0} name="Iterations" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

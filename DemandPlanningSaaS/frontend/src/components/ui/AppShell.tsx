@@ -19,7 +19,7 @@ import AdminGovernancePanel from '@/components/ui/AdminGovernancePanel';
 import { DashboardSkeleton, KPISkeletonRow, SidebarSkeleton } from '@/components/ui/Skeletons';
 import CopilotPanel from '@/components/ui/CopilotPanel';
 import LoginPage from '@/components/ui/LoginPage';
-import { uploadDataset, generateForecast, checkHealth, buildChartData } from '@/lib/api';
+import { uploadDataset, generateForecast, checkHealth, buildChartData, listDatasets } from '@/lib/api';
 import { type ModuleId, CURRENCIES } from '@/types';
 
 // ─── Lazy-loaded modules ──────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ const ExecutionModule   = lazy(() => import('@/modules/execution'));
 
 // ─── Module registry ──────────────────────────────────────────────────────────
 const MODULE_DEFS = [
-  { id: 'demand' as ModuleId,      label: 'Demand Planning',        icon: <TrendingUp size={18}/>,  minRole: 'viewer',  tabs: [{ id:'overview', label:'Overview' }, { id:'editor', label:'Forecast Editor' }, { id:'analysis', label:'Performance' }, { id:'npi', label:'NPI' }, { id:'sensing', label:'Demand Sensing' }, { id:'causal', label:'Causal Forecasting' }, { id:'events', label:'Event Calendar' }, { id:'promo', label:'Promotion Planning' }, { id:'sensitivity', label:'Sensitivity' }, { id:'versions', label:'Versions' }] },
+  { id: 'demand' as ModuleId,      label: 'Demand Planning',        icon: <TrendingUp size={18}/>,  minRole: 'viewer',  tabs: [{ id:'overview', label:'Overview' }, { id:'data', label:'Data Explorer' }, { id:'editor', label:'Forecast Editor' }, { id:'analysis', label:'Performance' }, { id:'npi', label:'NPI' }, { id:'sensing', label:'Demand Sensing' }, { id:'causal', label:'Causal Forecasting' }, { id:'events', label:'Event Calendar' }, { id:'promo', label:'Promotion Planning' }, { id:'sensitivity', label:'Sensitivity' }, { id:'versions', label:'Versions' }] },
   { id: 'inventory' as ModuleId,   label: 'Inventory Optimization', icon: <Package size={18}/>,     minRole: 'viewer',  tabs: [{ id:'overview', label:'Network Dashboard' }, { id:'safety_stock', label:'Safety Stock' }, { id:'replenishment', label:'Replenishment' }, { id:'abc_xyz', label:'ABC/XYZ Segmentation' }, { id:'multi_echelon', label:'Multi-Echelon' }, { id:'balancing', label:'Network Balancing' }, { id:'health', label:'Health Score' }] },
   { id: 'diagnostics' as ModuleId, label: 'SC Diagnostics',         icon: <Stethoscope size={18}/>, minRole: 'planner', tabs: [{ id:'overview', label:'HOTW Tracker' }, { id:'entropy', label:'Entropy Scanner' }] },
   { id: 'sop' as ModuleId,         label: 'S&OP / IBP',             icon: <Briefcase size={18}/>,   minRole: 'manager', tabs: [{ id:'cycle', label:'IBP Cycle' }, { id:'overview', label:'Executive Review' }, { id:'balancing', label:'RCCP Balancing' }, { id:'finance', label:'Financial Reconciliation' }, { id:'scenarios', label:'Scenario S&OP' }, { id:'strategic', label:'Strategic Horizon' }] },
@@ -53,14 +53,130 @@ const MODULE_DEFS = [
 
 const ROLE_RANK: Record<string, number> = { viewer: 0, planner: 1, manager: 2, admin: 3 };
 
+const NAVIGATION_CLUSTERS = [
+  {
+    name: 'Plan',
+    modules: ['demand', 'retail', 'pricing']
+  },
+  {
+    name: 'Optimize',
+    modules: ['inventory', 'sop', 'finance']
+  },
+  {
+    name: 'Execute',
+    modules: ['execution']
+  },
+  {
+    name: 'Govern',
+    modules: ['governance']
+  },
+  {
+    name: 'Insights',
+    modules: ['analytics', 'diagnostics', 'bi', 'twin']
+  }
+];
+
+const getTickerData = (moduleId: string, state: any) => {
+  const { skuDatabase, horizon, horizonUnit } = state;
+  switch (moduleId) {
+    case 'demand':
+      return [
+        { label: 'SRV_LVL', value: '98.2%' },
+        { label: 'EXC_ITEMS', value: '12' },
+        { label: 'SYS_MAPE', value: '4.2%' },
+        { label: 'SKU_COUNT', value: String(skuDatabase?.length || 0) },
+        { label: 'HORIZON', value: `${horizon} ${horizonUnit?.toUpperCase()}S` }
+      ];
+    case 'inventory':
+      return [
+        { label: 'NET_SRV', value: '95.4%' },
+        { label: 'SS_VAL', value: '$4.2M' },
+        { label: 'TRAP_CAP', value: '$842K' },
+        { label: 'STOCKOUT_RISK', value: 'LOW' }
+      ];
+    case 'diagnostics':
+      return [
+        { label: 'AVG_FVA', value: '+4.2%' },
+        { label: 'OUTLIERS', value: '8' },
+        { label: 'ENTROPY', value: 'STABLE' },
+        { label: 'VOLATILITY', value: '18.2%' }
+      ];
+    case 'sop':
+      return [
+        { label: 'AOP_GAP', value: '-$1.2M' },
+        { label: 'CONSTRAINED_FCST', value: '$18.4M' },
+        { label: 'CAP_UTIL', value: '88.5%' },
+        { label: 'CYCLE_PHASE', value: 'SUPPLY REVIEW' }
+      ];
+    case 'finance':
+      return [
+        { label: 'T12M_REV', value: '$24.8M' },
+        { label: 'GROSS_MARGIN', value: '42.5%' },
+        { label: 'CASH_RUNWAY', value: '18 MO' },
+        { label: 'CCC', value: '42 DAYS' }
+      ];
+    case 'analytics':
+      return [
+        { label: 'FILL_RATE', value: '94.2%' },
+        { label: 'EXC_STOCK', value: '$1.8M' },
+        { label: 'SUPPLIER_OTIF', value: '91.8%' },
+        { label: 'ANOMALIES', value: '4' }
+      ];
+    case 'bi':
+      return [
+        { label: 'DATA_SOURCES', value: '6' },
+        { label: 'DAILY_QUERIES', value: '142' },
+        { label: 'SEMANTIC_ENT', value: '48' },
+        { label: 'LAST_SYNC', value: '12M AGO' }
+      ];
+    case 'twin':
+      return [
+        { label: 'NETWORK_NODES', value: '34' },
+        { label: 'ACTIVE_SANDBOX', value: 'BASE CASE' },
+        { label: 'SHOCK_VOL', value: '18.5%' },
+        { label: 'MC_RUNS', value: '1,000' }
+      ];
+    case 'retail':
+      return [
+        { label: 'CLUSTERS', value: '4' },
+        { label: 'ASSORTMENT_SKUS', value: '342' },
+        { label: 'SHELF_UTIL', value: '91.2%' },
+        { label: 'CANNIBAL_RISK', value: 'LOW' }
+      ];
+    case 'pricing':
+      return [
+        { label: 'ELASTICITY', value: '-1.8' },
+        { label: 'PROMO_ROI', value: '2.4X' },
+        { label: 'MD_ALERTS', value: '6' },
+        { label: 'PRICE_IMPACT', value: '+12.4%' }
+      ];
+    case 'execution':
+      return [
+        { label: 'CONNECTOR_STATUS', value: 'OK' },
+        { label: 'ACTIVE_EVENTS', value: '1,242' },
+        { label: 'SUCCESS_RATE', value: '99.8%' },
+        { label: 'AVG_LATENCY', value: '48MS' }
+      ];
+    case 'governance':
+      return [
+        { label: 'PENDING_APP', value: '3' },
+        { label: 'SIGNED_TX', value: '142' },
+        { label: 'ACTIVE_ROLES', value: '4' },
+        { label: 'SECURE_STATUS', value: 'SECURE' }
+      ];
+    default:
+      return [];
+  }
+};
+
 // ─── PlanoraLogo ──────────────────────────────────────────────────────────────
-function PlanoraLogo({ collapsed }: { collapsed?: boolean }) {
+function PlanoraLogo({ collapsed, color }: { collapsed?: boolean; color?: string }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:'8px', fontFamily:'var(--font-sans)', fontSize:'1.2rem', fontWeight:700, color:'var(--text-main)', letterSpacing:'-0.02em', overflow:'hidden' }}>
+    <div style={{ display:'flex', alignItems:'center', gap:'8px', fontFamily:'var(--font-sans)', fontSize:'1.2rem', fontWeight:700, color: color ?? 'var(--text-main)', letterSpacing:'-0.02em', overflow:'hidden' }}>
       <div style={{ display:'flex', alignItems:'flex-end', gap:'2px', flexShrink:0 }}>
-        <span style={{ display:'block', width:'6px', height:'12px', borderRadius:'3px 3px 0 0', background:'var(--accent-primary)' }} />
-        <span style={{ display:'block', width:'6px', height:'20px', borderRadius:'3px 3px 0 0', background:'var(--accent-primary)' }} />
-        <span style={{ display:'block', width:'6px', height:'8px', borderRadius:'3px 3px 0 0', background:'#f97316', opacity:0.9 }} />
+        <span style={{ display:'block', width:'6px', height:'12px', borderRadius:'0px', background:'var(--accent-primary)' }} />
+        <span style={{ display:'block', width:'6px', height:'20px', borderRadius:'0px', background:'var(--accent-primary)' }} />
+        <span style={{ display:'block', width:'6px', height:'8px', borderRadius:'0px', background:'#f97316', opacity:0.9 }} />
       </div>
       {!collapsed && <span>Planora <span style={{ color:'var(--accent-primary)' }}>AI</span></span>}
     </div>
@@ -174,6 +290,19 @@ export default function AppShell() {
       .catch(() => dispatch({ type: 'SET_API_STATUS', payload: 'offline' }));
   }, [isAuthenticated]);
 
+  // ── Load available datasets ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    listDatasets()
+      .then(data => {
+        dispatch({ type: 'SET_DATASETS', payload: data.datasets });
+        if (data.datasets.length) {
+          dispatch({ type: 'SET_SELECTED_DATASET', payload: data.datasets[0] });
+        }
+      })
+      .catch(err => console.error('Failed to list datasets:', err));
+  }, [isAuthenticated]);
+
   // ── File upload ─────────────────────────────────────────────────────────────
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -261,7 +390,7 @@ export default function AppShell() {
       <header className="app-header">
         <div className="flex items-center gap-4">
           <div onClick={() => {}} style={{ cursor:'pointer', display:'flex' }}>
-            <PlanoraLogo />
+            <PlanoraLogo color="#F7F6F2" />
           </div>
           {/* API status */}
           <div className="api-status">
@@ -405,26 +534,37 @@ export default function AppShell() {
         {/* ── Persistent left rail nav ─────────────────────────────────────── */}
         <nav className={`left-rail${isSidebarCollapsed?' collapsed':''}`} aria-label="Module navigation">
           <div className="left-rail-nav">
-            {MODULE_DEFS.map(m => {
-              const allowed = !user || ROLE_RANK[user.role] >= ROLE_RANK[m.minRole];
+            {NAVIGATION_CLUSTERS.map(cluster => {
+              const clusterModules = cluster.modules.map(id => MODULE_DEFS.find(m => m.id === id)).filter(Boolean);
               return (
-                <button
-                  key={m.id}
-                  className={`left-rail-item${activeModule===m.id?' active':''}${!allowed?' disabled':''}`}
-                  onClick={() => allowed && dispatch({ type:'SET_MODULE', payload:m.id })}
-                  title={isSidebarCollapsed ? m.label : undefined}
-                  aria-current={activeModule===m.id?'page':undefined}
-                  aria-disabled={!allowed}
-                  style={{ opacity:allowed?1:0.4, cursor:allowed?'pointer':'not-allowed' }}
-                >
-                  <span className="left-rail-icon">{m.icon}</span>
+                <div key={cluster.name} className="nav-cluster">
                   {!isSidebarCollapsed && (
-                    <span className="left-rail-label">
-                      {m.label}
-                      {!allowed && <span style={{ fontSize:'0.65rem', marginLeft:'6px', color:'var(--text-muted)' }}>({m.minRole}+)</span>}
-                    </span>
+                    <div className="nav-cluster-title">{cluster.name}</div>
                   )}
-                </button>
+                  {clusterModules.map(m => {
+                    if (!m) return null;
+                    const allowed = !user || ROLE_RANK[user.role] >= ROLE_RANK[m.minRole];
+                    return (
+                      <button
+                        key={m.id}
+                        className={`left-rail-item${activeModule===m.id?' active':''}${!allowed?' disabled':''}`}
+                        onClick={() => allowed && dispatch({ type:'SET_MODULE', payload:m.id })}
+                        title={isSidebarCollapsed ? m.label : undefined}
+                        aria-current={activeModule===m.id?'page':undefined}
+                        aria-disabled={!allowed}
+                        style={{ opacity:allowed?1:0.4, cursor:allowed?'pointer':'not-allowed' }}
+                      >
+                        <span className="left-rail-icon">{m.icon}</span>
+                        {!isSidebarCollapsed && (
+                          <span className="left-rail-label">
+                            {m.label}
+                            {!allowed && <span style={{ fontSize:'0.65rem', marginLeft:'6px', color:'var(--text-muted)' }}>({m.minRole}+)</span>}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
@@ -548,6 +688,16 @@ export default function AppShell() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Signature Ticker Strip */}
+            <div className="ticker-strip">
+              {getTickerData(activeModule, state).map((item, i) => (
+                <div key={i} className="ticker-item">
+                  <span className="ticker-label">{item.label}:</span>
+                  <span className="ticker-value">{item.value}</span>
+                </div>
+              ))}
             </div>
 
             {/* Data Explorer tab (cross-module, lives in AppShell) */}

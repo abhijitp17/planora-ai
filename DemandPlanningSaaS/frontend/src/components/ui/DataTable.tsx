@@ -89,11 +89,18 @@ export function DataTable<T extends object>({
     cell: ({ getValue, row }) => {
       const value = getValue();
       if (col.render) return col.render(value, row.original);
+      const isNumeric = typeof value === 'number';
+      const isCodeOrId = col.key.toLowerCase().includes('sku') || 
+                         col.key.toLowerCase().includes('id') || 
+                         col.key.toLowerCase().includes('date') || 
+                         col.key.toLowerCase().includes('code');
+      const useMono = isNumeric || isCodeOrId || col.align === 'right';
       return (
         <span style={{
           display: 'block',
           textAlign: col.align ?? 'left',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          fontFamily: useMono ? 'var(--font-mono)' : 'var(--font-sans)',
         }}>
           {value == null ? '—' : String(value)}
         </span>
@@ -166,7 +173,7 @@ export function DataTable<T extends object>({
               placeholder="Search…"
               style={{
                 padding: '6px 28px 6px 28px', border: '1px solid var(--border-color)',
-                borderRadius: '6px', background: 'var(--bg-panel)', color: 'var(--text-main)',
+                borderRadius: '0px', background: 'var(--bg-panel)', color: 'var(--text-main)',
                 fontSize: '0.8rem', width: '180px', outline: 'none',
               }}
             />
@@ -180,20 +187,20 @@ export function DataTable<T extends object>({
           {onExport && (
             <button
               onClick={onExport}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '6px', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 500 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', border: '1px solid var(--border-color)', borderRadius: '0px', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 500 }}
             >
               <Download size={13} />{exportLabel}
             </button>
           )}
           {/* Row count */}
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>
             {serverSide ? `${serverSide.total.toLocaleString()} rows` : `${rows.length.toLocaleString()} rows`}
           </span>
         </div>
       </div>
 
       {/* Table */}
-      <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-panel)', position: 'relative' }}>
+      <div style={{ border: '1px solid var(--border-color)', borderRadius: '0px', overflow: 'hidden', background: 'var(--bg-panel)', position: 'relative' }}>
         {isLoading && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
             <div className="spin" style={{ width: '20px', height: '20px', borderWidth: '2px' }} />
@@ -219,8 +226,8 @@ export function DataTable<T extends object>({
                           padding: '10px 12px',
                           background: 'var(--bg-hover)',
                           borderBottom: '2px solid var(--border-color)',
-                          fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                          color: 'var(--text-main)', letterSpacing: '0.04em',
+                          fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase',
+                          color: 'var(--text-main)', letterSpacing: '0.5px',
                           cursor: canSort ? 'pointer' : 'default',
                           userSelect: 'none', whiteSpace: 'nowrap',
                           textAlign: columns[colIdx]?.align ?? 'left',
@@ -228,6 +235,7 @@ export function DataTable<T extends object>({
                           left: isFirst ? 0 : undefined,
                           zIndex: isFirst ? 3 : undefined,
                           borderRight: isFirst ? '2px solid var(--border-color)' : undefined,
+                          fontFamily: 'var(--font-mono)',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: columns[colIdx]?.align === 'right' ? 'flex-end' : 'flex-start' }}>
@@ -269,6 +277,13 @@ export function DataTable<T extends object>({
                     >
                       {row.getVisibleCells().map((cell, colIdx) => {
                         const isFirst = colIdx === 0 && stickyFirstColumn;
+                        const cellVal = cell.getValue();
+                        const isNumeric = typeof cellVal === 'number';
+                        const isCodeOrId = cell.column.id.toLowerCase().includes('sku') || 
+                                           cell.column.id.toLowerCase().includes('id') || 
+                                           cell.column.id.toLowerCase().includes('date') || 
+                                           cell.column.id.toLowerCase().includes('code');
+                        const useMono = isNumeric || isCodeOrId || columns[colIdx]?.align === 'right';
                         return (
                           <td
                             key={cell.id}
@@ -284,7 +299,8 @@ export function DataTable<T extends object>({
                               zIndex: isFirst ? 2 : undefined,
                               background: isFirst ? 'var(--bg-panel)' : undefined,
                               borderRight: isFirst ? '2px solid var(--border-color)' : undefined,
-                              fontWeight: isFirst ? 600 : undefined,
+                              fontWeight: isFirst ? 500 : undefined,
+                              fontFamily: useMono ? 'var(--font-mono)' : 'var(--font-sans)',
                             }}
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -308,11 +324,11 @@ export function DataTable<T extends object>({
             <select
               value={serverSide.pageSize}
               onChange={e => serverSide.onPageSizeChange(Number(e.target.value))}
-              style={{ padding: '4px 8px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '0.8rem', background: 'var(--bg-panel)', color: 'var(--text-main)' }}
+              style={{ padding: '4px 8px', border: '1px solid var(--border-color)', borderRadius: '0px', fontSize: '0.8rem', background: 'var(--bg-panel)', color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}
             >
               {PAGE_SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               {((serverSide.page - 1) * serverSide.pageSize + 1).toLocaleString()}–
               {Math.min(serverSide.page * serverSide.pageSize, serverSide.total).toLocaleString()} of {serverSide.total.toLocaleString()}
             </span>
@@ -329,7 +345,7 @@ export function DataTable<T extends object>({
                 onClick={btn.action}
                 disabled={btn.disabled}
                 style={{
-                  padding: '5px 8px', border: '1px solid var(--border-color)', borderRadius: '5px',
+                  padding: '5px 8px', border: '1px solid var(--border-color)', borderRadius: '0px',
                   background: 'var(--bg-panel)', cursor: btn.disabled ? 'not-allowed' : 'pointer',
                   color: btn.disabled ? 'var(--text-muted)' : 'var(--text-main)',
                   opacity: btn.disabled ? 0.4 : 1, display: 'flex', alignItems: 'center',
@@ -338,7 +354,7 @@ export function DataTable<T extends object>({
                 {btn.icon}
               </button>
             ))}
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0 4px' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0 4px', fontFamily: 'var(--font-mono)' }}>
               Page {serverSide.page} / {serverSide.pages}
             </span>
           </div>
