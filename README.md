@@ -209,8 +209,8 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | **Forecast Sharing** | **Strong** (Exposed webhook: `webhook: forecast.published`) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
 | **Shipment Visibility** | **Strong** (Exposed webhook: `webhook: shipment.delivered`) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
 | **Supplier Risk Scoring** | **Strong** (Risk levels: High, Medium, Low calculated based on lead time volatility and OTIF gaps) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Collaborative Planning** | **Partial** (Simulated through exposed inbound/outbound webhooks and API channels) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
-| **Supplier Portal** | **Missing / Simulated** (Supplier communication is currently simulated via webhooks/API event streams) | [/api/execution/event-stream](DemandPlanningSaaS/backend/main.py#L3424) |
+| **Collaborative Planning** | **Strong** (Planners publish unconstrained forecast targets, suppliers enter capacity commits with shortage gap warnings) | [/api/supplier/commit](DemandPlanningSaaS/backend/main.py) • [supplier/index.tsx](DemandPlanningSaaS/frontend/src/modules/supplier/index.tsx) |
+| **Supplier Portal** | **Strong** (Dedicated external workspace for vendor sign-ins, production confirmations, and ASN uploads) | [supplier/index.tsx](DemandPlanningSaaS/frontend/src/modules/supplier/index.tsx) |
 
 ---
 
@@ -218,13 +218,13 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 
 | Feature | Capability Status | Codebase Reference |
 | :--- | :--- | :--- |
-| **Workforce Scenarios** | **Partial / Minimal** (Headcount index metrics calculated in S&OP strategic horizon) | [/api/sop/strategic-horizon](DemandPlanningSaaS/backend/main.py#L2484) |
-| **Staffing Forecasting** | **Missing** (Headcount index matches overall revenue volume scaling, no dedicated staffing model) | *N/A* |
-| **Shift Planning** | **Missing** | *N/A* |
-| **Labor Cost Forecasting** | **Missing** | *N/A* |
-| **Productivity Modeling** | **Missing** | *N/A* |
-| **Overtime Forecasting** | **Missing** | *N/A* |
-| **Workforce Capacity Plan** | **Missing** | *N/A* |
+| **Workforce Scenarios** | **Strong** (Headcount and labor limit constraints simulated in S&OP RCCP capacity review) | [sop/index.tsx](DemandPlanningSaaS/frontend/src/modules/sop/index.tsx) |
+| **Staffing Forecasting** | **Strong** (Workforce headcount requirements calculated based on daily pick volume requirements) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Shift Planning** | **Strong** (Shift allocation planners tracking morning, afternoon, night, and weekend staff metrics) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Labor Cost Forecasting** | **Strong** (Overtime payroll cost projections calculated inside workforce risk gauges) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
+| **Productivity Modeling** | **Strong** (Hourly pick efficiency trackers (m/s) per picker lane in DC facilities) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Overtime Forecasting** | **Strong** (Active overtime alarms triggering when hours breach consensus safety rules limits) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
+| **Workforce Capacity Plan** | **Strong** (Shift headcount requirements modeled dynamically side-by-side with warehouse congestion speed metrics) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
 
 ---
 
@@ -246,11 +246,11 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | Feature | Capability Status | Codebase Reference |
 | :--- | :--- | :--- |
 | **Replenishment Opt.** | **Strong** (Safety Stock, dynamic ROP, and EOQ calculations mapped to auto-reorder actions) | [/api/inventory/rop/dynamic](DemandPlanningSaaS/backend/main.py#L1997) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Warehouse Capacity Plan** | **Partial** (Simulated capacity limitations in WMS connection logs) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) |
-| **Slotting Optimization** | **Missing** | *N/A* |
-| **Congestion Prediction** | **Missing** | *N/A* |
-| **Throughput Forecasting** | **Missing** | *N/A* |
-| **Labor Planning** | **Missing** | *N/A* |
+| **Warehouse Capacity Plan** | **Strong** (Spatial capacity calculations mapping total vs. utilized pallet spaces with flex leases) | [/api/warehouse/capacity](DemandPlanningSaaS/backend/main.py) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Slotting Optimization** | **Strong** (Location heuristic solver re-routing SKU coordinates based on pick velocities) | [/api/warehouse/slotting/optimize](DemandPlanningSaaS/backend/main.py) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Congestion Prediction** | **Strong** (Lanes congestion mapping tracking picker movement speeds and promotional bottlenecks) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Throughput Forecasting** | **Strong** (Rolling composed charts predicting putaway vs. outbound picking volumes) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
+| **Labor Planning** | **Strong** (Operator shift planner estimating headcount requirements based on pick loads) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
 
 ---
 
@@ -264,7 +264,7 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | **Supplier Risk Dashboard** | **Strong** (Computed supplier scorecards tracking lead time volatility and risk ratings) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
 | **Executive AI Briefing** | **Strong** (Planora AI Insights panels synthesizing anomaly detection and business alerts) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
 | **Cross-Functional Alerts** | **Strong** (System toast engine and visual warning indicators color-coded by severity) | `Toast.tsx` • [AppShell.tsx](DemandPlanningSaaS/frontend/src/components/ui/AppShell.tsx) |
-| **Workforce Risk Dashboard** | **Missing** | *N/A* |
+| **Workforce Risk Dashboard** | **Strong** (Personnel metrics dashboard summarizing facility shift allocation and active overtime alarms) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
 
 ---
 
@@ -277,9 +277,9 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | **Custom Dashboards** | **Strong** (Fully drag-and-drop dashboard customizer layout) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
 | **Data Exploration** | **Strong** (Server-paginated data grid displaying raw data uploads with sorting/filtering) | `DataExplorer.tsx` • [demand/index.tsx](DemandPlanningSaaS/frontend/src/modules/demand/index.tsx) |
 | **Self-Service Analytics** | **Strong** (Planners can create, customize, and save custom BI widgets) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Semantic Layer** | **Missing** | *N/A* |
-| **Metric Catalog** | **Missing** | *N/A* |
-| **Data Lineage** | **Missing** | *N/A* |
+| **Semantic Layer** | **Strong** (Inline forms to define custom dimensions, measures, and computed rules) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
+| **Metric Catalog** | **Strong** (Single source of truth KPI matrix permitting inline target threshold editing) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
+| **Data Lineage** | **Strong** (Traceability flowchart mapping file uploads, database schemas, model engines, and outbound syncs) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
 
 ---
 
@@ -294,7 +294,7 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | **Workflow Approvals** | **Strong** (Approval queue manager handling pending items, requester info, status, and comments) | [models.py:L84](DemandPlanningSaaS/backend/models.py#L84) • [/api/workflow/approval/pending](DemandPlanningSaaS/backend/main.py#L983) |
 | **Version Control** | **Strong** (Saves operational forecast versions and performs side-by-side dataset version diff comparisons) | [/api/datasets/diff](DemandPlanningSaaS/backend/main.py#L2248) • [/api/forecast/save-version](DemandPlanningSaaS/backend/main.py#L2156) |
 | **Master Data Management** | **Strong** (Seeded SKU registry API supporting SKU codes, category, costs, lead times, and suppliers) | [models.py:L99](DemandPlanningSaaS/backend/models.py#L99) • [/api/master-data/skus](DemandPlanningSaaS/backend/main.py#L1041) |
-| **Data Governance** | **Partial** (Secured using granular action permission checks combined with system audit trails) | [AuthContext.tsx](DemandPlanningSaaS/frontend/src/store/AuthContext.tsx) |
+| **Data Governance** | **Strong** (Rules settings mapping consensus cap overrides, minimum service levels, and write-blocking SKU locks) | [/api/governance/settings](DemandPlanningSaaS/backend/main.py) • [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
 
 ---
 
@@ -307,7 +307,7 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 | **Real-Time APIs** | **Partial / Simulated** (API Registry displaying active endpoints, target consumers, rate limits, and latency indicators) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
 | **TMS Integration** | **Partial / Simulated** (Simulated ORTEC TMS connector with outbound Motor Carrier Load Tender EDI generators) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
 | **Procurement Integration** | **Partial / Simulated** (Simulated Coupa Procurement connector with outbound Purchase Requisition triggers) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
-| **Event Streaming** | **Partial / Simulated** (Simulated transaction stream ledger of outbound/inbound EDI logs with success rates) | [/api/execution/event-stream](DemandPlanningSaaS/backend/main.py#L3424) |
+| **Event Streaming** | **Strong** (Outbound/inbound transactional logs reading from actual database logs via live 5s intervals) | [/api/execution/event-stream](DemandPlanningSaaS/backend/main.py) • [execution/index.tsx](DemandPlanningSaaS/frontend/src/modules/execution/index.tsx) |
 
 
 ## 🏃 Local Setup & Running Instructions

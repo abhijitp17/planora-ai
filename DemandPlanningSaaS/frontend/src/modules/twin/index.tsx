@@ -393,7 +393,7 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
           <div className="workspace-panel shadow-sm mb-6">
             <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Demand vs Inventory vs Orders (Bullwhip)</h3>
             <ResponsiveContainer width="100%" height={320}>
-              <ComposedChart data={data.weeks} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+              <ComposedChart data={data.weeks} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="week" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(w) => `W${w}`} />
                 <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
@@ -409,7 +409,7 @@ function DemandShockView({ selectedDataset, canEdit }: { selectedDataset: string
           <div className="workspace-panel shadow-sm">
             <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Weekly Fill Rate</h3>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={data.weeks} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={data.weeks} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="week" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(w) => `W${w}`} />
                 <YAxis domain={[0, 100]} stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
@@ -491,7 +491,7 @@ function MonteCarloView({ selectedDataset, canEdit }: { selectedDataset: string;
             <div className="workspace-panel shadow-sm">
               <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Service Level Distribution</h3>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={data.service_histogram} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                <BarChart data={data.service_histogram} margin={{ top: 10, right: 20, left: 45, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="bucket" stroke="var(--text-muted)" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" height={50} />
                   <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />

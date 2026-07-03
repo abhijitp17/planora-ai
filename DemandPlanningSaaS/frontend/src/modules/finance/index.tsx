@@ -399,7 +399,7 @@ function CashFlowTab({ selectedDataset, currencyCode }: { selectedDataset: strin
       <div className="workspace-panel shadow-sm mb-6">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Closing Cash Position & Net Flow</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={data.flows} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <ComposedChart data={data.flows} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
@@ -476,7 +476,7 @@ function BudgetTab({ selectedDataset, currencyCode }: { selectedDataset: string;
       <div className="workspace-panel shadow-sm mb-6">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Revenue & Operating Profit by Category</h3>
         <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
@@ -547,7 +547,7 @@ function ProfitabilityTab({ selectedDataset, currencyCode }: { selectedDataset: 
       <div className="workspace-panel shadow-sm mb-6">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Margin Cascade by Category</h3>
         <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <BarChart data={data.lines} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="category" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
@@ -638,7 +638,7 @@ function WorkingCapitalTab({ selectedDataset, currencyCode }: { selectedDataset:
         <div className="workspace-panel shadow-sm">
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Cash Conversion Cycle Bridge</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={cccData} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 5 }}>
+            <BarChart data={cccData} layout="vertical" margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
               <XAxis type="number" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="label" stroke="var(--text-muted)" tick={{ fontSize: 11 }} width={100} />

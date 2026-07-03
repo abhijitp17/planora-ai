@@ -269,6 +269,66 @@ export default function BIModule() {
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [activeDashboardId, setActiveDashboardId] = useState<string>('');
 
+  // Semantic Layer State
+  const [dimensions, setDimensions] = useState([
+    { name: 'SKU', table: 'demand_records', column: 'sku', description: 'Product identifier', type: 'string' },
+    { name: 'Category', table: 'demand_records', column: 'category', description: 'Product line grouping', type: 'string' },
+    { name: 'Location', table: 'demand_records', column: 'location', description: 'Warehouse / store', type: 'string' },
+    { name: 'Channel', table: 'demand_records', column: 'channel', description: 'Sales channel', type: 'string' },
+    { name: 'Date', table: 'demand_records', column: 'date', description: 'Transaction date', type: 'date' },
+  ]);
+
+  const [measures, setMeasures] = useState([
+    { name: 'Total Demand', formula: 'SUM(target_demand)', format: '#,##0', agg: 'SUM' },
+    { name: 'Revenue', formula: 'SUM(target_demand * asp)', format: '$#,##0', agg: 'SUM' },
+    { name: 'Avg Daily Demand', formula: 'AVG(target_demand)', format: '#,##0.0', agg: 'AVG' },
+    { name: 'Inventory Value', formula: 'SUM(on_hand * unit_cost)', format: '$#,##0', agg: 'SUM' },
+    { name: 'MAPE', formula: 'AVG(|actual - forecast| / actual)', format: '0.0%', agg: 'CALC' },
+  ]);
+
+  const [calcs, setCalcs] = useState([
+    { field: 'Days of Supply', def: 'on_hand / avg_daily_demand', fmt: '#0.0 days', used: 'Inventory dashboard' },
+    { field: 'Gross Margin %', def: '(revenue - cogs) / revenue * 100', fmt: '0.0%', used: 'Finance, Category' },
+    { field: 'ABC Class', def: 'Pareto classification on revenue contribution', fmt: 'A / B / C', used: 'Inventory, Category' },
+    { field: 'Forecast Accuracy', def: '100 - MAPE', fmt: '0.0%', used: 'Demand, Analytics' },
+    { field: 'Inventory Turns', def: 'annual_cogs / avg_inventory_value', fmt: '#0.0x', used: 'Inventory, Finance' },
+    { field: 'Service Level', def: 'fill_rate / order_lines * 100', fmt: '0.0%', used: 'Analytics, S&OP' },
+  ]);
+
+  // Form State
+  const [newDim, setNewDim] = useState({ name: '', table: 'demand_records', column: '', description: '', type: 'string' });
+  const [newMeasure, setNewMeasure] = useState({ name: '', formula: '', format: '#,##0', agg: 'SUM' });
+  const [newCalc, setNewCalc] = useState({ field: '', def: '', fmt: '#0.0', used: '' });
+  const [showAddDim, setShowAddDim] = useState(false);
+  const [showAddMeasure, setShowAddMeasure] = useState(false);
+  const [showAddCalc, setShowAddCalc] = useState(false);
+
+  // Metric Catalogue State
+  const [catalogueMetrics, setCatalogueMetrics] = useState([
+    { name: 'System MAPE', domain: 'Forecasting', formula: 'Mean Absolute % Error', owner: 'Demand Planner', refresh: 'Daily', target: '<5%', current: '4.2%', status: 'On Target' },
+    { name: 'Forecast Coverage', domain: 'Forecasting', formula: 'SKUs with active forecast / total SKUs', owner: 'Demand Planner', refresh: 'Daily', target: '>95%', current: '88%', status: 'Below Target' },
+    { name: 'OTIF', domain: 'Service', formula: 'On-Time In-Full orders / total orders', owner: 'Supply Chain', refresh: 'Weekly', target: '>95%', current: '94.1%', status: 'Below Target' },
+    { name: 'Inventory Turns', domain: 'Inventory', formula: 'Annual COGS / Avg Inventory Value', owner: 'Inventory Mgr', refresh: 'Monthly', target: '>8x', current: '9.2x', status: 'On Target' },
+    { name: 'Days of Supply', domain: 'Inventory', formula: 'On-Hand / Avg Daily Demand', owner: 'Inventory Mgr', refresh: 'Daily', target: '20-45 days', current: '34 days', status: 'On Target' },
+    { name: 'Gross Margin %', domain: 'Finance', formula: '(Revenue - COGS) / Revenue', owner: 'Finance', refresh: 'Monthly', target: '>40%', current: '42.3%', status: 'On Target' },
+    { name: 'Stockout Rate', domain: 'Inventory', formula: 'SKUs in stockout / total SKUs', owner: 'Supply Chain', refresh: 'Daily', target: '<2%', current: '3.1%', status: 'Below Target' },
+    { name: 'Planner Value Add', domain: 'Forecasting', formula: 'System MAPE - Human MAPE', owner: 'Demand Planner', refresh: 'Monthly', target: '>0%', current: '+0.4%', status: 'On Target' },
+    { name: 'ABC-A Coverage', domain: 'Inventory', formula: 'A-class SKUs with SS >= target / total A-class', owner: 'Inventory Mgr', refresh: 'Weekly', target: '>98%', current: '99.1%', status: 'On Target' },
+    { name: 'Supplier OTIF', domain: 'Supply', formula: 'Supplier deliveries on-time / total', owner: 'Procurement', refresh: 'Weekly', target: '>90%', current: '88.4%', status: 'Below Target' },
+  ]);
+
+  const [editingMetricIndex, setEditingMetricIndex] = useState<number | null>(null);
+  const [editTarget, setEditTarget] = useState('');
+  const [editCurrent, setEditCurrent] = useState('');
+  const [editStatus, setEditStatus] = useState('On Target');
+
+  const [showAddMetric, setShowAddMetric] = useState(false);
+  const [newMetric, setNewMetric] = useState({ name: '', domain: 'Forecasting', formula: '', owner: '', refresh: 'Daily', target: '', current: '', status: 'On Target' });
+
+  // Data Lineage Selected Node Detail State
+  const [selectedLineageNode, setSelectedLineageNode] = useState<string | null>(null);
+
+
   // Save targets configuration
   const [saveTargetDashboardId, setSaveTargetDashboardId] = useState<string>('');
   const [saveNewDashboardName, setSaveNewDashboardName] = useState<string>('');
@@ -669,6 +729,31 @@ export default function BIModule() {
     localStorage.setItem('planora_bi_dashboards', JSON.stringify(updatedDashboards));
   };
 
+  // Drag and drop handlers for widgets
+  const handleWidgetDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleWidgetDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    if (isNaN(sourceIndex) || sourceIndex === targetIndex) return;
+
+    const updatedWidgets = [...savedQueries];
+    const draggedWidget = updatedWidgets[sourceIndex];
+    updatedWidgets.splice(sourceIndex, 1);
+    updatedWidgets.splice(targetIndex, 0, draggedWidget);
+
+    const updatedDashboards = dashboards.map(d => {
+      if (d.id === activeDashboardId) {
+        return { ...d, widgets: updatedWidgets };
+      }
+      return d;
+    });
+    setDashboards(updatedDashboards);
+    localStorage.setItem('planora_bi_dashboards', JSON.stringify(updatedDashboards));
+  };
+
   // Toggle widget width span between half and full inside active dashboard
   const toggleWidgetWidth = (id: string) => {
     const updated = dashboards.map(d => {
@@ -889,12 +974,17 @@ export default function BIModule() {
     return (
       <div 
         key={q.id} 
+        draggable={isEditingLayout}
+        onDragStart={(e) => handleWidgetDragStart(e, index)}
+        onDragOver={(e) => { if (isEditingLayout) e.preventDefault(); }}
+        onDrop={(e) => { if (isEditingLayout) handleWidgetDrop(e, index); }}
         className={`workspace-panel flex flex-col transition-all duration-200 ${isFullWidth ? 'col-span-2' : 'col-span-1'}`} 
         style={{ 
           height: '350px',
           border: isEditingLayout ? '1.5px dashed var(--accent-primary)' : '1px solid var(--border-color)',
           boxShadow: isEditingLayout ? '0 0 6px rgba(6, 78, 59, 0.1)' : 'none',
-          position: 'relative'
+          position: 'relative',
+          cursor: isEditingLayout ? 'move' : 'default'
         }}
       >
         <div className="flex justify-between items-center mb-2">
@@ -977,7 +1067,7 @@ export default function BIModule() {
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               {q.chartType === 'line' ? (
-                <LineChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <LineChart data={data} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
@@ -985,7 +1075,7 @@ export default function BIModule() {
                   <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={false} />
                 </LineChart>
               ) : q.chartType === 'area' ? (
-                <AreaChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <AreaChart data={data} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
@@ -1001,7 +1091,7 @@ export default function BIModule() {
                   <Legend wrapperStyle={{ fontSize: '9px', marginTop: '10px' }} />
                 </PieChart>
               ) : (
-                <BarChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <BarChart data={data} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isFinancial ? formatCurrency(val, selectedCurrencyCode, true) : val.toLocaleString()} />
@@ -1357,7 +1447,7 @@ export default function BIModule() {
                       <div style={{ height: '300px', width: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
                           {chartType === 'line' ? (
-                            <LineChart data={queryResult}>
+                            <LineChart data={queryResult} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1365,7 +1455,7 @@ export default function BIModule() {
                               <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={3} dot={false} />
                             </LineChart>
                           ) : chartType === 'area' ? (
-                            <AreaChart data={queryResult}>
+                            <AreaChart data={queryResult} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1381,7 +1471,7 @@ export default function BIModule() {
                               <Legend />
                             </PieChart>
                           ) : (
-                            <BarChart data={queryResult}>
+                            <BarChart data={queryResult} margin={{ top: 10, right: 15, left: 55, bottom: 25 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                               <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
                               <YAxis stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => isFinancialMeasure(measure) ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1536,7 +1626,7 @@ export default function BIModule() {
                                 <div style={{ height: '250px', width: '100%', padding: '10px 0', border: '1px solid var(--border-color)', borderRadius: '0px', backgroundColor: 'var(--bg-panel)' }}>
                                   <ResponsiveContainer width="100%" height="100%">
                                     {consoleChartType === 'line' ? (
-                                      <LineChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                                      <LineChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 55, bottom: 25 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1544,7 +1634,7 @@ export default function BIModule() {
                                         <Line type="monotone" dataKey="value" stroke="var(--accent-primary)" strokeWidth={2.5} dot={false} />
                                       </LineChart>
                                     ) : consoleChartType === 'area' ? (
-                                      <AreaChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                                      <AreaChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 55, bottom: 25 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1560,7 +1650,7 @@ export default function BIModule() {
                                         <Legend />
                                       </PieChart>
                                     ) : (
-                                      <BarChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                                      <BarChart data={mappedConsoleData} margin={{ top: 10, right: 20, left: 55, bottom: 25 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                         <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} />
                                         <YAxis stroke="var(--text-muted)" fontSize={10} tickFormatter={(val) => isConsoleFinancial ? `${activeCurrencySymbol}${val.toLocaleString()}` : val.toLocaleString()} />
@@ -1899,27 +1989,73 @@ export default function BIModule() {
         {/* SEMANTIC LAYER TAB */}
         {activeTab === 'semantic' && (
           <div style={{ padding: '1.5rem 2rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Semantic Layer</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                A business-friendly abstraction over raw database tables. Defines dimensions, measures, and calculated fields so analysts work with concepts like "Revenue" instead of raw SQL.
-              </p>
+            <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Semantic Layer</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                  A business-friendly abstraction over raw database tables. Defines dimensions, measures, and calculated fields so analysts work with concepts like "Revenue" instead of raw SQL.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-6">
               {/* Dimensions */}
               <div className="workspace-panel shadow-sm">
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem' }}>DIM</span>
-                  Dimensions (Attributes)
-                </h4>
-                {[
-                  { name: 'SKU', table: 'demand_records', column: 'sku', description: 'Product identifier', type: 'string' },
-                  { name: 'Category', table: 'demand_records', column: 'category', description: 'Product line grouping', type: 'string' },
-                  { name: 'Location', table: 'demand_records', column: 'location', description: 'Warehouse / store', type: 'string' },
-                  { name: 'Channel', table: 'demand_records', column: 'channel', description: 'Sales channel', type: 'string' },
-                  { name: 'Date', table: 'demand_records', column: 'date', description: 'Transaction date', type: 'date' },
-                ].map(dim => (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem' }}>DIM</span>
+                    Dimensions (Attributes)
+                  </h4>
+                  <button onClick={() => setShowAddDim(!showAddDim)} className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>
+                    + Custom Dimension
+                  </button>
+                </div>
+
+                {showAddDim && (
+                  <div style={{ padding: '12px', background: 'var(--bg-hover)', border: '0.5px solid var(--border-color)', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Dimension Name (e.g. Region)" 
+                      value={newDim.name} 
+                      onChange={e => setNewDim({ ...newDim, name: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '6px' }}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Database Column Mapping (e.g. location_region)" 
+                      value={newDim.column} 
+                      onChange={e => setNewDim({ ...newDim, column: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '6px' }}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Brief Description" 
+                      value={newDim.description} 
+                      onChange={e => setNewDim({ ...newDim, description: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '6px' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button onClick={() => setShowAddDim(false)} className="btn" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                      <button 
+                        onClick={() => {
+                          if (!newDim.name || !newDim.column) return;
+                          setDimensions([...dimensions, newDim]);
+                          setNewDim({ name: '', table: 'demand_records', column: '', description: '', type: 'string' });
+                          setShowAddDim(false);
+                        }} 
+                        className="btn btn-primary" 
+                        style={{ padding: '3px 10px', fontSize: '0.75rem' }}
+                      >
+                        Add Attribute
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {dimensions.map(dim => (
                   <div key={dim.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '0px', marginBottom: '6px' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{dim.name}</div>
@@ -1935,18 +2071,53 @@ export default function BIModule() {
 
               {/* Measures */}
               <div className="workspace-panel shadow-sm">
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ padding: '2px 8px', background: 'var(--bg-hover)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>MSR</span>
-                  Measures (Metrics)
-                </h4>
-                {[
-                  { name: 'Total Demand', formula: 'SUM(target_demand)', format: '#,##0', agg: 'SUM' },
-                  { name: 'Revenue', formula: 'SUM(target_demand × asp)', format: '$#,##0', agg: 'SUM' },
-                  { name: 'Avg Daily Demand', formula: 'AVG(target_demand)', format: '#,##0.0', agg: 'AVG' },
-                  { name: 'Demand Variability (CV)', formula: 'STDEV(demand) / AVG(demand)', format: '0.00%', agg: 'CALC' },
-                  { name: 'MAPE', formula: 'AVG(|actual − forecast| / actual)', format: '0.0%', agg: 'CALC' },
-                  { name: 'Inventory Value', formula: 'SUM(on_hand × unit_cost)', formula2: '', format: '$#,##0', agg: 'SUM' },
-                ].map(msr => (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ padding: '2px 8px', background: 'var(--bg-hover)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>MSR</span>
+                    Measures (Metrics)
+                  </h4>
+                  <button onClick={() => setShowAddMeasure(!showAddMeasure)} className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>
+                    + Custom Measure
+                  </button>
+                </div>
+
+                {showAddMeasure && (
+                  <div style={{ padding: '12px', background: 'var(--bg-hover)', border: '0.5px solid var(--border-color)', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Measure Name (e.g. Net Profit)" 
+                      value={newMeasure.name} 
+                      onChange={e => setNewMeasure({ ...newMeasure, name: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '6px' }}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Aggregation Formula (e.g. SUM(sales_value - cogs))" 
+                      value={newMeasure.formula} 
+                      onChange={e => setNewMeasure({ ...newMeasure, formula: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '6px' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <button onClick={() => setShowAddMeasure(false)} className="btn" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                      <button 
+                        onClick={() => {
+                          if (!newMeasure.name || !newMeasure.formula) return;
+                          setMeasures([...measures, newMeasure]);
+                          setNewMeasure({ name: '', formula: '', format: '#,##0', agg: 'SUM' });
+                          setShowAddMeasure(false);
+                        }} 
+                        className="btn btn-primary" 
+                        style={{ padding: '3px 10px', fontSize: '0.75rem' }}
+                      >
+                        Add Metric
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {measures.map(msr => (
                   <div key={msr.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'var(--bg-hover)', borderRadius: '0px', marginBottom: '6px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{msr.name}</div>
@@ -1962,22 +2133,65 @@ export default function BIModule() {
 
             {/* Calculated fields */}
             <div className="workspace-panel shadow-sm">
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--accent-primary)' }}>CALC</span>
-                Calculated Fields (Business Rules)
-              </h4>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ padding: '2px 8px', background: 'var(--accent-primary-light)', borderRadius: '0px', fontSize: '0.75rem', color: 'var(--accent-primary)' }}>CALC</span>
+                  Calculated Fields (Business Rules)
+                </h4>
+                <button onClick={() => setShowAddCalc(!showAddCalc)} className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>
+                  + Custom Calculation
+                </button>
+              </div>
+
+              {showAddCalc && (
+                <div style={{ padding: '12px', background: 'var(--bg-hover)', border: '0.5px solid var(--border-color)', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '500px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Field Name (e.g. Inventory Velocity)" 
+                    value={newCalc.field} 
+                    onChange={e => setNewCalc({ ...newCalc, field: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.8rem', padding: '6px' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Rule definition formula (e.g. sales / average_stock)" 
+                    value={newCalc.def} 
+                    onChange={e => setNewCalc({ ...newCalc, def: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.8rem', padding: '6px' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Used in modules (e.g. Inventory, S&OP)" 
+                    value={newCalc.used} 
+                    onChange={e => setNewCalc({ ...newCalc, used: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.8rem', padding: '6px' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button onClick={() => setShowAddCalc(false)} className="btn" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                    <button 
+                      onClick={() => {
+                        if (!newCalc.field || !newCalc.def) return;
+                        setCalcs([...calcs, newCalc]);
+                        setNewCalc({ field: '', def: '', fmt: '#0.0', used: '' });
+                        setShowAddCalc(false);
+                      }} 
+                      className="btn btn-primary" 
+                      style={{ padding: '3px 10px', fontSize: '0.75rem' }}
+                    >
+                      Add Calculation Rule
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="table-container">
                 <table>
                   <thead><tr><th>Field</th><th>Definition</th><th>Format</th><th>Used In</th></tr></thead>
                   <tbody>
-                    {[
-                      { field: 'Days of Supply', def: 'on_hand / avg_daily_demand', fmt: '#0.0 days', used: 'Inventory dashboard' },
-                      { field: 'Gross Margin %', def: '(revenue − cogs) / revenue × 100', fmt: '0.0%', used: 'Finance, Category' },
-                      { field: 'ABC Class', def: 'Pareto classification on revenue contribution', fmt: 'A / B / C', used: 'Inventory, Category' },
-                      { field: 'Forecast Accuracy', def: '100 − MAPE', fmt: '0.0%', used: 'Demand, Analytics' },
-                      { field: 'Inventory Turns', def: 'annual_cogs / avg_inventory_value', fmt: '#0.0x', used: 'Inventory, Finance' },
-                      { field: 'Service Level', def: 'fill_rate / order_lines × 100', fmt: '0.0%', used: 'Analytics, S&OP' },
-                    ].map(row => (
+                    {calcs.map(row => (
                       <tr key={row.field}>
                         <td style={{ fontWeight: 600 }}>{row.field}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--text-muted)' }}>{row.def}</td>
@@ -1995,19 +2209,100 @@ export default function BIModule() {
         {/* METRIC CATALOGUE TAB */}
         {activeTab === 'catalogue' && (
           <div style={{ padding: '1.5rem 2rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Metric Catalogue</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                Single source of truth for all platform KPIs. Defines each metric's formula, owner, refresh cadence, and target threshold.
-              </p>
+            <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Metric Catalogue</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                  Single source of truth for all platform KPIs. Defines each metric's formula, owner, refresh cadence, and target threshold.
+                </p>
+              </div>
+              <button onClick={() => setShowAddMetric(!showAddMetric)} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.82rem' }}>
+                + Add Custom Metric KPI
+              </button>
             </div>
+
+            {showAddMetric && (
+              <div className="workspace-panel shadow-sm mb-6" style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '600px' }}>
+                <h4 style={{ fontSize: '0.92rem', fontWeight: 600, margin: '0 0 8px' }}>Define New Metric KPI</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <input 
+                    type="text" 
+                    placeholder="KPI Name (e.g. Supplier Lead Volatility)" 
+                    value={newMetric.name} 
+                    onChange={e => setNewMetric({ ...newMetric, name: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                  <select 
+                    value={newMetric.domain} 
+                    onChange={e => setNewMetric({ ...newMetric, domain: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.82rem' }}
+                  >
+                    <option value="Forecasting">Forecasting</option>
+                    <option value="Inventory">Inventory</option>
+                    <option value="Service">Service</option>
+                    <option value="Supply">Supply</option>
+                    <option value="Finance">Finance</option>
+                  </select>
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Calculated Formula (e.g. standard_deviation(lead_time_days))" 
+                  value={newMetric.formula} 
+                  onChange={e => setNewMetric({ ...newMetric, formula: e.target.value })}
+                  className="form-control"
+                  style={{ fontSize: '0.82rem' }}
+                />
+                <div className="grid grid-cols-3 gap-4">
+                  <input 
+                    type="text" 
+                    placeholder="Owner (e.g. Procurement)" 
+                    value={newMetric.owner} 
+                    onChange={e => setNewMetric({ ...newMetric, owner: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Target (e.g. <3 days)" 
+                    value={newMetric.target} 
+                    onChange={e => setNewMetric({ ...newMetric, target: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Current Value" 
+                    value={newMetric.current} 
+                    onChange={e => setNewMetric({ ...newMetric, current: e.target.value })}
+                    className="form-control"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                  <button onClick={() => setShowAddMetric(false)} className="btn">Cancel</button>
+                  <button 
+                    onClick={() => {
+                      if (!newMetric.name || !newMetric.formula) return;
+                      setCatalogueMetrics([...catalogueMetrics, newMetric]);
+                      setNewMetric({ name: '', domain: 'Forecasting', formula: '', owner: '', refresh: 'Daily', target: '', current: '', status: 'On Target' });
+                      setShowAddMetric(false);
+                    }} 
+                    className="btn btn-primary"
+                  >
+                    Save Metric KPI
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-4 mb-6">
               {[
-                { label: 'Total Metrics', value: '24', color: 'var(--accent-primary)' },
-                { label: 'Refreshed Daily', value: '16', color: 'var(--status-good)' },
-                { label: 'With Targets Set', value: '18', color: 'var(--text-main)' },
-                { label: 'Off-Target Now', value: '4', color: 'var(--status-error)' },
+                { label: 'Total Metrics', value: String(catalogueMetrics.length), color: 'var(--accent-primary)' },
+                { label: 'Refreshed Daily', value: String(catalogueMetrics.filter(m => m.refresh === 'Daily').length), color: 'var(--status-good)' },
+                { label: 'With Targets Set', value: String(catalogueMetrics.filter(m => m.target).length), color: 'var(--text-main)' },
+                { label: 'Off-Target Now', value: String(catalogueMetrics.filter(m => m.status.includes('Below')).length), color: 'var(--status-error)' },
               ].map(kpi => (
                 <div key={kpi.label} className="kpi-infolet">
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>{kpi.label}</span>
@@ -2017,24 +2312,58 @@ export default function BIModule() {
             </div>
 
             <div className="workspace-panel shadow-sm">
+              {editingMetricIndex !== null && (
+                <div style={{ padding: '12px', background: 'var(--bg-hover)', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem', display: 'flex', gap: '14px', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Editing Targets: {catalogueMetrics[editingMetricIndex].name}</span>
+                  <input 
+                    type="text" 
+                    placeholder="Target Value" 
+                    value={editTarget} 
+                    onChange={e => setEditTarget(e.target.value)} 
+                    style={{ fontSize: '0.8rem', padding: '4px 8px', border: '1px solid var(--border-color)', width: '100px' }}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Current Value" 
+                    value={editCurrent} 
+                    onChange={e => setEditCurrent(e.target.value)} 
+                    style={{ fontSize: '0.8rem', padding: '4px 8px', border: '1px solid var(--border-color)', width: '100px' }}
+                  />
+                  <select 
+                    value={editStatus} 
+                    onChange={e => setEditStatus(e.target.value)}
+                    style={{ fontSize: '0.8rem', padding: '4px 8px', border: '1px solid var(--border-color)' }}
+                  >
+                    <option value="On Target">On Target</option>
+                    <option value="Below Target">Below Target</option>
+                  </select>
+                  <button 
+                    onClick={() => {
+                      const updated = catalogueMetrics.map((m, idx) => {
+                        if (idx === editingMetricIndex) {
+                          return { ...m, target: editTarget, current: editCurrent, status: editStatus };
+                        }
+                        return m;
+                      });
+                      setCatalogueMetrics(updated);
+                      setEditingMetricIndex(null);
+                    }} 
+                    className="btn btn-primary"
+                    style={{ padding: '4px 12px', fontSize: '0.75rem' }}
+                  >
+                    Save Changes
+                  </button>
+                  <button onClick={() => setEditingMetricIndex(null)} className="btn" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Cancel</button>
+                </div>
+              )}
+
               <div className="table-container">
                 <table>
                   <thead>
-                    <tr><th>Metric</th><th>Domain</th><th>Formula</th><th>Owner</th><th>Refresh</th><th>Target</th><th>Current</th><th>Status</th></tr>
+                    <tr><th>Metric</th><th>Domain</th><th>Formula</th><th>Owner</th><th>Refresh</th><th>Target</th><th>Current</th><th>Status</th><th>Edit</th></tr>
                   </thead>
                   <tbody>
-                    {[
-                      { name: 'System MAPE', domain: 'Forecasting', formula: 'Mean Absolute % Error', owner: 'Demand Planner', refresh: 'Daily', target: '<5%', current: '4.2%', status: 'On Target' },
-                      { name: 'Forecast Coverage', domain: 'Forecasting', formula: 'SKUs with active forecast / total SKUs', owner: 'Demand Planner', refresh: 'Daily', target: '>95%', current: '88%', status: 'Below' },
-                      { name: 'OTIF', domain: 'Service', formula: 'On-Time In-Full orders / total orders', owner: 'Supply Chain', refresh: 'Weekly', target: '>95%', current: '94.1%', status: 'Below' },
-                      { name: 'Inventory Turns', domain: 'Inventory', formula: 'Annual COGS / Avg Inventory Value', owner: 'Inventory Mgr', refresh: 'Monthly', target: '>8x', current: '9.2x', status: 'On Target' },
-                      { name: 'Days of Supply', domain: 'Inventory', formula: 'On-Hand / Avg Daily Demand', owner: 'Inventory Mgr', refresh: 'Daily', target: '20–45 days', current: '34 days', status: 'On Target' },
-                      { name: 'Gross Margin %', domain: 'Finance', formula: '(Revenue − COGS) / Revenue', owner: 'Finance', refresh: 'Monthly', target: '>40%', current: '42.3%', status: 'On Target' },
-                      { name: 'Stockout Rate', domain: 'Inventory', formula: 'SKUs in stockout / total SKUs', owner: 'Supply Chain', refresh: 'Daily', target: '<2%', current: '3.1%', status: 'Below' },
-                      { name: 'Planner Value Add', domain: 'Forecasting', formula: 'System MAPE − Human MAPE', owner: 'Demand Planner', refresh: 'Monthly', target: '>0%', current: '+0.4%', status: 'On Target' },
-                      { name: 'ABC-A Coverage', domain: 'Inventory', formula: 'A-class SKUs with SS ≥ target / total A-class', owner: 'Inventory Mgr', refresh: 'Weekly', target: '>98%', current: '99.1%', status: 'On Target' },
-                      { name: 'Supplier OTIF', domain: 'Supply', formula: 'Supplier deliveries on-time / total', owner: 'Procurement', refresh: 'Weekly', target: '>90%', current: '88.4%', status: 'Below' },
-                    ].map(metric => {
+                    {catalogueMetrics.map((metric, idx) => {
                       const isOnTarget = metric.status === 'On Target';
                       return (
                         <tr key={metric.name}>
@@ -2050,6 +2379,20 @@ export default function BIModule() {
                               {metric.status}
                             </span>
                           </td>
+                          <td>
+                            <button 
+                              onClick={() => {
+                                setEditingMetricIndex(idx);
+                                setEditTarget(metric.target);
+                                setEditCurrent(metric.current);
+                                setEditStatus(metric.status);
+                              }}
+                              className="btn btn-outline" 
+                              style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                            >
+                              Edit Target
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -2057,6 +2400,174 @@ export default function BIModule() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+
+        {/* DATA LINEAGE TAB */}
+        {activeTab === 'lineage' && (
+          <div style={{ padding: '1.5rem 2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: '0 0 6px' }}>Data Lineage & Traceability</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                Trace the movement of supply chain data from raw ingest uploads to final consensus forecasts and outbound execution orders.
+              </p>
+            </div>
+
+            <div style={{ padding: '8px 12px', background: 'var(--bg-hover)', border: '0.5px solid var(--border-color)', borderRadius: '0px', marginBottom: '1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              💡 Click any node in the pipeline below to inspect database schemas, validation rules, and active record metrics.
+            </div>
+
+            {/* Visual Node Flow Layout */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              overflowX: 'auto', 
+              padding: '24px 16px', 
+              background: 'var(--bg-panel)', 
+              border: '0.5px solid var(--border-color)', 
+              marginBottom: '1.5rem' 
+            }}>
+              {[
+                { id: 'upload', title: 'Ingest Uploads', role: 'INPUT', label: 'CSV/Excel' },
+                { id: 'ingestion', title: 'Data Validation', role: 'RULES', label: '14 Rules' },
+                { id: 'database', title: 'SQLite Warehouse', role: 'STORAGE', label: 'demand_records' },
+                { id: 'forecasting', title: 'AutoML Forecasting', role: 'ENGINE', label: 'Model Ensemble' },
+                { id: 'overrides', title: 'Consensus Editor', role: 'HUMAN', label: 'Manual Uplifts' },
+                { id: 'snapshots', title: 'Forecast Versions', role: 'OUTPUT', label: 'forecast_results' },
+                { id: 'integrations', title: 'ERP/WMS Outbound', role: 'SYNC', label: 'PO/STO Transmit' }
+              ].map((node, i, arr) => {
+                const isSelected = selectedLineageNode === node.id;
+                return (
+                  <React.Fragment key={node.id}>
+                    <div 
+                      onClick={() => setSelectedLineageNode(node.id)}
+                      style={{
+                        border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                        background: isSelected ? 'var(--accent-primary-light)' : 'var(--bg-hover)',
+                        padding: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        minHeight: '85px',
+                        width: '180px',
+                        flexShrink: 0,
+                        transition: 'all 0.15s ease',
+                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '0.62rem', padding: '1px 5px', background: 'var(--bg-panel)', color: 'var(--text-muted)', fontWeight: 700 }}>
+                          {node.role}
+                        </span>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-good)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.82rem', color: isSelected ? 'var(--accent-primary)' : 'var(--text-main)' }}>{node.title}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>{node.label}</div>
+                      </div>
+                    </div>
+                    {i < arr.length - 1 && (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', userSelect: 'none', padding: '0 4px' }}>→</span>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Selected Node Details Panel */}
+            {selectedLineageNode ? (() => {
+              const LINEAGE_NODES: Record<string, { title: string; role: string; desc: string; metrics: Record<string, string>; schema: string[] }> = {
+                upload: {
+                  title: 'Data Ingestion Uploads',
+                  role: 'INPUT',
+                  desc: 'CSV / Excel source files matching canonical planning ingestion schemas.',
+                  metrics: { format: 'CSV / Excel', encoding: 'UTF-8', limit: '50MB max' },
+                  schema: ['date (DateTime)', 'sku (String)', 'target_demand (Float)', 'category (String)', 'location (String)', 'channel (String)']
+                },
+                ingestion: {
+                  title: 'Validation & Cleansing',
+                  role: 'RULES',
+                  desc: 'Inbound parsing rules filtering null fields, casting formats, and standardizing datetimes.',
+                  metrics: { validations: '14 rules active', filterRate: '0.04% dropped', standard: 'UTC-0' },
+                  schema: ['Null check', 'Type safety enforce', 'Outlier IQR check', 'SKU registry constraint check']
+                },
+                database: {
+                  title: 'SQL Database Warehouse',
+                  role: 'STORAGE',
+                  desc: 'SQLite database tables hosting actual sales history and static master SKU registry.',
+                  metrics: { table: 'demand_records', rowCount: '46,720 rows', dbSize: '15.0 MB' },
+                  schema: ['id (int PK)', 'date (timestamp)', 'target_demand (float)', 'sku (varchar)', 'category (varchar)', 'location (varchar)']
+                },
+                forecasting: {
+                  title: 'AutoML Forecasting Engine',
+                  role: 'ENGINE',
+                  desc: 'Statistical (ARIMA, Holt-Winters) and Machine Learning (XGBoost, LightGBM) model pipeline.',
+                  metrics: { activeModels: '11 statistical / 5 ML', accuracy: '94.8% baseline', refresh: 'Every scenario run' },
+                  schema: ['Auto-fit parameter selection', 'Backtesting iteration', 'Ensemble weights optimizer']
+                },
+                overrides: {
+                  title: 'Consensus Overrides',
+                  role: 'HUMAN',
+                  desc: 'Planner manual adjustment pivots allocating volume changes across hierarchies.',
+                  metrics: { adjustmentCap: '±30% cap', editLock: 'ELE_PHONE_001 enabled', approvalsLink: 'Approval requests queue' },
+                  schema: ['percentage_uplift', 'absolute_uplift', 'set_value', 'linear_allocation']
+                },
+                snapshots: {
+                  title: 'Consensus Forecast Outputs',
+                  role: 'OUTPUT',
+                  desc: 'Consolidated forecasting table holding unconstrained planning versions for collaborative review.',
+                  metrics: { table: 'forecast_results', totalVersions: '12 snapshots', activeHorizon: '12 months' },
+                  schema: ['id (int PK)', 'date (timestamp)', 'forecast_demand (float)', 'sku (varchar)', 'model_name (varchar)', 'ensemble_strategy (varchar)']
+                },
+                integrations: {
+                  title: 'Outbound Connectors',
+                  role: 'COLLABORATE',
+                  desc: 'Downstream ERP, WMS, and TMS systems sync. Generates EDI 850 POs, STOs, and Load Tenders.',
+                  metrics: { connectorsCount: '5 active', formats: 'EDI 850 / EDI 856 / STO', realTimeWebhooks: 'Live webhook stream' },
+                  schema: ['SAP S/4HANA (IDoc)', 'Manhattan WMS (REST)', 'ORTEC TMS (EDI 204)', 'Coupa Procurement (cXML)']
+                }
+              };
+              const node = LINEAGE_NODES[selectedLineageNode];
+              if (!node) return null;
+              return (
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="workspace-panel shadow-sm">
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-main)' }}>{node.title}</h4>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1rem' }}>{node.desc}</p>
+                    
+                    <h5 style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px' }}>Active Statistics</h5>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {Object.entries(node.metrics).map(([k, v]) => (
+                        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', background: 'var(--bg-hover)', padding: '5px 8px' }}>
+                          <span style={{ textTransform: 'capitalize', color: 'var(--text-muted)' }}>{k.replace(/([A-Z])/g, ' $1')}</span>
+                          <span style={{ fontWeight: 600 }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="workspace-panel shadow-sm">
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '10px' }}>
+                      {selectedLineageNode === 'ingestion' || selectedLineageNode === 'forecasting' || selectedLineageNode === 'overrides' ? 'Functional Rules' : 'Schema Structure'}
+                    </h4>
+                    <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                      {node.schema.map(f => (
+                        <div key={f} style={{ fontFamily: 'monospace', fontSize: '0.76rem', padding: '4px 6px', borderBottom: '0.5px solid var(--border-color)', color: 'var(--text-main)' }}>
+                          {f}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
+                Select a lineage node above to view schema mappings and traceability metrics.
+              </div>
+            )}
           </div>
         )}
 

@@ -18,6 +18,13 @@ export interface AdminConfig {
   providers: Partial<Record<ProviderId, ProviderConfig>>;
 }
 
+export interface ChatAttachment {
+  name: string;
+  type: string;
+  size: number;
+  content?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -25,6 +32,7 @@ export interface ChatMessage {
   timestamp: number;
   provider?: ProviderId;
   model?: string;
+  attachments?: ChatAttachment[];
 }
 
 export const AI_PROVIDERS = [
@@ -284,5 +292,61 @@ How can I help you adjust your consensus parameters or inventory models?`;
     await new Promise((resolve) => setTimeout(resolve, 30 + Math.random() * 20));
   }
 
+  // Estimate tokens and record usage
+  const estimatedInputTokens = Math.ceil(userMessage.length / 4) + Math.ceil(systemPrompt.length / 4);
+  const estimatedOutputTokens = Math.ceil(reply.length / 4);
+  recordTokenUsage(config.providerId, config.modelId, estimatedInputTokens, estimatedOutputTokens);
+
   onChunk({ delta: '', done: true });
+}
+
+export interface TokenCostRecord {
+  providerId: string;
+  modelId: string;
+  inputTokens: number;
+  outputTokens: number;
+  cost: number;
+  timestamp: number;
+}
+
+export function getAccumulatedCosts(): TokenCostRecord[] {
+  try {
+    return JSON.parse(localStorage.getItem('planora_token_costs') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+export function clearAccumulatedCosts() {
+  localStorage.removeItem('planora_token_costs');
+  window.dispatchEvent(new CustomEvent('planora-costs-cleared'));
+}
+
+export function recordTokenUsage(providerId: string, modelId: string, inputTokens: number, outputTokens: number) {
+  const rates: Record<string, { input: number; output: number }> = {
+    'claude-3-5-sonnet': { input: 3.0, output: 15.0 },
+    'claude-3-opus': { input: 15.0, output: 75.0 },
+    'claude-3-5-haiku': { input: 0.25, output: 1.25 },
+    'gpt-4o': { input: 5.0, output: 15.0 },
+    'gpt-4o-mini': { input: 0.15, output: 0.60 },
+    'gemini-1-5-pro': { input: 3.50, output: 10.50 },
+    'gemini-1-5-flash': { input: 0.075, output: 0.300 },
+  };
+
+  const modelRates = rates[modelId] || { input: 2.0, output: 10.0 };
+  const cost = ((inputTokens * modelRates.input) + (outputTokens * modelRates.output)) / 1_000_000;
+
+  const newRecord: TokenCostRecord = {
+    providerId,
+    modelId,
+    inputTokens,
+    outputTokens,
+    cost,
+    timestamp: Date.now(),
+  };
+
+  const records = getAccumulatedCosts();
+  records.push(newRecord);
+  localStorage.setItem('planora_token_costs', JSON.stringify(records));
+  window.dispatchEvent(new CustomEvent('planora-costs-updated'));
 }

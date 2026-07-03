@@ -4,13 +4,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   X, Send, Settings, Trash2, ChevronDown, ChevronUp, ExternalLink,
   Eye, EyeOff, CheckCircle2, AlertCircle, Sparkles, RotateCcw,
-  Shield, User, Copy, ChevronRight,
+  Shield, User, Copy, ChevronRight, DollarSign, Paperclip,
 } from 'lucide-react';
 import {
   AI_PROVIDERS, PROVIDER_MAP, ProviderId, ProviderConfig, AdminConfig,
   ChatMessage, callProvider, buildSystemPrompt,
   saveUserConfig, loadUserConfig, saveAdminConfig, loadAdminConfig,
   saveHistory, loadHistory, clearHistory,
+  getAccumulatedCosts, clearAccumulatedCosts, TokenCostRecord, ChatAttachment,
 } from '@/lib/aiProviders';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ interface CopilotPanelProps {
   context: CopilotContext;
 }
 
-type PanelView = 'chat' | 'settings' | 'admin';
+type PanelView = 'chat' | 'settings' | 'admin' | 'billing';
 
 const TIER_LABELS: Record<string, string> = { fast: '⚡ Fast', balanced: '⚖ Balanced', powerful: '🧠 Powerful' };
 const TIER_COLORS: Record<string, string> = { fast: '#16a34a', balanced: '#d97706', powerful: '#7c3aed' };
@@ -58,7 +59,16 @@ function MessageBubble({ msg, providerColor }: { msg: ChatMessage; providerColor
           border: '1px solid var(--border-color)', borderRadius: '0', padding: '10px 14px',
           fontSize: '12.5px', lineHeight: 1.55,
         }}>
-          {msg.content}
+          <div>{msg.content}</div>
+          {msg.attachments && msg.attachments.length > 0 && (
+            <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'flex-end' }}>
+              {msg.attachments.map((file, idx) => (
+                <div key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '10px', color: '#fff' }}>
+                  📎 {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -282,6 +292,48 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
   const [userConfigs, setUserConfigs] = useState<Partial<Record<ProviderId, ProviderConfig>>>({});
   const [adminConfig, setAdminConfig] = useState<AdminConfig | null>(null);
 
+  // Cost and attachment states
+  const [costHistoryTick, setCostHistoryTick] = useState(0);
+  const [attachedFiles, setAttachedFiles] = useState<ChatAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleUpdate = () => setCostHistoryTick(prev => prev + 1);
+    window.addEventListener('planora-costs-updated', handleUpdate);
+    window.addEventListener('planora-costs-cleared', handleUpdate);
+    return () => {
+      window.removeEventListener('planora-costs-updated', handleUpdate);
+      window.removeEventListener('planora-costs-cleared', handleUpdate);
+    };
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const fileList = Array.from(e.target.files);
+    fileList.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setAttachedFiles(prev => [...prev, {
+          name: file.name,
+          type: file.type || 'text/plain',
+          size: file.size,
+          content: content,
+        }]);
+      };
+      if (file.type.startsWith('image/')) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.readAsText(file);
+      }
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (idx: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
   // Admin panel state
   const [adminPassword, setAdminPassword] = useState('');
   const [adminAuthed, setAdminAuthed] = useState(false);
@@ -372,7 +424,10 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
       role: 'user',
       content: text,
       timestamp: Date.now(),
+      attachments: attachedFiles.length > 0 ? attachedFiles : undefined,
     };
+
+    setAttachedFiles([]);
 
     const assistantMsg: ChatMessage = {
       id: `a-${Date.now()}`,
@@ -514,6 +569,15 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
               }}
             ><Shield size={16} /></button>
             <button
+              onClick={() => setView(view === 'billing' ? 'chat' : 'billing')}
+              title="Token Billing & Cost tracker"
+              style={{
+                background: view === 'billing' ? 'var(--bg-hover)' : 'transparent',
+                border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px',
+                color: view === 'billing' ? 'var(--accent-primary)' : 'var(--text-muted)', display: 'flex',
+              }}
+            ><DollarSign size={16} /></button>
+            <button
               onClick={() => setView(view === 'settings' ? 'chat' : 'settings')}
               title="Provider settings"
               style={{
@@ -549,6 +613,71 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
             {context.selectedDataset && (
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>DS: {context.selectedDataset}</span>
             )}
+          </div>
+        )}
+
+        {/* ── Billing view ────────────────────────────────────────────────────── */}
+        {view === 'billing' && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>Token Billing & Cost Tracker</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Monitor simulated API token consumption rates and cost estimates across your portfolio models.
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ padding: '12px', background: 'var(--bg-hover)', border: '1px solid var(--border-color)', borderRadius: '4px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Total Cost</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--status-good)', fontFamily: 'var(--font-mono)' }}>
+                  ${getAccumulatedCosts().reduce((acc, c) => acc + c.cost, 0).toFixed(4)}
+                </div>
+              </div>
+              <div style={{ padding: '12px', background: 'var(--bg-hover)', border: '1px solid var(--border-color)', borderRadius: '4px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Total Requests</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
+                  {getAccumulatedCosts().length}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, border: '1px solid var(--border-color)', padding: '12px', overflowY: 'auto', backgroundColor: 'var(--bg-panel)', minHeight: '150px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Billing Ledger</span>
+                {getAccumulatedCosts().length > 0 && (
+                  <button 
+                    onClick={() => {
+                      clearAccumulatedCosts();
+                    }}
+                    style={{ fontSize: '0.65rem', color: 'var(--status-error)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Reset Logs
+                  </button>
+                )}
+              </div>
+              
+              {getAccumulatedCosts().length === 0 ? (
+                <div style={{ height: '80%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                  No usage logged yet. Send a chat to estimate token cost.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {getAccumulatedCosts().map((item, idx) => (
+                    <div key={idx} style={{ fontSize: '0.72rem', borderBottom: '1px dashed var(--border-color)', paddingBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.modelId}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
+                          In: {item.inputTokens} | Out: {item.outputTokens}
+                        </div>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-main)', alignSelf: 'center' }}>
+                        ${item.cost.toFixed(4)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -766,7 +895,43 @@ export default function CopilotPanel({ isOpen, onClose, context }: CopilotPanelP
                 )}
               </div>
 
+              {/* Attachment Preview list */}
+              {attachedFiles.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                  {attachedFiles.map((file, idx) => (
+                    <div key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '2px 8px', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-main)' }}>
+                      <span>📎 {file.name}</span>
+                      <button 
+                        onClick={() => removeAttachment(idx)} 
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--status-error)', fontSize: '11px', fontWeight: 'bold', padding: 0 }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  multiple 
+                  style={{ display: 'none' }} 
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!isConfigured || isStreaming}
+                  style={{
+                    width: '38px', height: '38px', borderRadius: '10px', border: '1px solid var(--border-color)', cursor: 'pointer',
+                    background: 'var(--bg-main)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, transition: 'all 0.2s',
+                  }}
+                  title="Attach file"
+                >
+                  <Paperclip size={15} />
+                </button>
                 <textarea
                   ref={inputRef}
                   value={input}

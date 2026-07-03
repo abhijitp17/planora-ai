@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { ConsensusBulkActions } from '@/components/ui/ConsensusBulkActions';
-import { autoMLForecast, batchForecast } from '@/lib/api';
+import { autoMLForecast, batchForecast, diffDatasetVersions } from '@/lib/api';
 import { 
   Activity, Upload, Settings, Plus, Calendar, Tag, TrendingDown, DollarSign, AlertTriangle,
 } from 'lucide-react';
@@ -29,9 +29,31 @@ export default function DemandModule() {
     activeTab, skuDatabase, selectedSkuId, forecastModel: model,
     horizon, horizonUnit, smaWindow, emaAlpha, mlEstimators, arimaOrder,
     consensusAdjustments, apiForecastData, apiForecastMetrics, isForecastLoading,
+    selectedDataset, availableDatasets,
   } = state;
 
   const selectedSku = skuDatabase.find(s => s.id === selectedSkuId) ?? skuDatabase[0];
+
+  // Compare state
+  const [compareVersionB, setCompareVersionB] = React.useState('');
+  const [comparisonResults, setComparisonResults] = React.useState<any>(null);
+  const [isComparing, setIsComparing] = React.useState(false);
+  const [comparisonError, setComparisonError] = React.useState('');
+
+  const runVersionComparison = async (versionB: string) => {
+    if (!selectedDataset || !versionB) return;
+    setIsComparing(true);
+    setComparisonError('');
+    setComparisonResults(null);
+    try {
+      const res = await diffDatasetVersions(selectedDataset, versionB);
+      setComparisonResults(res);
+    } catch (e: any) {
+      setComparisonError(e.message || 'Failed to compare datasets.');
+    } finally {
+      setIsComparing(false);
+    }
+  };
 
 
   const forecastData = React.useMemo(() => {
@@ -71,13 +93,13 @@ export default function DemandModule() {
               <div className="workspace-panel shadow-sm">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Category Volume Distribution</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={skuDatabase}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip cursor={{fill:'var(--bg-hover)'}} contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Bar dataKey="base" fill="var(--accent-primary)" radius={0} barSize={40} /></BarChart>
+                  <BarChart data={skuDatabase} margin={{ top: 10, right: 10, left: 45, bottom: 20 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip cursor={{fill:'var(--bg-hover)'}} contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Bar dataKey="base" fill="var(--accent-primary)" radius={0} barSize={40} /></BarChart>
                 </ResponsiveContainer>
               </div>
               <div className="workspace-panel shadow-sm">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Historical Aggregate Demand</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={forecastData.filter((d: any) => d.isHistorical)}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Line type="monotone" dataKey="actual" stroke="var(--accent-primary)" strokeWidth={2} dot={false} /></LineChart>
+                  <LineChart data={forecastData.filter((d: any) => d.isHistorical)} margin={{ top: 10, right: 10, left: 45, bottom: 20 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" /><XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }}/><RechartsTooltip contentStyle={{ borderRadius:'0px', border:'1px solid var(--border-color)', background:'var(--bg-panel)', color:'var(--text-main)' }}/><Line type="monotone" dataKey="actual" stroke="var(--accent-primary)" strokeWidth={2} dot={false} /></LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
@@ -100,7 +122,7 @@ export default function DemandModule() {
                     <div className="forecast-loading"><div className="spin" /><span>Running ML forecast engine…</span></div>
                   )}
                   <ResponsiveContainer>
-                    <ComposedChart data={forecastData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                    <ComposedChart data={forecastData} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                       <XAxis dataKey="period" stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                       <YAxis stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
@@ -323,7 +345,7 @@ export default function DemandModule() {
                 
                 <div style={{ height: '380px' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={forecastData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                    <ComposedChart data={forecastData} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                       <XAxis dataKey="period" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
                       <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
@@ -529,7 +551,7 @@ export default function DemandModule() {
                     { name: 'Prime Day', uplift: 52 },
                     { name: 'Cyber Monday', uplift: 68 },
                     { name: 'Holiday Promo', uplift: 45 },
-                  ]} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                  ]} margin={{ top: 10, right: 10, left: 45, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
@@ -639,6 +661,64 @@ export default function DemandModule() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            <div className="workspace-panel mt-6" style={{ borderTop: '1.5px solid var(--border-color)', marginTop: '24px', paddingTop: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Database size={18} color="var(--accent-primary)" />
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Dataset Version Cross-Comparison</h3>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>
+                Compare current dataset <strong>{selectedDataset || 'Active'}</strong> against another uploaded dataset version.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <select 
+                  value={compareVersionB} 
+                  onChange={(e) => {
+                    setCompareVersionB(e.target.value);
+                    if (e.target.value) runVersionComparison(e.target.value);
+                  }}
+                  className="form-control"
+                  style={{ maxWidth: '300px', padding: '0.4rem', border: '1px solid var(--border-color)', background: 'var(--bg-panel)', color: 'var(--text-main)' }}
+                >
+                  <option value="">-- Select Version to Compare --</option>
+                  {(availableDatasets || []).filter(v => v !== selectedDataset).map(v => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+                
+                {isComparing && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Comparing datasets...</span>}
+              </div>
+
+              {comparisonError && (
+                <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--status-error)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                  {comparisonError}
+                </div>
+              )}
+
+              {comparisonResults && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Added Records</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--status-good)', fontFamily: 'var(--font-mono)' }}>+{comparisonResults.added_rows}</div>
+                  </div>
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Deleted Records</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--status-error)', fontFamily: 'var(--font-mono)' }}>-{comparisonResults.deleted_rows}</div>
+                  </div>
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Modified Records</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>{comparisonResults.changed_rows}</div>
+                  </div>
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Avg Demand Shift</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 600, color: comparisonResults.average_demand_shift >= 0 ? 'var(--status-good)' : 'var(--status-warn)', fontFamily: 'var(--font-mono)' }}>
+                      {comparisonResults.average_demand_shift > 0 ? '+' : ''}{comparisonResults.average_demand_shift}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -67,9 +67,9 @@ export default function GlobalAnalyticsModule() {
                   
                   <div className="workspace-panel shadow-sm">
                      <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Forecast vs Actual Attainment</h3>
-                     <ResponsiveContainer width="100%" height={300}>
-                        <ComposedChart data={demandAccuracyData}>
-                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                      <ResponsiveContainer width="100%" height={300}>
+                         <ComposedChart data={demandAccuracyData} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                            <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
                            <YAxis stroke="var(--text-muted)" fontSize={12} />
                            <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} />
@@ -187,9 +187,9 @@ export default function GlobalAnalyticsModule() {
 
                   <div className="workspace-panel shadow-sm">
                      <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Service Level Trending (12 Weeks)</h3>
-                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={otifData}>
-                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                      <ResponsiveContainer width="100%" height={300}>
+                         <LineChart data={otifData} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                            <XAxis dataKey="week" stroke="var(--text-muted)" fontSize={12} />
                            <YAxis stroke="var(--text-muted)" fontSize={12} domain={[80, 100]} />
                            <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} />
@@ -274,8 +274,8 @@ export default function GlobalAnalyticsModule() {
                      <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '1.5rem', margin: 0 }}>Working Capital vs Gross Margin Map</h3>
                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Scatter representation of capital investment against margin yield to identify inefficient capital traps.</p>
                      <ResponsiveContainer width="100%" height={300}>
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)"/>
+                         <ScatterChart margin={{ top: 20, right: 20, bottom: 25, left: 45 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)"/>
                             <XAxis type="number" dataKey="x" name={`Working Cap Built (${CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'})`} unit={CURRENCIES.find(c => c.code === selectedCurrencyCode)?.symbol ?? '$'} stroke="var(--text-muted)" fontSize={12} />
                             <YAxis type="number" dataKey="y" name="Gross Margin Yield (%)" unit="%" stroke="var(--text-muted)" fontSize={12} />
                             <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '0px' }}/>

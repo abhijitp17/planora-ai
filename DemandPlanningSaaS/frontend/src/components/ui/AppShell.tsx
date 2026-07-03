@@ -5,7 +5,7 @@ import {
   TrendingUp, Package, Stethoscope, Briefcase, DollarSign, BarChart2,
   BrainCircuit, Gauge, Upload, Bell, Sparkles, Sun, Moon, Search,
   ChevronLeft, ChevronRight, CheckCircle2, Tag, Menu, User,
-  LogOut, Settings, Shield, AlertTriangle, Activity, Database, Network, Store, ArrowRightLeft,
+  LogOut, Settings, Shield, AlertTriangle, Activity, Database, Network, Store, ArrowRightLeft, Users,
 } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 import { usePlatform } from '@/store/PlatformContext';
@@ -34,21 +34,23 @@ const TwinModule        = lazy(() => import('@/modules/twin'));
 const RetailModule      = lazy(() => import('@/modules/retail'));
 const PricingModule     = lazy(() => import('@/modules/pricing'));
 const ExecutionModule   = lazy(() => import('@/modules/execution'));
+const SupplierModule    = lazy(() => import('@/modules/supplier'));
 
 // ─── Module registry ──────────────────────────────────────────────────────────
 const MODULE_DEFS = [
   { id: 'demand' as ModuleId,      label: 'Demand Planning',        icon: <TrendingUp size={18}/>,  minRole: 'viewer',  tabs: [{ id:'overview', label:'Overview' }, { id:'data', label:'Data Explorer' }, { id:'editor', label:'Forecast Editor' }, { id:'analysis', label:'Performance' }, { id:'npi', label:'NPI' }, { id:'sensing', label:'Demand Sensing' }, { id:'causal', label:'Causal Forecasting' }, { id:'events', label:'Event Calendar' }, { id:'promo', label:'Promotion Planning' }, { id:'sensitivity', label:'Sensitivity' }, { id:'versions', label:'Versions' }] },
-  { id: 'inventory' as ModuleId,   label: 'Inventory Optimization', icon: <Package size={18}/>,     minRole: 'viewer',  tabs: [{ id:'overview', label:'Network Dashboard' }, { id:'safety_stock', label:'Safety Stock' }, { id:'replenishment', label:'Replenishment' }, { id:'abc_xyz', label:'ABC/XYZ Segmentation' }, { id:'multi_echelon', label:'Multi-Echelon' }, { id:'balancing', label:'Network Balancing' }, { id:'health', label:'Health Score' }] },
+  { id: 'inventory' as ModuleId,   label: 'Inventory Optimization', icon: <Package size={18}/>,     minRole: 'viewer',  tabs: [{ id:'overview', label:'Network Dashboard' }, { id:'safety_stock', label:'Safety Stock' }, { id:'replenishment', label:'Replenishment' }, { id:'abc_xyz', label:'ABC/XYZ Segmentation' }, { id:'multi_echelon', label:'Multi-Echelon' }, { id:'balancing', label:'Network Balancing' }, { id:'warehouse', label:'Warehouse Intelligence' }, { id:'health', label:'Health Score' }] },
   { id: 'diagnostics' as ModuleId, label: 'SC Diagnostics',         icon: <Stethoscope size={18}/>, minRole: 'planner', tabs: [{ id:'overview', label:'HOTW Tracker' }, { id:'entropy', label:'Entropy Scanner' }] },
   { id: 'sop' as ModuleId,         label: 'S&OP / IBP',             icon: <Briefcase size={18}/>,   minRole: 'manager', tabs: [{ id:'cycle', label:'IBP Cycle' }, { id:'overview', label:'Executive Review' }, { id:'balancing', label:'RCCP Balancing' }, { id:'finance', label:'Financial Reconciliation' }, { id:'scenarios', label:'Scenario S&OP' }, { id:'strategic', label:'Strategic Horizon' }] },
   { id: 'finance' as ModuleId,     label: 'Financial Simulation',   icon: <DollarSign size={18}/>,  minRole: 'manager', tabs: [{ id:'overview', label:'Scenario Simulation' }, { id:'optimization', label:'Product Mix' }, { id:'plan', label:'Master Plan' }, { id:'cashflow', label:'Cash Flow' }, { id:'budget', label:'Budget Planning' }, { id:'profitability', label:'Profitability' }, { id:'workingcapital', label:'Working Capital' }] },
   { id: 'analytics' as ModuleId,   label: 'Global Analytics',       icon: <BarChart2 size={18}/>,   minRole: 'viewer',  tabs: [{ id:'overview', label:'Demand & Sales' }, { id:'inventory', label:'Inventory Health' }, { id:'service', label:'Service & Fulfillment' }, { id:'supply', label:'Supplier & Capacity' }, { id:'financial', label:'Financial Capital' }, { id:'ai', label:'✨ AI Insights' }, { id:'prescriptive', label:'Prescriptive Actions' }, { id:'autonomous', label:'Autonomous Planning' }] },
-  { id: 'bi' as ModuleId,          label: 'Business Intelligence',  icon: <Database size={18}/>,    minRole: 'viewer',  tabs: [{ id:'sources', label:'Data Sources' }, { id:'query', label:'Visual Query Builder' }, { id:'dashboards', label:'Custom Dashboards' }, { id:'semantic', label:'Semantic Layer' }, { id:'catalogue', label:'Metric Catalogue' }] },
+  { id: 'bi' as ModuleId,          label: 'Business Intelligence',  icon: <Database size={18}/>,    minRole: 'viewer',  tabs: [{ id:'sources', label:'Data Sources' }, { id:'query', label:'Visual Query Builder' }, { id:'dashboards', label:'Custom Dashboards' }, { id:'semantic', label:'Semantic Layer' }, { id:'catalogue', label:'Metric Catalogue' }, { id:'lineage', label:'Data Lineage' }] },
   { id: 'twin' as ModuleId,        label: 'Digital Twin & Scenarios', icon: <Network size={18}/>,   minRole: 'planner', tabs: [{ id:'network', label:'Network Topology' }, { id:'scenarios', label:'Scenario Sandbox' }, { id:'impact', label:'Impact Analysis' }, { id:'shock', label:'Demand Shock' }, { id:'montecarlo', label:'Risk (Monte Carlo)' }] },
   { id: 'retail' as ModuleId,      label: 'Retail & Category',      icon: <Store size={18}/>,       minRole: 'planner', tabs: [{ id:'overview', label:'Category Overview' }, { id:'assortment', label:'Assortment & Merchandising' }, { id:'space', label:'Space Planning' }, { id:'demand', label:'Retail Demand' }, { id:'scorecard', label:'Category Scorecard' }, { id:'lifecycle', label:'Product Lifecycle' }, { id:'longtail', label:'Long Tail & Rationalization' }, { id:'cannibalization', label:'Cannibalization' }, { id:'roles', label:'Category Roles' }] },
   { id: 'pricing' as ModuleId,     label: 'Pricing & Promotion',    icon: <Tag size={18}/>,         minRole: 'planner', tabs: [{ id:'elasticity', label:'Price Elasticity' }, { id:'simulate', label:'Price Simulation' }, { id:'promo', label:'Promotion ROI' }, { id:'dynamic', label:'Dynamic Pricing' }] },
   { id: 'execution' as ModuleId,   label: 'Execution Systems',      icon: <ArrowRightLeft size={18}/>, minRole: 'manager', tabs: [{ id:'connectors', label:'Connectors' }, { id:'documents', label:'Outbound Documents' }, { id:'apis', label:'API & Webhooks' }, { id:'events', label:'Event Stream' }] },
-  { id: 'governance' as ModuleId,  label: 'Governance & Admin',     icon: <Shield size={18}/>,      minRole: 'manager', tabs: [{ id:'approvals', label:'Workflow Approvals' }, { id:'master', label:'Master Data' }] },
+  { id: 'supplier' as ModuleId,    label: 'Supplier Collaboration', icon: <Users size={18}/>,       minRole: 'viewer',  tabs: [{ id:'collaborative', label:'Collaborative Planning' }, { id:'portal', label:'Supplier Portal' }, { id:'scorecard', label:'Supplier Performance' }] },
+  { id: 'governance' as ModuleId,  label: 'Governance & Admin',     icon: <Shield size={18}/>,      minRole: 'manager', tabs: [{ id:'approvals', label:'Workflow Approvals' }, { id:'master', label:'Master Data' }, { id:'workforce', label:'Workforce Risk' }, { id:'rules', label:'Governance Rules' }] },
 ];
 
 const ROLE_RANK: Record<string, number> = { viewer: 0, planner: 1, manager: 2, admin: 3 };
@@ -64,7 +66,7 @@ const NAVIGATION_CLUSTERS = [
   },
   {
     name: 'Execute',
-    modules: ['execution']
+    modules: ['execution', 'supplier']
   },
   {
     name: 'Govern',
@@ -215,6 +217,7 @@ function ActiveModule({ moduleId }: { moduleId: ModuleId }) {
     case 'retail':      return <RetailModule />;
     case 'pricing':     return <PricingModule />;
     case 'execution':   return <ExecutionModule />;
+    case 'supplier':    return <SupplierModule />;
     default:            return <div style={{ padding:'2rem', color:'var(--text-muted)' }}>Module not found.</div>;
   }
 }

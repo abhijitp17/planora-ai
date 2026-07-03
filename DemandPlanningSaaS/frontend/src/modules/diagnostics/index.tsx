@@ -155,7 +155,7 @@ export default function SupplyChainDiagnosticsModule() {
                        <div style={{ position: 'absolute', left: '50%', top: '5%', bottom: '15%', borderLeft: '2px dashed var(--border-color)', zIndex: 0 }} />
                        
                        <ResponsiveContainer>
-                         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                         <ScatterChart margin={{ top: 20, right: 20, bottom: 25, left: 45 }}>
                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" opacity={0.5} />
                            <XAxis type="number" dataKey="x" name="ADI" tick={{ fontSize: 12 }} stroke="var(--text-muted)" />
                            <YAxis type="number" dataKey="y" name="CV" tick={{ fontSize: 12 }} stroke="var(--text-muted)" />

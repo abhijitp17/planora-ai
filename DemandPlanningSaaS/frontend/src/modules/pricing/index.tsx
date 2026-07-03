@@ -75,7 +75,7 @@ function ElasticityView({ dataset, cur }: { dataset: string; cur: string }) {
       <div className="workspace-panel shadow-sm">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Profit & Revenue Curve — {cat.category}</h3>
         <ResponsiveContainer width="100%" height={320}>
-          <ComposedChart data={cat.curve} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <ComposedChart data={cat.curve} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="price_change_pct" stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />

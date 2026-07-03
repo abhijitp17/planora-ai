@@ -98,7 +98,7 @@ export function DataTable<T extends object>({
       return (
         <span style={{
           display: 'block',
-          textAlign: col.align ?? 'left',
+          textAlign: col.align ?? 'center',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           fontFamily: useMono ? 'var(--font-mono)' : 'var(--font-sans)',
         }}>
@@ -157,11 +157,11 @@ export function DataTable<T extends object>({
   const isLoading = serverSide?.isLoading ?? false;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         {title && (
-          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>{title}</h3>
+          <h3 className="dt-title" style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)' }}>{title}</h3>
         )}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: title ? 'auto' : 0 }}>
           {/* Search */}
@@ -230,7 +230,7 @@ export function DataTable<T extends object>({
                           color: 'var(--text-main)', letterSpacing: '0.5px',
                           cursor: canSort ? 'pointer' : 'default',
                           userSelect: 'none', whiteSpace: 'nowrap',
-                          textAlign: columns[colIdx]?.align ?? 'left',
+                          textAlign: columns[colIdx]?.align ?? 'center',
                           position: isFirst ? 'sticky' : undefined,
                           left: isFirst ? 0 : undefined,
                           zIndex: isFirst ? 3 : undefined,
@@ -238,7 +238,7 @@ export function DataTable<T extends object>({
                           fontFamily: 'var(--font-mono)',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: columns[colIdx]?.align === 'right' ? 'flex-end' : 'flex-start' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {canSort && <SortIcon sorted={sorted} />}
                         </div>
@@ -293,7 +293,7 @@ export function DataTable<T extends object>({
                               borderBottom: '1px solid var(--border-color)',
                               fontSize: '0.875rem', color: 'var(--text-main)',
                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                              textAlign: columns[colIdx]?.align ?? 'left',
+                              textAlign: columns[colIdx]?.align ?? 'center',
                               position: isFirst ? 'sticky' : undefined,
                               left: isFirst ? 0 : undefined,
                               zIndex: isFirst ? 2 : undefined,

@@ -542,6 +542,15 @@ span, div, td, input, select, option, button {
   padding: 16px 20px;
   margin-bottom: 16px;
 }
+.workspace-panel h1:not(.dt-title),
+.workspace-panel h2:not(.dt-title),
+.workspace-panel h3:not(.dt-title),
+.workspace-panel h4:not(.dt-title),
+.workspace-panel h5:not(.dt-title),
+.workspace-panel h6:not(.dt-title) {
+  margin-top: 0 !important;
+  margin-bottom: 1.5rem !important;
+}
 .kpi-infolet {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
@@ -614,7 +623,7 @@ span, div, td, input, select, option, button {
 table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  text-align: center !important;
   background: var(--bg-panel);
   white-space: nowrap;
 }
@@ -628,6 +637,7 @@ th {
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.5px;
+  text-align: center !important;
 }
 td {
   padding: 8px 12px;
@@ -635,6 +645,7 @@ td {
   color: var(--text-main);
   font-size: 12.5px;
   height: 38px;
+  text-align: center !important;
 }
 tr:hover td {
   background: var(--bg-hover);
@@ -653,7 +664,7 @@ th.sticky-left {
 
 /* Monospace alignment for table values */
 td.right-align, td[style*="text-align: right"], td[style*="textAlign: right"] {
-  text-align: right !important;
+  text-align: center !important;
   font-family: var(--font-mono) !important;
 }
 

@@ -370,7 +370,21 @@ export async function detectOutliers(dataset_version: string, sku: string, metho
 }
 
 export async function saveForecastVersion(dataset_version: string, sku: string, model_name: string, forecast_values: number[], notes = '') {
-  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/forecast/save-version`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dataset_version, sku, model_name, forecast_values, notes }) });
+  const url = new URL(`${NEXT_PUBLIC_API_URL}/api/forecast/save-version`);
+  url.searchParams.set('dataset_version', dataset_version);
+  url.searchParams.set('sku', sku);
+  url.searchParams.set('model_name', model_name);
+  if (notes) url.searchParams.set('notes', notes);
+  
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(forecast_values),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Forecast save failed' }));
+    throw new Error(errorData.detail || 'Forecast save failed');
+  }
   return res.json();
 }
 
@@ -383,7 +397,13 @@ export async function getInventoryHealthScore(dataset_version: string, sku: stri
 }
 
 export async function diffDatasetVersions(version_a: string, version_b: string) {
-  return fetch(`${NEXT_PUBLIC_API_URL}/api/datasets/diff?version_a=${version_a}&version_b=${version_b}`).then(r => r.json());
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/datasets/diff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version_a, version_b }),
+  });
+  if (!res.ok) throw new Error('Dataset comparison failed');
+  return res.json();
 }
 
 export async function getOptimizedEnsemble(dataset_version: string, sku: string, horizon = 12) {
@@ -407,6 +427,15 @@ export async function executeNetworkTransfers(transfers: any[], format = 'SAP') 
 
 export async function detectAnomalies(dataset_version: string, sku = '') {
   const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/analytics/anomaly-detection`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dataset_version, sku }) });
+  return res.json();
+}
+
+export async function optimizeMultiEchelon(dataset_version: string, network_config: any = null, service_level = 0.95) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/inventory/multi-echelon`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataset_version, network_config, service_level }),
+  });
   return res.json();
 }
 
@@ -491,3 +520,108 @@ export async function getApiRegistry() {
 export async function getEventStream(limit = 25) {
   return fetch(`${NEXT_PUBLIC_API_URL}/api/execution/event-stream?limit=${limit}`).then(r => r.json());
 }
+
+export async function compareDatasets(version_a: string, version_b: string) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/datasets/diff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version_a, version_b }),
+  });
+  if (!res.ok) throw new Error('Dataset comparison failed');
+  return res.json();
+}
+
+export async function executeHighConfidenceActions() {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/ai/autonomous-planning/execute-high-confidence`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Autonomous planning execution failed');
+  return res.json();
+}
+
+export async function pingConnector(connectorId: string) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/execution/connectors/ping`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ connector_id: connectorId }),
+  });
+  if (!res.ok) throw new Error('Connector ping check failed');
+  return res.json();
+}
+
+export async function syncConnector(connectorId: string, forceFullSync: boolean = false) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/execution/connectors/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ connector_id: connectorId, force_full_sync: forceFullSync }),
+  });
+  if (!res.ok) throw new Error('Connector sync failed');
+  return res.json();
+}
+
+
+export async function getGovernanceSettings() {
+  return fetch(`${NEXT_PUBLIC_API_URL}/api/governance/settings`).then(r => r.json());
+}
+
+export async function saveGovernanceSettings(settings: { consensus_cap_pct: number; service_level_floor_pct: number; locked_skus: string[] }) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/governance/settings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings),
+  });
+  if (!res.ok) throw new Error('Failed to save governance settings');
+  return res.json();
+}
+
+// Warehouse Intelligence APIs
+export async function getWarehouseCapacity() {
+  return fetch(`${NEXT_PUBLIC_API_URL}/api/warehouse/capacity`).then(r => r.json());
+}
+
+export async function optimizeSlotting(facilityId: string, skusCount = 100) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/warehouse/slotting/optimize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ facility_id: facilityId, skus_count: skusCount }),
+  });
+  if (!res.ok) throw new Error('Failed to run slotting optimization');
+  return res.json();
+}
+
+// Supplier Collaboration & Portal APIs
+export async function getSupplierForecasts(supplierName?: string) {
+  const url = supplierName 
+    ? `${NEXT_PUBLIC_API_URL}/api/supplier/forecasts?supplier_name=${encodeURIComponent(supplierName)}`
+    : `${NEXT_PUBLIC_API_URL}/api/supplier/forecasts`;
+  return fetch(url).then(r => r.json());
+}
+
+export async function commitSupplier(payload: { supplier_name: string; sku: string; dataset_version: string; commit_qty: number; notes?: string }) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/supplier/commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to save supplier commitments');
+  return res.json();
+}
+
+export async function uploadAsn(payload: { supplier_name: string; asn_number: string; items: Array<{ sku: string; qty: number }> }) {
+  const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/supplier/asn`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to transmit ASN upload');
+  return res.json();
+}
+
+export async function getAsnLedger(supplierName?: string) {
+  const url = supplierName
+    ? `${NEXT_PUBLIC_API_URL}/api/supplier/asn/ledger?supplier_name=${encodeURIComponent(supplierName)}`
+    : `${NEXT_PUBLIC_API_URL}/api/supplier/asn/ledger`;
+  return fetch(url).then(r => r.json());
+}
+
+

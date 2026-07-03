@@ -315,7 +315,7 @@ function RCCPBalancingView({ skuDatabase, selectedDataset, selectedCurrencyCode,
           <h3 style={{ fontSize: '1.1rem', margin: '0 0 1.5rem', color: 'var(--text-main)' }}>Rough-Cut Capacity Planning (Aggregate Units)</h3>
           <div style={{ height: '320px', width: '100%' }}>
             <ResponsiveContainer>
-              <ComposedChart data={monthlyData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+              <ComposedChart data={monthlyData} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                 <XAxis dataKey="month" stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                 <YAxis stroke="var(--text-muted)" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontFamily: 'var(--font-mono)' }} />
@@ -566,7 +566,7 @@ function ScenarioSOPView({ selectedCurrencyCode, selectedDataset, canEdit }: { s
       <div className="workspace-panel shadow-sm">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Scenario Comparison — Revenue vs Margin</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={data.scenarios} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <ComposedChart data={data.scenarios} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="scenario" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="left" stroke="var(--text-muted)" tick={{ fontSize: 11, fontFamily: 'var(--font-mono)' }} />
@@ -629,7 +629,7 @@ function StrategicHorizonView({ selectedCurrencyCode, selectedDataset }: { selec
       <div className="workspace-panel shadow-sm mb-6">
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-main)' }}>Revenue & Capacity Trajectory</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={data.horizon} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+          <ComposedChart data={data.horizon} margin={{ top: 10, right: 30, left: 45, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis dataKey="period" stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
             <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} />

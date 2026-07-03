@@ -147,11 +147,11 @@ function CategoryOverview({ categories }: { categories: RetailCategory[] }) {
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Category Performance</h3>
         <div style={{ height: '280px', marginBottom: '1.5rem' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={categories.slice(0,6).map(c => ({ name: c.name.slice(0,15), revenue: c.revenue/1000, margin: c.margin }))}>
+            <BarChart data={categories.slice(0,6).map(c => ({ name: c.name.slice(0,15), revenue: c.revenue/1000, margin: c.margin }))} margin={{ top: 10, right: 35, left: 45, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="left" tick={{ fontSize: 11 }} label={{ value: 'Revenue ($K)', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} label={{ value: 'Margin %', angle: 90, position: 'insideRight', style: { fontSize: 11 } }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11 }} label={{ value: 'Revenue ($K)', angle: -90, position: 'insideLeft', offset: -25, style: { fontSize: 11, fill: 'var(--text-main)' } }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} label={{ value: 'Margin %', angle: 90, position: 'insideRight', offset: -20, style: { fontSize: 11, fill: 'var(--text-main)' } }} />
               <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar yAxisId="left" dataKey="revenue" fill="var(--accent-primary)" radius={[4,4,0,0]} name="Revenue ($K)" />
@@ -296,10 +296,10 @@ function SpacePlanning({ spaces, categories, onOptimize, isOptimizing, canEdit }
         <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Space Share vs Sales Share Analysis</h4>
         <div style={{ height: '320px' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 30, bottom: 20, left: 20 }}>
+            <ScatterChart margin={{ top: 15, right: 30, bottom: 40, left: 45 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis dataKey="spaceShare" name="Space Share" unit="%" tick={{ fontSize: 11 }} label={{ value: 'Space Share %', position: 'insideBottom', offset: -10, style: { fontSize: 11 } }} />
-              <YAxis dataKey="salesShare" name="Sales Share" unit="%" tick={{ fontSize: 11 }} label={{ value: 'Sales Share %', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
+              <XAxis dataKey="spaceShare" name="Space Share" unit="%" tick={{ fontSize: 11 }} label={{ value: 'Space Share %', position: 'insideBottom', offset: -25, style: { fontSize: 11, fill: 'var(--text-main)' } }} />
+              <YAxis dataKey="salesShare" name="Sales Share" unit="%" tick={{ fontSize: 11 }} label={{ value: 'Sales Share %', angle: -90, position: 'insideLeft', offset: -30, style: { fontSize: 11, fill: 'var(--text-main)', textAnchor: 'middle' } }} />
               <ZAxis dataKey="margin" range={[100, 800]} name="Margin" />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />

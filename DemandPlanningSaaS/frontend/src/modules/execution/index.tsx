@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { usePlatform } from '@/store/PlatformContext';
 import { useAuth } from '@/store/AuthContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { getConnectors, generateExecutionDoc, getApiRegistry, getEventStream } from '@/lib/api';
+import { getConnectors, generateExecutionDoc, getApiRegistry, getEventStream, pingConnector, syncConnector } from '@/lib/api';
 import {
   ArrowRightLeft, Database, Truck, ShoppingCart, Server, Zap, Download,
   CircleCheck, AlertTriangle, CircleDashed, ArrowDown, ArrowUp, RefreshCw,
+  Wifi,
 } from 'lucide-react';
 
 export default function ExecutionModule() {
@@ -32,16 +33,71 @@ export default function ExecutionModule() {
 function ConnectorsView() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pingResults, setPingResults] = useState<Record<string, { status: string; latency_ms: number; health: number; pinging?: boolean }>>({});
+  const [syncResults, setSyncResults] = useState<Record<string, { syncing?: boolean; records?: number; duration?: number; type?: string; error?: string }>>({});
 
   useEffect(() => {
     getConnectors().then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, []);
+
+  const handlePing = (connectorId: string) => {
+    setPingResults(prev => ({ 
+      ...prev, 
+      [connectorId]: { ...(prev[connectorId] || { status: '', latency_ms: 0, health: 0 }), pinging: true } 
+    }));
+    
+    pingConnector(connectorId)
+      .then(res => {
+        setPingResults(prev => ({
+          ...prev,
+          [connectorId]: {
+            status: res.status,
+            latency_ms: res.latency_ms,
+            health: res.health,
+            pinging: false
+          }
+        }));
+      })
+      .catch(() => {
+        setPingResults(prev => ({ 
+          ...prev, 
+          [connectorId]: { status: 'failed', latency_ms: 0, health: 0, pinging: false } 
+        }));
+      });
+  };
+
+  const handleSync = (connectorId: string) => {
+    setSyncResults(prev => ({
+      ...prev,
+      [connectorId]: { syncing: true }
+    }));
+    
+    syncConnector(connectorId)
+      .then(res => {
+        setSyncResults(prev => ({
+          ...prev,
+          [connectorId]: {
+            syncing: false,
+            records: res.records_synced,
+            duration: res.sync_duration_seconds,
+            type: res.sync_type
+          }
+        }));
+      })
+      .catch((err) => {
+        setSyncResults(prev => ({
+          ...prev,
+          [connectorId]: { syncing: false, error: err.message || 'Sync failed' }
+        }));
+      });
+  };
 
   const typeIcons: Record<string, any> = { ERP: Database, WMS: Server, TMS: Truck, Procurement: ShoppingCart };
   const statusConfig: Record<string, { color: string; icon: any; label: string }> = {
     connected: { color: 'var(--status-good)', icon: CircleCheck, label: 'Connected' },
     degraded: { color: 'var(--status-warn)', icon: AlertTriangle, label: 'Degraded' },
     configured: { color: 'var(--text-muted)', icon: CircleDashed, label: 'Configured' },
+    failed: { color: 'var(--status-error)', icon: AlertTriangle, label: 'Failed' },
   };
 
   if (loading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading connectors…</div>;
@@ -70,33 +126,103 @@ function ConnectorsView() {
       <div className="grid grid-cols-2 gap-6">
         {data.connectors.map((c: any) => {
           const Icon = typeIcons[c.type] || Database;
-          const sc = statusConfig[c.status];
+          const pingRes = pingResults[c.id];
+          const syncRes = syncResults[c.id];
+          const activeStatus = (pingRes && !pingRes.pinging) ? pingRes.status : c.status;
+          const activeHealth = (pingRes && !pingRes.pinging) ? pingRes.health : c.health;
+          const sc = statusConfig[activeStatus] || statusConfig.configured;
           const StatusIcon = sc.icon;
+          
           return (
-            <div key={c.id} className="workspace-panel shadow-sm" style={{ borderLeft: `4px solid ${sc.color}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={18} color="var(--accent-primary)" />
+            <div key={c.id} className="workspace-panel shadow-sm" style={{ borderLeft: `4px solid ${sc.color}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} color="var(--accent-primary)" />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>{c.name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{c.type} · {c.protocol}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>{c.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{c.type} · {c.protocol}</div>
-                  </div>
+                  <span className="badge" style={{ background: sc.color + '20', color: sc.color, border: `1px solid ${sc.color}`, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <StatusIcon size={11} /> {sc.label}
+                  </span>
                 </div>
-                <span className="badge" style={{ background: sc.color + '20', color: sc.color, border: `1px solid ${sc.color}`, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <StatusIcon size={11} /> {sc.label}
-                </span>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '0.75rem' }}>
+                  <div><span style={{ color: 'var(--text-muted)' }}>Direction:</span> <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{c.direction}</span></div>
+                  {(activeHealth > 0 || activeStatus === 'connected') && (
+                    <div><span style={{ color: 'var(--text-muted)' }}>Health:</span> <span style={{ fontWeight: 600, color: activeHealth > 95 ? 'var(--status-good)' : 'var(--status-warn)' }}>{activeHealth}%</span></div>
+                  )}
+                  <div><span style={{ color: 'var(--text-muted)' }}>Last sync:</span> <span style={{ fontWeight: 600 }}>{c.last_sync ? new Date(c.last_sync).toLocaleTimeString() : '—'}</span></div>
+                </div>
+                {pingRes && !pingRes.pinging && pingRes.latency_ms > 0 && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px', fontFamily: 'monospace' }}>
+                    Ping Response Latency: <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{pingRes.latency_ms} ms</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {c.objects.map((o: string) => (
+                    <span key={o} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>{o}</span>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '10px', fontSize: '0.75rem' }}>
-                <div><span style={{ color: 'var(--text-muted)' }}>Direction:</span> <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{c.direction}</span></div>
-                {c.health > 0 && <div><span style={{ color: 'var(--text-muted)' }}>Health:</span> <span style={{ fontWeight: 600, color: c.health > 95 ? 'var(--status-good)' : 'var(--status-warn)' }}>{c.health}%</span></div>}
-                <div><span style={{ color: 'var(--text-muted)' }}>Last sync:</span> <span style={{ fontWeight: 600 }}>{c.last_sync ? new Date(c.last_sync).toLocaleTimeString() : '—'}</span></div>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {c.objects.map((o: string) => (
-                  <span key={o} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>{o}</span>
-                ))}
+              
+              <div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
+                  <button 
+                    onClick={() => handlePing(c.id)}
+                    disabled={pingRes?.pinging}
+                    className="btn btn-outline"
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontSize: '0.75rem',
+                      padding: '6px 8px'
+                    }}
+                  >
+                    <Wifi size={13} />
+                    {pingRes?.pinging ? 'Pinging...' : 'Ping'}
+                  </button>
+                  <button 
+                    onClick={() => handleSync(c.id)}
+                    disabled={syncRes?.syncing}
+                    className="btn btn-primary"
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontSize: '0.75rem',
+                      padding: '6px 8px'
+                    }}
+                  >
+                    <RefreshCw size={13} />
+                    {syncRes?.syncing ? 'Syncing...' : 'Force Sync'}
+                  </button>
+                </div>
+                {syncRes && !syncRes.syncing && (
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '6px 8px',
+                    borderRadius: '4px',
+                    fontSize: '0.72rem',
+                    background: syncRes.error ? 'var(--status-error)10' : 'var(--status-good)10',
+                    color: syncRes.error ? 'var(--status-error)' : 'var(--status-good)',
+                    border: `1px solid ${syncRes.error ? 'var(--status-error)30' : 'var(--status-good)30'}`
+                  }}>
+                    {syncRes.error ? (
+                      <span>Error: {syncRes.error}</span>
+                    ) : (
+                      <span>Success: Synced {syncRes.records} {syncRes.type} records in {syncRes.duration}s</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -105,6 +231,7 @@ function ConnectorsView() {
     </div>
   );
 }
+
 
 // ── Outbound Documents ────────────────────────────────────────────────────────
 function DocumentsView({ dataset, canEdit }: { dataset: string; canEdit: boolean }) {
@@ -213,9 +340,75 @@ function ApiRegistryView() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sandbox State
+  const [selectedEndpoint, setSelectedEndpoint] = useState('/api/execution/connectors/sync');
+  const [requestBody, setRequestBody] = useState('{\n  "connector_id": "erp-sap",\n  "force_full_sync": true\n}');
+  const [responsePayload, setResponsePayload] = useState<any>(null);
+  const [sandboxLoading, setSandboxLoading] = useState(false);
+  const [sandboxError, setSandboxError] = useState<string | null>(null);
+
   useEffect(() => {
     getApiRegistry().then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, []);
+
+  const templates: Record<string, { method: string; body: string }> = {
+    '/api/execution/connectors/sync': {
+      method: 'POST',
+      body: JSON.stringify({ connector_id: 'erp-sap', force_full_sync: true }, null, 2)
+    },
+    '/api/supplier/commit': {
+      method: 'POST',
+      body: JSON.stringify({
+        supplier_name: 'Asia Sourcing Corp',
+        sku: 'ELE_PHONE_001',
+        dataset_version: 'v1',
+        commit_qty: 1350,
+        notes: 'Capacity updated via API sandbox'
+      }, null, 2)
+    },
+    '/api/supplier/asn': {
+      method: 'POST',
+      body: JSON.stringify({
+        supplier_name: 'Asia Sourcing Corp',
+        asn_number: 'ASN-SANDBOX-101',
+        items: [{ sku: 'ELE_PHONE_001', qty: 500 }]
+      }, null, 2)
+    },
+    '/api/warehouse/slotting/optimize': {
+      method: 'POST',
+      body: JSON.stringify({ facility_id: 'WH_EAST', skus_count: 50 }, null, 2)
+    }
+  };
+
+  const handleEndpointChange = (endpoint: string) => {
+    setSelectedEndpoint(endpoint);
+    if (templates[endpoint]) {
+      setRequestBody(templates[endpoint].body);
+    }
+  };
+
+  const executeApi = async () => {
+    setSandboxLoading(true);
+    setSandboxError(null);
+    setResponsePayload(null);
+    try {
+      const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}${selectedEndpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP Error ${res.status}: ${res.statusText}`);
+      }
+      const json = await res.json();
+      setResponsePayload(json);
+    } catch (err: any) {
+      setSandboxError(err.message || 'Execution failed');
+    } finally {
+      setSandboxLoading(false);
+    }
+  };
 
   if (loading) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading API registry…</div>;
   if (!data?.apis) return <div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Unable to load registry.</div>;
@@ -260,6 +453,92 @@ function ApiRegistryView() {
           </table>
         </div>
       </div>
+
+      {/* API Sandbox Playground */}
+      <div className="workspace-panel shadow-sm" style={{ marginTop: '2rem' }}>
+        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Zap size={16} color="var(--accent-primary)" />
+          <h4 style={{ fontSize: '1.05rem', margin: 0, fontWeight: 600, color: 'var(--text-main)' }}>Interactive API Sandbox Playground</h4>
+        </div>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+          Send mock HTTP requests to the active planning backend. Execution writes transaction events to the stream in real-time.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>Target Endpoint</label>
+              <select
+                value={selectedEndpoint}
+                onChange={(e) => handleEndpointChange(e.target.value)}
+                className="form-control"
+                style={{ width: '100%', fontSize: '0.82rem' }}
+              >
+                <option value="/api/execution/connectors/sync">POST /api/execution/connectors/sync (Force System Sync)</option>
+                <option value="/api/supplier/commit">POST /api/supplier/commit (Update Supplier Production Commit)</option>
+                <option value="/api/supplier/asn">POST /api/supplier/asn (Send Supplier ASN Dispatch)</option>
+                <option value="/api/warehouse/slotting/optimize">POST /api/warehouse/slotting/optimize (Run Slotting Optimizer)</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>Request JSON Payload</label>
+              <textarea
+                value={requestBody}
+                onChange={(e) => setRequestBody(e.target.value)}
+                rows={8}
+                style={{
+                  width: '100%',
+                  fontFamily: 'monospace',
+                  fontSize: '0.78rem',
+                  padding: '8px 12px',
+                  background: 'var(--bg-hover)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px',
+                  color: 'var(--text-main)',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            <button
+              onClick={executeApi}
+              disabled={sandboxLoading}
+              className="btn btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+            >
+              <Zap size={14} />
+              {sandboxLoading ? 'Executing Request...' : 'Trigger API Request'}
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>Response Payload</label>
+            <div style={{
+              flex: 1,
+              background: '#0f172a',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              padding: '12px',
+              color: '#38bdf8',
+              fontFamily: 'monospace',
+              fontSize: '0.78rem',
+              overflowY: 'auto',
+              minHeight: '220px',
+              whiteSpace: 'pre-wrap'
+            }}>
+              {sandboxLoading && <span style={{ color: '#94a3b8' }}>Executing request against Planora API...</span>}
+              {!sandboxLoading && sandboxError && <span style={{ color: '#f87171' }}>Error: {sandboxError}</span>}
+              {!sandboxLoading && !sandboxError && responsePayload && (
+                JSON.stringify(responsePayload, null, 2)
+              )}
+              {!sandboxLoading && !sandboxError && !responsePayload && (
+                <span style={{ color: '#64748b' }}>Awaiting API execution trigger...</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -269,11 +548,18 @@ function EventStreamView() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = () => {
-    setLoading(true);
+  const load = (silent = false) => {
+    if (!silent) setLoading(true);
     getEventStream(25).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   };
-  useEffect(() => { load(); }, []);
+  
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => {
+      load(true);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const statusColors: Record<string, string> = { success: 'var(--status-good)', retry: 'var(--status-warn)', failed: 'var(--status-error)' };
 
@@ -289,7 +575,7 @@ function EventStreamView() {
             Live ledger of messages flowing between the platform and execution systems.
           </p>
         </div>
-        <button className="btn btn-outline" onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button className="btn btn-outline" onClick={() => load()} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <RefreshCw size={14} /> Refresh
         </button>
       </div>

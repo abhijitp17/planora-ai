@@ -16,6 +16,13 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Demand Planning MVP Engine")
 
+# Global data governance settings
+GOVERNANCE_SETTINGS = {
+    "consensus_cap_pct": 30.0,
+    "service_level_floor_pct": 85.0,
+    "locked_skus": ["ELE_PHONE_001"],
+}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # For React frontend
@@ -440,11 +447,7 @@ def get_recent_signals(
 
 @app.post("/api/forecast/causal")
 def causal_forecast(
-    dataset_version: str,
-    sku: str,
-    exog_variables: dict,  # {price: [values], promo: [0,1,0,1], holiday: [0,0,1,0]}
-    horizon: int = 12,
-    model: str = "arimax",  # arimax or sarimax
+    req: schemas.CausalForecastRequest,
     db: Session = Depends(get_db)
 ):
     """
@@ -456,8 +459,8 @@ def causal_forecast(
     
     # Fetch historical data
     records = db.query(models.DemandRecord).filter(
-        models.DemandRecord.dataset_version == dataset_version,
-        models.DemandRecord.sku == sku
+        models.DemandRecord.dataset_version == req.dataset_version,
+        models.DemandRecord.sku == req.sku
     ).order_by(models.DemandRecord.date).all()
     
     if not records:
@@ -467,7 +470,9 @@ def causal_forecast(
     
     # Build exogenous matrix
     exog_list = []
-    for var_name, values in exog_variables.items():
+    for var_name, values in req.exog_variables.items():
+        if var_name == 'future':
+            continue
         if len(values) == len(y):
             exog_list.append(values)
     
@@ -477,24 +482,24 @@ def causal_forecast(
     exog = np.column_stack(exog_list)
     
     # Train model
-    ModelClass = SARIMAXModel if model == "sarimax" else ARIMAXModel
+    ModelClass = SARIMAXModel if req.model == "sarimax" else ARIMAXModel
     fitted_model = ModelClass()
     fitted_model.fit(y, exog=exog)
     
     # Future exogenous values (user must provide)
-    future_exog_values = exog_variables.get('future', [])
-    if len(future_exog_values) != horizon:
+    future_exog_values = req.exog_variables.get('future', [])
+    if len(future_exog_values) != req.horizon:
         # Use last known values repeated
-        future_exog = np.tile(exog[-1, :], (horizon, 1))
+        future_exog = np.tile(exog[-1, :], (req.horizon, 1))
     else:
         future_exog = np.array(future_exog_values)
     
-    predictions = fitted_model.predict(steps=horizon, exog=future_exog)
+    predictions = fitted_model.predict(steps=req.horizon, exog=future_exog)
     
     return {
-        "sku": sku,
-        "model": model,
-        "exog_vars": list(exog_variables.keys()),
+        "sku": req.sku,
+        "model": req.model,
+        "exog_vars": [k for k in req.exog_variables.keys() if k != 'future'],
         "forecast": predictions.tolist(),
         "historical": [{"date": r.date.isoformat(), "demand": r.target_demand} for r in records[-24:]],
     }
@@ -629,7 +634,7 @@ def event_based_forecast(
 @app.post("/api/inventory/multi-echelon")
 def optimize_multi_echelon(
     dataset_version: str,
-    network_config: dict,  # {nodes: [{id, type, holding_cost}], edges: [{from, to, lead_time}]}
+    network_config: dict = None,  # {nodes: [{id, type, holding_cost}], edges: [{from, to, lead_time}]}
     service_level: float = 0.95,
     db: Session = Depends(get_db)
 ):
@@ -637,47 +642,119 @@ def optimize_multi_echelon(
     Multi-echelon inventory optimization using network flow.
     Allocates safety stock across the network to minimize total cost while meeting service level.
     """
-    # Simplified Clark-Scarf approach
+    from scipy import stats
+    import math
+
+    if not network_config or not network_config.get('nodes'):
+        network_config = {
+            "nodes": [
+                {"id": "SUPP_APAC", "type": "supplier", "holding_cost": 0.05, "label": "Supplier APAC"},
+                {"id": "DC_CENTRAL", "type": "dc", "holding_cost": 0.10, "label": "Central DC"},
+                {"id": "WH_EAST_01", "type": "warehouse", "holding_cost": 0.15, "label": "Regional WH East"},
+                {"id": "WH_WEST_02", "type": "warehouse", "holding_cost": 0.15, "label": "Regional WH West"},
+                {"id": "WH_SOUTH_03", "type": "warehouse", "holding_cost": 0.15, "label": "Regional WH South"},
+                {"id": "WH_NORTH_04", "type": "warehouse", "holding_cost": 0.15, "label": "Regional WH North"}
+            ],
+            "edges": [
+                {"from": "SUPP_APAC", "to": "DC_CENTRAL", "lead_time": 14},
+                {"from": "DC_CENTRAL", "to": "WH_EAST_01", "lead_time": 7},
+                {"from": "DC_CENTRAL", "to": "WH_WEST_02", "lead_time": 7},
+                {"from": "DC_CENTRAL", "to": "WH_SOUTH_03", "lead_time": 10},
+                {"from": "DC_CENTRAL", "to": "WH_NORTH_04", "lead_time": 10}
+            ]
+        }
+
     nodes = network_config.get('nodes', [])
     edges = network_config.get('edges', [])
-    
-    # Calculate echelon stock for each node
-    z_score = 1.65  # 95% service level
+
+    # Calculate z-score dynamically
+    z_score = stats.norm.ppf(service_level)
+
+    # Fetch all records for dataset version
+    records = db.query(models.DemandRecord).filter(
+        models.DemandRecord.dataset_version == dataset_version
+    ).all()
+
+    # Align demands by location and date
+    direct_demands = {}
+    all_dates = set()
+    for r in records:
+        all_dates.add(r.date)
+        if r.location not in direct_demands:
+            direct_demands[r.location] = {}
+        direct_demands[r.location][r.date] = r.target_demand
+
+    all_dates = sorted(list(all_dates))
+
+    # Memoized recursive demand aggregator
+    memo = {}
+    def get_demand_series(node_id):
+        if node_id in memo:
+            return memo[node_id]
+
+        # Initialize with direct demand
+        series = {dt: direct_demands.get(node_id, {}).get(dt, 0.0) for dt in all_dates}
+
+        # Add downstream demands
+        for edge in edges:
+            source = edge.get('from') or edge.get('source')
+            target = edge.get('to') or edge.get('target')
+            if source == node_id:
+                downstream_series = get_demand_series(target)
+                for dt in all_dates:
+                    series[dt] += downstream_series[dt]
+
+        memo[node_id] = series
+        return series
+
+    # Memoized recursive cumulative lead time calculator
+    lt_memo = {}
+    def get_cumulative_lt(node_id):
+        if node_id in lt_memo:
+            return lt_memo[node_id]
+
+        max_upstream_lt = 0
+        for edge in edges:
+            source = edge.get('from') or edge.get('source')
+            target = edge.get('to') or edge.get('target')
+            if target == node_id:
+                edge_lt = edge.get('lead_time') or edge.get('leadTimeDays') or 7
+                max_upstream_lt = max(max_upstream_lt, get_cumulative_lt(source) + edge_lt)
+
+        lt_memo[node_id] = max_upstream_lt
+        return max_upstream_lt
+
     results = {}
-    
     for node in nodes:
         node_id = node['id']
         holding_cost = node.get('holding_cost', 0.2)
-        
-        # Get demand data for this node
-        records = db.query(models.DemandRecord).filter(
-            models.DemandRecord.dataset_version == dataset_version,
-            models.DemandRecord.location == node_id
-        ).all()
-        
-        if not records:
-            continue
-        
-        demand_vals = [r.target_demand for r in records]
-        avg_demand = sum(demand_vals) / len(demand_vals) if demand_vals else 0
-        std_demand = (sum((d - avg_demand) ** 2 for d in demand_vals) / len(demand_vals)) ** 0.5 if len(demand_vals) > 1 else 0
-        
-        # Find cumulative lead time from upstream
-        cumulative_lt = 0
-        for edge in edges:
-            if edge['to'] == node_id:
-                cumulative_lt += edge.get('lead_time', 7)
-        
-        # Echelon safety stock
-        safety_stock = z_score * std_demand * (cumulative_lt ** 0.5)
-        
+        node_type = node.get('type', 'warehouse')
+
+        # Get computed demand series
+        series = get_demand_series(node_id)
+        demand_vals = list(series.values())
+
+        avg_demand = sum(demand_vals) / len(demand_vals) if demand_vals else 0.0
+        std_demand = (sum((d - avg_demand) ** 2 for d in demand_vals) / len(demand_vals)) ** 0.5 if len(demand_vals) > 1 else 0.0
+
+        # Propagate lead time
+        cumulative_lt = get_cumulative_lt(node_id)
+
+        # For supplier, set a default lead time to calculate standard stock
+        effective_lt = cumulative_lt if cumulative_lt > 0 else 7.0
+
+        # Safety stock
+        safety_stock = z_score * std_demand * (effective_lt ** 0.5)
+
         results[node_id] = {
             "safety_stock": round(safety_stock, 2),
             "holding_cost_annual": round(safety_stock * holding_cost * avg_demand, 2),
             "avg_demand": round(avg_demand, 2),
             "cumulative_lead_time": cumulative_lt,
+            "type": node_type,
+            "label": node.get('label', node_id)
         }
-    
+
     return {"network_optimization": results, "service_level": service_level}
 
 
@@ -960,24 +1037,21 @@ def enable_autonomous_planning(
 
 @app.post("/api/workflow/approval/request")
 async def request_approval(
-    requester_id: str,
-    approval_type: str,  # forecast_override, inventory_transfer, budget_change
-    payload: dict,
-    approver_role: str = "manager",
+    req: schemas.ApprovalRequestCreate,
     db: Session = Depends(get_db)
 ):
     """Create approval request for governance workflow"""
     approval = models.ApprovalRequest(
-        requester_id=requester_id,
-        approval_type=approval_type,
-        payload_json=payload,
-        approver_role=approver_role,
+        requester_id=req.requester_id,
+        approval_type=req.approval_type,
+        payload_json=req.payload,
+        approver_role=req.approver_role,
         status="PENDING",
         created_at=datetime.utcnow(),
     )
     db.add(approval)
     db.commit()
-    return {"status": "pending", "id": approval.id, "approver_role": approver_role}
+    return {"status": "pending", "id": approval.id, "approver_role": req.approver_role}
 
 
 @app.get("/api/workflow/approval/pending")
@@ -1646,10 +1720,7 @@ async def batch_forecast(
 # ── Dynamic Safety Stock Calculation ──────────────────────────────────────────
 @app.post("/api/inventory/safety-stock/dynamic")
 def calculate_dynamic_ss(
-    sku: str,
-    dataset_version: str,
-    service_level: float = 0.95,
-    lead_time_std: float = 0.0,  # Lead time variance (days)
+    req: schemas.SafetyStockRequest,
     db: Session = Depends(get_db)
 ):
     """
@@ -1658,8 +1729,8 @@ def calculate_dynamic_ss(
     """
     # Get demand statistics
     records = db.query(models.DemandRecord).filter(
-        models.DemandRecord.dataset_version == dataset_version,
-        models.DemandRecord.sku == sku
+        models.DemandRecord.dataset_version == req.dataset_version,
+        models.DemandRecord.sku == req.sku
     ).all()
     
     if not records:
@@ -1670,39 +1741,36 @@ def calculate_dynamic_ss(
     variance = sum((d - avg_demand)**2 for d in demands) / len(demands)
     std_demand = variance ** 0.5
     
-    # Mock lead time (in production: from SKU master)
-    avg_lead_time = 30
+    # Fetch lead time from SKU master if exists
+    sku_master = db.query(models.SKUMaster).filter(models.SKUMaster.sku == req.sku).first()
+    avg_lead_time = sku_master.lead_time if sku_master else 30
     
     ss = calculate_dynamic_safety_stock(
-        avg_demand, std_demand, avg_lead_time, lead_time_std, service_level
+        avg_demand, std_demand, avg_lead_time, req.lead_time_std, req.service_level
     )
     
     return {
-        "sku": sku,
+        "sku": req.sku,
         "safety_stock": round(ss, 2),
-        "service_level": service_level,
+        "service_level": req.service_level,
         "avg_demand": round(avg_demand, 2),
         "std_demand": round(std_demand, 2),
         "avg_lead_time": avg_lead_time,
-        "std_lead_time": lead_time_std,
-        "includes_lead_time_variance": lead_time_std > 0,
+        "std_lead_time": req.lead_time_std,
+        "includes_lead_time_variance": req.lead_time_std > 0,
     }
 
 
 # ── Service Level Cost Optimizer ──────────────────────────────────────────────
 @app.post("/api/inventory/service-level/optimize")
 def optimize_sl(
-    sku: str,
-    dataset_version: str,
-    unit_cost: float,
-    holding_cost_pct: float = 0.20,
-    stockout_cost_multiplier: float = 3.0,
+    req: schemas.ServiceLevelOptimizeRequest,
     db: Session = Depends(get_db)
 ):
     """Find optimal service level minimizing total cost"""
     records = db.query(models.DemandRecord).filter(
-        models.DemandRecord.dataset_version == dataset_version,
-        models.DemandRecord.sku == sku
+        models.DemandRecord.dataset_version == req.dataset_version,
+        models.DemandRecord.sku == req.sku
     ).all()
     
     if not records:
@@ -1712,15 +1780,18 @@ def optimize_sl(
     avg_demand = sum(demands) / len(demands)
     std_demand = (sum((d - avg_demand)**2 for d in demands) / len(demands)) ** 0.5
     
-    lead_time = 30  # Mock
-    stockout_cost = unit_cost * stockout_cost_multiplier
+    # Fetch lead time from SKU master if exists
+    sku_master = db.query(models.SKUMaster).filter(models.SKUMaster.sku == req.sku).first()
+    lead_time = sku_master.lead_time if sku_master else 30
+    
+    stockout_cost = req.unit_cost * req.stockout_cost_multiplier
     
     optimal_sl, analysis = optimize_service_level(
-        avg_demand, std_demand, lead_time, unit_cost, holding_cost_pct, stockout_cost
+        avg_demand, std_demand, lead_time, req.unit_cost, req.holding_cost_pct, stockout_cost
     )
     
     return {
-        "sku": sku,
+        "sku": req.sku,
         "recommended_service_level": round(optimal_sl * 100, 1),
         **analysis,
     }
@@ -1863,8 +1934,7 @@ def forecast_sensitivity_analysis(
 
 @app.post("/api/inventory/network-transfers/execute")
 async def execute_network_transfers(
-    transfers: list[dict],  # [{from, to, sku, quantity}]
-    output_format: str = "SAP"  # SAP, Oracle, or CSV
+    req: schemas.ExecuteTransfersRequest
 ):
     """Generate WMS transfer orders in ERP format"""
     import csv
@@ -1872,32 +1942,38 @@ async def execute_network_transfers(
     
     output = io.StringIO()
     
-    if output_format == "SAP":
+    if req.output_format == "SAP":
         # SAP IDoc format (simplified)
         writer = csv.writer(output)
         writer.writerow(["TransferOrder", "FromPlant", "ToPlant", "Material", "Quantity", "UOM", "Priority"])
-        for i, t in enumerate(transfers, 1):
+        for i, t in enumerate(req.transfers, 1):
             writer.writerow([
                 f"TO{i:06d}",
-                t['from'],
-                t['to'],
-                t['sku'],
-                t['quantity'],
+                t.get('from', ''),
+                t.get('to', ''),
+                t.get('sku', ''),
+                t.get('quantity', 0),
                 "EA",
-                "HIGH" if t['quantity'] > 500 else "NORMAL"
+                "HIGH" if t.get('quantity', 0) > 500 else "NORMAL"
             ])
     else:
         # Generic CSV
         writer = csv.DictWriter(output, fieldnames=['from_location', 'to_location', 'sku', 'quantity', 'status'])
         writer.writeheader()
-        for t in transfers:
-            writer.writerow({**t, 'status': 'PENDING'})
+        for t in req.transfers:
+            writer.writerow({
+                'from_location': t.get('from', ''),
+                'to_location': t.get('to', ''),
+                'sku': t.get('sku', ''),
+                'quantity': t.get('quantity', 0),
+                'status': 'PENDING'
+            })
     
     csv_content = output.getvalue()
     
     return {
-        "format": output_format,
-        "transfer_count": len(transfers),
+        "format": req.output_format,
+        "transfer_count": len(req.transfers),
         "csv_content": csv_content,
         "filename": f"planora_transfers_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     }
@@ -1996,36 +2072,55 @@ def detect_demand_anomalies(
 # ── P2: Dynamic ROP with Forecast Integration ────────────────────────────────
 @app.post("/api/inventory/rop/dynamic")
 def dynamic_reorder_point(
-    dataset_version: str, sku: str, service_level: float = 0.95,
+    req: schemas.RopRequest,
     db: Session = Depends(get_db)
 ):
     """ROP = (Forecasted Demand × LT) + Safety Stock"""
     records = db.query(models.DemandRecord).filter(
-        models.DemandRecord.dataset_version == dataset_version,
-        models.DemandRecord.sku == sku
+        models.DemandRecord.dataset_version == req.dataset_version,
+        models.DemandRecord.sku == req.sku
     ).order_by(models.DemandRecord.date).all()
     if not records: raise HTTPException(404, "No data")
     
     demands = [r.target_demand for r in records]
     avg_demand = sum(demands) / len(demands)
     std_demand = (sum((d - avg_demand)**2 for d in demands) / len(demands)) ** 0.5
-    lead_time = 30
     
-    # Use forecasted demand instead of historical average
-    from core.forecasting import XGBoostModel
-    y = np.array(demands)
-    model = XGBoostModel()
-    model.fit(y)
-    forecasted_demand = float(np.mean(model.predict(steps=3)))  # Next 3 periods avg
+    # Fetch lead time and unit cost from SKU master if exists
+    sku_master = db.query(models.SKUMaster).filter(models.SKUMaster.sku == req.sku).first()
+    lead_time = sku_master.lead_time if sku_master else 30
+    unit_cost = sku_master.unit_cost if (sku_master and sku_master.unit_cost) else 10.0
     
+    # Try to fetch existing forecast from ForecastResult
+    forecast_records = db.query(models.ForecastResult).filter(
+        models.ForecastResult.dataset_version == req.dataset_version,
+        models.ForecastResult.sku == req.sku
+    ).all()
+    
+    if forecast_records:
+        forecasted_demand = sum(f.forecast_demand for f in forecast_records) / len(forecast_records)
+    else:
+        # Fallback: Use XGBoost fit on the fly
+        from core.forecasting import XGBoostModel
+        import numpy as np
+        model = XGBoostModel()
+        df_temp = pd.DataFrame({"target_demand": demands})
+        model.fit(df_temp, "target_demand")
+        forecasted_demand = float(np.mean(model.predict(steps=3)))  # Next 3 periods avg
+        
     from scipy import stats
-    z = stats.norm.ppf(service_level)
+    z = stats.norm.ppf(req.service_level)
     ss = z * std_demand * (lead_time ** 0.5)
     rop = (forecasted_demand * (lead_time / 30)) + ss
-    eoq = ((2 * avg_demand * 12 * 50) / (avg_demand * 0.2)) ** 0.5  # EOQ formula
+    
+    # Standard EOQ: sqrt((2 * AnnualDemand * SetupCost) / CarryingCost)
+    annual_demand = avg_demand * 12
+    setup_cost = 50.0
+    carrying_cost = unit_cost * 0.20
+    eoq = ((2 * annual_demand * setup_cost) / carrying_cost) ** 0.5
     
     return {
-        "sku": sku, "rop": round(rop, 0), "safety_stock": round(ss, 0),
+        "sku": req.sku, "rop": round(rop, 0), "safety_stock": round(ss, 0),
         "eoq": round(eoq, 0), "forecasted_demand": round(forecasted_demand, 0),
         "avg_demand": round(avg_demand, 0), "lead_time_days": lead_time,
         "reorder_trigger": "NOW" if avg_demand * 0.5 < rop else "OK",
@@ -2160,6 +2255,23 @@ async def save_forecast_version(
     db: Session = Depends(get_db)
 ):
     """Save forecast snapshot as a version"""
+    if sku in GOVERNANCE_SETTINGS.get("locked_skus", []):
+        raise HTTPException(status_code=403, detail=f"SKU {sku} is locked by Data Governance Policies. Overrides blocked.")
+        
+    # Check consensus cap if historical demand exists
+    records = db.query(models.DemandRecord).filter(
+        models.DemandRecord.dataset_version == dataset_version,
+        models.DemandRecord.sku == sku
+    ).all()
+    if records:
+        demands = [r.target_demand for r in records]
+        avg_demand = sum(demands) / len(demands)
+        cap_pct = GOVERNANCE_SETTINGS.get("consensus_cap_pct", 30.0)
+        for val in forecast_values:
+            dev = abs(val - avg_demand) / max(1.0, avg_demand) * 100.0
+            if dev > cap_pct:
+                raise HTTPException(status_code=400, detail=f"Override value {val:.1f} deviates from historical average {avg_demand:.1f} by {dev:.1f}%, exceeding the Data Governance cap of {cap_pct}%.")
+                
     version_id = f"v_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
     
     for i, val in enumerate(forecast_values):
@@ -3421,7 +3533,7 @@ def execution_api_registry():
 
 
 @app.get("/api/execution/event-stream")
-def execution_event_stream(limit: int = 25):
+def execution_event_stream(limit: int = 25, db: Session = Depends(get_db)):
     """
     Recent integration event stream — the live ledger of messages flowing
     between the platform and connected execution systems.
@@ -3438,10 +3550,28 @@ def execution_event_stream(limit: int = 25):
         ("stock.adjusted", "WMS", "Planora", "inbound"),
         ("load.tendered", "Planora", "TMS", "outbound"),
     ]
-    statuses = ["success"] * 18 + ["retry", "success"]  # ~95% success, occasional retry
+    statuses = ["success"] * 18 + ["retry", "success"]
     now = datetime.utcnow()
     events = []
-    for i in range(limit):
+    
+    # Query actual audit logs from SQL DB
+    audit_records = db.query(models.AuditLog).order_by(models.AuditLog.timestamp.desc()).limit(10).all()
+    for i, a in enumerate(audit_records):
+        evt_type = f"audit.{a.actionType.lower().replace(' ', '_')}"
+        events.append({
+            "event_id": f"AUD{a.timestamp.strftime('%H%M%S')}{i:02d}",
+            "event_type": evt_type,
+            "source": f"User ({a.user_id})",
+            "target": "Audit Trail Ledger",
+            "direction": "inbound",
+            "status": "success",
+            "timestamp": a.timestamp.isoformat() + "Z",
+            "latency_ms": random.randint(10, 45),
+        })
+
+    # Add mock events to fill out limit
+    remaining = limit - len(events)
+    for i in range(max(0, remaining)):
         et = random.choice(event_types)
         status = random.choice(statuses)
         ts = now - timedelta(minutes=i * random.randint(1, 6))
@@ -3455,12 +3585,217 @@ def execution_event_stream(limit: int = 25):
             "timestamp": ts.isoformat() + "Z",
             "latency_ms": random.randint(8, 140),
         })
-    success = sum(1 for e in events if e["status"] == "success")
+        
+    events = sorted(events, key=lambda e: e["timestamp"], reverse=True)
+    success = sum(1 for e in events[:limit] if e["status"] == "success")
     return {
-        "events": events,
+        "events": events[:limit],
         "summary": {
-            "total": len(events),
-            "success_rate": round(success / len(events) * 100, 1),
-            "retries": sum(1 for e in events if e["status"] == "retry"),
+            "total": len(events[:limit]),
+            "success_rate": round(success / len(events[:limit]) * 100, 1),
+            "retries": sum(1 for e in events[:limit] if e["status"] == "retry"),
         },
     }
+
+
+# ── P2: Dataset Version Diffs ─────────────────────────────────────────────────
+@app.post("/api/datasets/diff")
+def dataset_diff(
+    req: schemas.DatasetDiffRequest,
+    db: Session = Depends(get_db)
+):
+    """Compare two dataset versions record-by-record and return metrics"""
+    count_a = db.query(models.DemandRecord).filter(models.DemandRecord.dataset_version == req.version_a).count()
+    count_b = db.query(models.DemandRecord).filter(models.DemandRecord.dataset_version == req.version_b).count()
+    
+    records_a = db.query(models.DemandRecord).filter(models.DemandRecord.dataset_version == req.version_a).all()
+    records_b = db.query(models.DemandRecord).filter(models.DemandRecord.dataset_version == req.version_b).all()
+    
+    dict_a = {(r.sku, r.date.isoformat()): r.target_demand for r in records_a}
+    dict_b = {(r.sku, r.date.isoformat()): r.target_demand for r in records_b}
+    
+    added_keys = set(dict_b.keys()) - set(dict_a.keys())
+    deleted_keys = set(dict_a.keys()) - set(dict_b.keys())
+    common_keys = set(dict_a.keys()) & set(dict_b.keys())
+    
+    changed_count = 0
+    demand_diffs = []
+    
+    for k in common_keys:
+        val_a = dict_a[k]
+        val_b = dict_b[k]
+        if val_a != val_b:
+            changed_count += 1
+            demand_diffs.append(val_b - val_a)
+            
+    avg_shift = sum(demand_diffs) / len(demand_diffs) if demand_diffs else 0.0
+    
+    return {
+        "version_a": req.version_a,
+        "version_b": req.version_b,
+        "records_a": count_a,
+        "records_b": count_b,
+        "added_rows": len(added_keys),
+        "deleted_rows": len(deleted_keys),
+        "changed_rows": changed_count,
+        "average_demand_shift": round(avg_shift, 2)
+    }
+
+
+# ── P2: Autonomous Planning High-Confidence Auto-Execution ────────────────────
+@app.post("/api/ai/autonomous-planning/execute-high-confidence")
+def execute_high_confidence_actions(
+    db: Session = Depends(get_db)
+):
+    """Automatically approve and execute pending approvals with confidence > 90%"""
+    pending = db.query(models.ApprovalRequest).filter(models.ApprovalRequest.status == "PENDING").all()
+    auto_approved = []
+    
+    for a in pending:
+        payload = a.payload_json or {}
+        confidence = payload.get("confidence", 0.0)
+        
+        try:
+            confidence = float(confidence)
+        except:
+            confidence = 0.0
+            
+        if not confidence and payload.get("confidence") == "High":
+            confidence = 0.95
+            
+        if confidence > 0.90:
+            a.status = "AUTO_APPROVED"
+            a.approved_at = datetime.utcnow()
+            a.approver_id = "SYSTEM_AUTOPILOT"
+            a.comments = f"Auto-approved by System Autopilot (Confidence: {confidence * 100:.1f}%)"
+            auto_approved.append({
+                "id": a.id,
+                "type": a.approval_type,
+                "confidence": confidence,
+                "sku": payload.get("sku", "ALL")
+            })
+            
+    if auto_approved:
+        db.commit()
+        
+    return {
+        "status": "success",
+        "processed_count": len(pending),
+        "auto_approved_count": len(auto_approved),
+        "auto_approved_actions": auto_approved
+    }
+
+
+@app.get("/api/governance/settings")
+def get_governance_settings():
+    return GOVERNANCE_SETTINGS
+
+
+@app.post("/api/governance/settings")
+def update_governance_settings(req: schemas.GovernanceSettingsUpdate):
+    global GOVERNANCE_SETTINGS
+    GOVERNANCE_SETTINGS["consensus_cap_pct"] = req.consensus_cap_pct
+    GOVERNANCE_SETTINGS["service_level_floor_pct"] = req.service_level_floor_pct
+    GOVERNANCE_SETTINGS["locked_skus"] = req.locked_skus
+    return {"status": "success", "settings": GOVERNANCE_SETTINGS}
+
+
+@app.post("/api/execution/connectors/ping")
+def ping_connector(req: schemas.ConnectorPingRequest):
+    import random
+    connector_id = req.connector_id
+    
+    # Simulated check
+    latency = random.randint(10, 150)
+    success = random.random() < 0.95
+    status = "connected" if success else "degraded"
+    health = round(100.0 - (latency / 10.0), 1) if success else 45.0
+    
+    return {
+        "connector_id": connector_id,
+        "status": status,
+        "latency_ms": latency,
+        "health": max(0.0, health),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
+
+@app.get("/api/warehouse/capacity")
+def get_warehouse_capacity():
+    from core.warehouse import get_warehouse_capacity_plan
+    return get_warehouse_capacity_plan()
+
+
+@app.post("/api/warehouse/slotting/optimize")
+def optimize_slotting(req: schemas.SlottingOptimizeRequest):
+    from core.warehouse import run_slotting_optimization
+    return run_slotting_optimization(req.facility_id, req.skus_count)
+
+
+@app.get("/api/supplier/forecasts")
+def get_supplier_forecasts(supplier_name: str = None):
+    from core.supplier import get_shared_forecasts
+    return get_shared_forecasts(supplier_name)
+
+
+@app.post("/api/supplier/commit")
+def commit_supplier(req: schemas.SupplierCommitRequest):
+    from core.supplier import save_supplier_commit
+    # Using dataset_version parameter from request payload as the month mapping
+    return save_supplier_commit(req.supplier_name, req.sku, req.dataset_version, req.commit_qty, req.notes)
+
+
+@app.post("/api/supplier/asn")
+def upload_asn(req: schemas.AsnUploadRequest):
+    from core.supplier import upload_supplier_asn
+    return upload_supplier_asn(req.supplier_name, req.asn_number, req.items)
+
+
+@app.get("/api/supplier/asn/ledger")
+def get_asn_records(supplier_name: str = None):
+    from core.supplier import get_asn_ledger
+    return get_asn_ledger(supplier_name)
+
+
+@app.post("/api/execution/connectors/sync")
+def sync_connector(req: schemas.ConnectorSyncRequest, db: Session = Depends(get_db)):
+    import random
+    from datetime import datetime
+    
+    # Define connector records metadata
+    connector_stats = {
+        "erp-sap": {"records": 114, "duration": 2.4, "type": "SKU Master Data"},
+        "wms-manhattan": {"records": 46720, "duration": 1.8, "type": "Inventory Count"},
+        "tms-ortec": {"records": 8, "duration": 0.9, "type": "Route Schedules"},
+        "procurement-coupa": {"records": 14, "duration": 1.2, "type": "Purchase Requisitions"}
+    }
+    
+    stats = connector_stats.get(req.connector_id, {"records": 50, "duration": 1.5, "type": "General Data"})
+    records_synced = stats["records"]
+    duration = stats["duration"]
+    
+    # Insert sync operation into AuditLog so it propagates dynamically to the event stream
+    from models import AuditLog
+    log = AuditLog(
+        user_id="System Integration",
+        role="system",
+        timestamp=datetime.utcnow(),
+        actionType=f"SYNC_{req.connector_id.replace('-', '_').upper()}",
+        dataset="N/A",
+        metadata_json={"details": f"Forced data synchronization on host {req.connector_id}. Synced {records_synced} {stats['type']} records in {duration}s."}
+    )
+    db.add(log)
+    db.commit()
+    
+    return {
+        "status": "success",
+        "connector_id": req.connector_id,
+        "records_synced": records_synced,
+        "sync_duration_seconds": duration,
+        "sync_type": stats["type"],
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
+
+
+

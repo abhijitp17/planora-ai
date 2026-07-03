@@ -71,9 +71,31 @@ class ARIMAModel(ForecastModel):
         return self.model.forecast(steps)
 
 # Additional StatsModels (Placeholders for complex implementation)
-class SARIMAModel(ARIMAModel): pass
-class ARIMAXModel(ARIMAModel): pass
-class SARIMAXModel(ARIMAModel): pass
+class SARIMAModel(ARIMAModel):
+    def __init__(self, order=(1,1,1), seasonal_order=(1,1,1,12)):
+        super().__init__(order)
+        self.seasonal_order = seasonal_order
+    def fit(self, df: pd.DataFrame, target_col: str):
+        from statsmodels.tsa.statespace.sarimax import SARIMAX
+        self.model = SARIMAX(df[target_col].values, order=self.order, seasonal_order=self.seasonal_order).fit(disp=False)
+
+class ARIMAXModel(ForecastModel):
+    def __init__(self, order=(1,1,1)):
+        self.order = order
+    def fit(self, y: np.ndarray, exog: np.ndarray = None):
+        self.model = ARIMA(y, exog=exog, order=self.order).fit()
+    def predict(self, steps: int, exog: np.ndarray = None):
+        return self.model.forecast(steps, exog=exog)
+
+class SARIMAXModel(ForecastModel):
+    def __init__(self, order=(1,1,1), seasonal_order=(1,1,1,12)):
+        self.order = order
+        self.seasonal_order = seasonal_order
+    def fit(self, y: np.ndarray, exog: np.ndarray = None):
+        from statsmodels.tsa.statespace.sarimax import SARIMAX
+        self.model = SARIMAX(y, exog=exog, order=self.order, seasonal_order=self.seasonal_order).fit(disp=False)
+    def predict(self, steps: int, exog: np.ndarray = None):
+        return self.model.forecast(steps, exog=exog)
 class CrostonModel(ForecastModel): 
     # Intermittent demand implementation goes here
     pass
