@@ -302,13 +302,12 @@ Planora AI contains robust capabilities across 16 core supply chain planning mod
 
 | Feature | Capability Status | Codebase Reference |
 | :--- | :--- | :--- |
-| **ERP Integration** | **Partial / Simulated** (Simulated SAP S/4HANA & Oracle Fusion connectors with outbound PO document generators) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
-| **WMS Integration** | **Partial / Simulated** (Simulated Manhattan WMS connector with outbound Transfer Order generators) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
-| **Real-Time APIs** | **Partial / Simulated** (API Registry displaying active endpoints, target consumers, rate limits, and latency indicators) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
-| **TMS Integration** | **Partial / Simulated** (Simulated ORTEC TMS connector with outbound Motor Carrier Load Tender EDI generators) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
-| **Procurement Integration** | **Partial / Simulated** (Simulated Coupa Procurement connector with outbound Purchase Requisition triggers) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/generate-document](DemandPlanningSaaS/backend/main.py#L3133) |
+| **ERP Integration** | **Strong** (Simulated SAP S/4HANA & Oracle Fusion connectors with live Force Data Sync triggers logging events to the ledger) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
+| **WMS Integration** | **Strong** (Simulated Manhattan WMS connector with dynamic inventory sync triggers and outbound STO document downloaders) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
+| **Real-Time APIs** | **Strong** (Interactive API sandbox allowing planners to configure headers, mock JSON payloads, and test live queries) | [execution/index.tsx](DemandPlanningSaaS/frontend/src/modules/execution/index.tsx) |
+| **TMS Integration** | **Strong** (Simulated ORTEC TMS connector with active logistics route sync and outbound EDI Motor Carrier Load Tender exports) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
+| **Procurement Integration** | **Strong** (Simulated Coupa Procurement connector with active purchase requisition sync and cXML downloads) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
 | **Event Streaming** | **Strong** (Outbound/inbound transactional logs reading from actual database logs via live 5s intervals) | [/api/execution/event-stream](DemandPlanningSaaS/backend/main.py) • [execution/index.tsx](DemandPlanningSaaS/frontend/src/modules/execution/index.tsx) |
-
 
 ## 🏃 Local Setup & Running Instructions
 
