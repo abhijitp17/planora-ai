@@ -1,5 +1,13 @@
 # Planora AI — Comprehensive Technical Documentation
 
+> ⚠️ **HISTORICAL / SUPERSEDED — do not treat as current status.**
+> This document predates the Build Charter and materially **overstates completeness**: it grades
+> modules as "Strong" that are in reality partial or simulated, and it predates the Phase 0
+> foundation work (multi-tenancy, server-side auth/RBAC, migrations, tests, CI). It is retained
+> for history only. For the accurate, current status of every module and system, see the
+> **[Build Charter](../PLANORA_BUILD_CHARTER.md)** (Reality Matrix) and **[PRD](../PLANORA_PRD.md)**.
+> Where they conflict, the Charter and the code are authoritative.
+
 **Version:** 2.0 (Phase 1-8 Complete)  
 **Last Updated:** June 2026  
 **Authors:** Development Team  

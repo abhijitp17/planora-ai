@@ -2,33 +2,17 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { User, AuthSession, UserRole } from '@/types';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock users for development (replace with real backend calls)
-// ─────────────────────────────────────────────────────────────────────────────
-const MOCK_USERS: Record<string, { password: string; user: User }> = {
-  'admin@planora.ai': {
-    password: 'admin123',
-    user: { id: 'u1', name: 'Admin User', email: 'admin@planora.ai', role: 'admin', orgId: 'org1' },
-  },
-  'manager@planora.ai': {
-    password: 'manager123',
-    user: { id: 'u2', name: 'Sarah Chen', email: 'manager@planora.ai', role: 'manager', orgId: 'org1' },
-  },
-  'planner@planora.ai': {
-    password: 'planner123',
-    user: { id: 'u3', name: 'Raj Patel', email: 'planner@planora.ai', role: 'planner', orgId: 'org1' },
-  },
-  'viewer@planora.ai': {
-    password: 'viewer123',
-    user: { id: 'u4', name: 'Guest Viewer', email: 'viewer@planora.ai', role: 'viewer', orgId: 'org1' },
-  },
-};
+import { loginRequest, fetchMe, persistTokens, clearAuthTokens } from '@/lib/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Storage
+//
+// The access + refresh tokens are managed by lib/authToken (used by apiFetch).
+// This session record holds the resolved user for display + the isAuthenticated
+// gate; `expiresAt` tracks the refresh-token horizon.
 // ─────────────────────────────────────────────────────────────────────────────
 const SESSION_KEY = 'planora_session';
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // matches refresh-token lifetime
 
 function saveSession(session: AuthSession) {
   try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
@@ -125,28 +109,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [session]);
 
-  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // In production: call POST /api/auth/login, get JWT
-    await new Promise(r => setTimeout(r, 600)); // simulate network
-
-    const record = MOCK_USERS[email.toLowerCase()];
-    if (!record || record.password !== password) {
-      return { success: false, error: 'Invalid email or password.' };
-    }
-
-    // Create mock JWT session (8h expiry)
-    const newSession: AuthSession = {
-      user: record.user,
-      token: `mock-jwt-${record.user.id}-${Date.now()}`,
-      expiresAt: Date.now() + 8 * 60 * 60 * 1000,
+  // apiFetch signals this when a token refresh fails — end the session immediately.
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      clearSession();
+      setSession(null);
     };
+    window.addEventListener('planora:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('planora:unauthorized', handleUnauthorized);
+  }, []);
 
-    saveSession(newSession);
-    setSession(newSession);
-    return { success: true };
+  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // 1. Exchange credentials for a real token pair.
+      const tokens = await loginRequest(email, password);
+      persistTokens(tokens);
+
+      // 2. Resolve the authenticated user (server is the source of truth for role/org).
+      const me = await fetchMe();
+      const user: User = {
+        id: String(me.id),
+        name: me.name,
+        email: me.email,
+        role: me.role as UserRole,
+        orgId: String(me.organization_id),
+      };
+
+      const newSession: AuthSession = {
+        user,
+        token: tokens.access_token,
+        expiresAt: Date.now() + SESSION_TTL_MS,
+      };
+      saveSession(newSession);
+      setSession(newSession);
+      return { success: true };
+    } catch (err: any) {
+      clearAuthTokens();
+      return { success: false, error: err?.message || 'Login failed. Please try again.' };
+    }
   }, []);
 
   const logout = useCallback(() => {
+    clearAuthTokens();
     clearSession();
     setSession(null);
   }, []);

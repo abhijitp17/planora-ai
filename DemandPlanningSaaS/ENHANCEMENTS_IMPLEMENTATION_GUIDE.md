@@ -1,5 +1,10 @@
 # Planora AI — 42 Enhancement Implementation Guide
 
+> ⚠️ **HISTORICAL / SUPERSEDED — do not treat as current status.**
+> This enhancement backlog predates the Build Charter and its status counts are stale. Retained
+> for history/ideas only. The authoritative roadmap and priorities are in the
+> **[Build Charter](../PLANORA_BUILD_CHARTER.md)** §6 and the **[PRD](../PLANORA_PRD.md)**.
+
 **Status:** Priority 1 Backend Complete (7/12) · Frontend Components Created (2/12)  
 **Total Enhancements:** 42 across 3 priorities  
 **Estimated Total Effort:** 12-15 days for all priorities

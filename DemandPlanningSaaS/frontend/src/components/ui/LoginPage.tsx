@@ -249,13 +249,6 @@ function BackgroundRoutes({ isMobile }: BackgroundRoutesProps) {
   );
 }
 
-const DEMO_ACCOUNTS = [
-  { label: 'Admin', email: 'admin@planora.ai', password: 'admin123', role: 'Full access & setup' },
-  { label: 'Manager', email: 'manager@planora.ai', password: 'manager123', role: 'S&OP & Finance views' },
-  { label: 'Planner', email: 'planner@planora.ai', password: 'planner123', role: 'Forecast overrides' },
-  { label: 'Viewer', email: 'viewer@planora.ai', password: 'viewer123', role: 'Read-only dashboard' },
-];
-
 // ─────────────────────────────────────────────────────────────────────────────
 // LoginPage Component (Layout Layer 2 & Layer 3)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -276,12 +269,6 @@ export default function LoginPage() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const fillDemo = (demoEmail: string, demoPw: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPw);
-    setError('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -573,51 +560,6 @@ export default function LoginPage() {
             </div>
           </div> {/* Ends card body */}
         </div> {/* Ends relative wrapper */}
-
-          {/* Demo account helper selector grid (staggered with the card) */}
-          <div style={{ marginTop: '1.5rem', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-              <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-sans)', color: 'var(--text-muted)', fontWeight: 500 }}>
-                Or log in as a demo user
-              </span>
-              <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              {DEMO_ACCOUNTS.map(acc => (
-                <button
-                  key={acc.label}
-                  type="button"
-                  onClick={() => fillDemo(acc.email, acc.password)}
-                  style={{
-                    padding: '8px 10px',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '0px',
-                    background: '#F7F6F2',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'background 0.15s, border-color 0.15s',
-                    outline: 'none',
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = 'var(--bg-hover)';
-                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = '#F7F6F2';
-                    e.currentTarget.style.borderColor = 'var(--border-color)';
-                  }}
-                >
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '2px', fontFamily: 'var(--font-sans)' }}>
-                    {acc.label}
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.3, fontFamily: 'var(--font-sans)' }}>
-                    {acc.role}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
 
         </div>
       </div>

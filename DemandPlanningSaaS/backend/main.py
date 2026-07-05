@@ -1,18 +1,50 @@
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
+import os
+import logging
 import pandas as pd
 import io
 import json
 import math
 
-from database import engine, get_db, Base
+from database import engine, get_db
 import models
 import schemas
 from core.data_ingestion import process_upload_to_canonical
+from logging_config import setup_logging
+from auth.router import router as auth_router
+from auth.dependencies import require_permission, get_current_user
+from tenancy import get_current_org_id
+from middleware import RequestContextMiddleware
 
-# Create Tables
-Base.metadata.create_all(bind=engine)
+# Configure structured logging as early as possible so startup logs are captured.
+setup_logging(
+    os.getenv("LOG_LEVEL", "INFO"),
+    json_format=os.getenv("LOG_FORMAT", "text").lower() == "json",
+)
+logger = logging.getLogger(__name__)
+
+
+def _warn_if_unmigrated() -> None:
+    """Schema is owned by Alembic (no implicit create_all in production).
+
+    We never auto-create tables here; instead we warn the developer if the
+    database has not been migrated yet, so a fresh checkout gets a clear
+    "run alembic upgrade head" signal instead of confusing "no such table" errors.
+    """
+    try:
+        if not inspect(engine).has_table("alembic_version"):
+            logger.warning(
+                "Database has no 'alembic_version' table — it may be unmigrated. "
+                "Run 'alembic upgrade head' before serving requests."
+            )
+    except Exception as exc:  # never let a readiness probe block startup
+        logger.warning("Could not verify migration state: %s", exc)
+
+
+_warn_if_unmigrated()
 
 app = FastAPI(title="Demand Planning MVP Engine")
 
@@ -23,19 +55,53 @@ GOVERNANCE_SETTINGS = {
     "locked_skus": ["ELE_PHONE_001"],
 }
 
+# Allowed frontend origins come from the environment (comma-separated), defaulting
+# to the local dev server. This replaces the previous wildcard "*", which is unsafe
+# with allow_credentials and unacceptable for an enterprise security review.
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For React frontend
+    allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Structured per-request access logging + tenant-context reset.
+app.add_middleware(RequestContextMiddleware)
+
+# Authentication endpoints (/api/auth/login, /refresh, /me, /logout, /password-reset/*).
+app.include_router(auth_router)
+
 @app.get("/")
 def health_check():
+    # Liveness: process is up. No dependencies checked (fast, always-on).
     return {"status": "ok", "service": "Demand Planning & Forecasting Platform"}
 
-@app.post("/api/upload", response_model=schemas.FileUploadResponse)
+
+@app.get("/health/ready")
+def readiness_check(db: Session = Depends(get_db)):
+    # Readiness: can we actually serve traffic? Verifies DB connectivity.
+    from fastapi import Response
+    from sqlalchemy import text
+
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ready"}
+    except Exception as exc:
+        logger.error("Readiness check failed: %s", exc)
+        return Response(
+            content='{"status": "not_ready"}',
+            media_type="application/json",
+            status_code=503,
+        )
+
+@app.post("/api/upload", response_model=schemas.FileUploadResponse, dependencies=[Depends(require_permission("upload:dataset"))])
 async def upload_dataset(
     file: UploadFile = File(...),
     column_mapping: str = Form(None), 
@@ -53,9 +119,11 @@ async def upload_dataset(
         mapping = json.loads(column_mapping) if column_mapping else None
         
         records, version = process_upload_to_canonical(df, mapping, planner_id="admin")
-        
-        # Insert to DB (bulk)
-        db_records = [models.DemandRecord(**r) for r in records]
+
+        # Insert to DB (bulk). bulk_save_objects bypasses the before_flush tenant-stamp
+        # event, so organization_id must be set explicitly here from the request's tenant.
+        org_id = get_current_org_id()
+        db_records = [models.DemandRecord(organization_id=org_id, **r) for r in records]
         db.bulk_save_objects(db_records)
         db.commit()
         
@@ -70,12 +138,12 @@ async def upload_dataset(
         db.rollback()
         raise HTTPException(500, f"Error processing file: {str(e)}")
 
-@app.get("/api/datasets")
+@app.get("/api/datasets", dependencies=[Depends(require_permission("view:demand"))])
 def list_datasets(db: Session = Depends(get_db)):
     versions = db.query(models.DemandRecord.dataset_version).distinct().all()
     return {"datasets": [v[0] for v in versions]}
 
-@app.post("/api/forecast")
+@app.post("/api/forecast", dependencies=[Depends(require_permission("run:forecast"))])
 def generate_forecast(dataset_version: str, sku: str, horizon: int = 12, db: Session = Depends(get_db)):
     import numpy as np
     from core.forecasting import HoltWintersModel, ARIMAModel, XGBoostModel, calculate_metrics
@@ -148,7 +216,7 @@ def generate_forecast(dataset_version: str, sku: str, horizon: int = 12, db: Ses
     return output
 
 # ─── Phase 5: Paginated SKU list ─────────────────────────────────────────────
-@app.get("/api/skus")
+@app.get("/api/skus", dependencies=[Depends(require_permission("view:demand"))])
 def list_skus(
     dataset_version: str,
     page: int = 1,
@@ -192,7 +260,7 @@ def list_skus(
 
 
 # ─── Phase 5: Paginated demand records ───────────────────────────────────────
-@app.get("/api/records")
+@app.get("/api/records", dependencies=[Depends(require_permission("view:demand"))])
 def list_records(
     dataset_version: str,
     sku: str = "",
@@ -240,7 +308,7 @@ def list_records(
 
 
 # ─── Phase 5: Dataset summary statistics ─────────────────────────────────────
-@app.get("/api/datasets/{dataset_version}/summary")
+@app.get("/api/datasets/{dataset_version}/summary", dependencies=[Depends(require_permission("view:demand"))])
 def dataset_summary(dataset_version: str, db: Session = Depends(get_db)):
     from sqlalchemy import func
 
@@ -282,7 +350,7 @@ def dataset_summary(dataset_version: str, db: Session = Depends(get_db)):
 from fastapi.responses import StreamingResponse
 import csv
 
-@app.get("/api/export/records")
+@app.get("/api/export/records", dependencies=[Depends(require_permission("export:data"))])
 def export_records(
     dataset_version: str,
     sku: str = "",
@@ -321,7 +389,7 @@ def export_records(
 # ═════════════════════════════════════════════════════════════════════════════
 from datetime import datetime, timedelta
 
-@app.post("/api/audit/log")
+@app.post("/api/audit/log", dependencies=[Depends(get_current_user)])
 async def log_action(
     user_id: str,
     role: str,
@@ -344,7 +412,7 @@ async def log_action(
     return {"status": "logged", "id": log_entry.id}
 
 
-@app.get("/api/audit/logs")
+@app.get("/api/audit/logs", dependencies=[Depends(require_permission("manage:settings"))])
 def get_audit_logs(
     user_id: str = "",
     action_type: str = "",
@@ -383,7 +451,7 @@ def get_audit_logs(
 # DEMAND SENSING — Real-time early signal integration
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/demand-sensing/ingest")
+@app.post("/api/demand-sensing/ingest", dependencies=[Depends(require_permission("upload:dataset"))])
 async def ingest_pos_data(
     data: list[dict],  # [{date, sku, channel, actual_sales}]
     dataset_version: str,
@@ -409,7 +477,7 @@ async def ingest_pos_data(
     return {"status": "success", "signals_ingested": ingested, "dataset_version": dataset_version}
 
 
-@app.get("/api/demand-sensing/signals")
+@app.get("/api/demand-sensing/signals", dependencies=[Depends(require_permission("view:demand"))])
 def get_recent_signals(
     dataset_version: str,
     sku: str = "",
@@ -445,7 +513,7 @@ def get_recent_signals(
 # CAUSAL FORECASTING — Exogenous variables for ARIMAX
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/forecast/causal")
+@app.post("/api/forecast/causal", dependencies=[Depends(require_permission("run:forecast"))])
 def causal_forecast(
     req: schemas.CausalForecastRequest,
     db: Session = Depends(get_db)
@@ -509,7 +577,7 @@ def causal_forecast(
 # EVENT-BASED FORECASTING — Calendar events integration
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/events/create")
+@app.post("/api/events/create", dependencies=[Depends(require_permission("edit:forecast"))])
 def create_event(
     name: str,
     event_type: str,  # holiday, promotion, launch, stockout, disruption
@@ -533,7 +601,7 @@ def create_event(
     return {"status": "created", "id": event.id, "name": name}
 
 
-@app.get("/api/events")
+@app.get("/api/events", dependencies=[Depends(require_permission("view:demand"))])
 def list_events(
     start_date: str = "",
     end_date: str = "",
@@ -568,7 +636,7 @@ def list_events(
     }
 
 
-@app.post("/api/forecast/event-based")
+@app.post("/api/forecast/event-based", dependencies=[Depends(require_permission("run:forecast"))])
 def event_based_forecast(
     dataset_version: str,
     sku: str,
@@ -631,7 +699,7 @@ def event_based_forecast(
 # INVENTORY OPTIMIZATION — Multi-Echelon, ABC/XYZ, Network Balancing
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/inventory/multi-echelon")
+@app.post("/api/inventory/multi-echelon", dependencies=[Depends(require_permission("view:inventory"))])
 def optimize_multi_echelon(
     dataset_version: str,
     network_config: dict = None,  # {nodes: [{id, type, holding_cost}], edges: [{from, to, lead_time}]}
@@ -758,7 +826,7 @@ def optimize_multi_echelon(
     return {"network_optimization": results, "service_level": service_level}
 
 
-@app.get("/api/inventory/abc-xyz")
+@app.get("/api/inventory/abc-xyz", dependencies=[Depends(require_permission("view:inventory"))])
 def abc_xyz_segmentation(
     dataset_version: str,
     db: Session = Depends(get_db)
@@ -860,7 +928,7 @@ def abc_xyz_segmentation(
     }
 
 
-@app.post("/api/inventory/network-balance")
+@app.post("/api/inventory/network-balance", dependencies=[Depends(require_permission("view:inventory"))])
 def network_balancing_recommendations(
     dataset_version: str,
     target_dos: int = 30,  # Target days of supply
@@ -919,7 +987,7 @@ def network_balancing_recommendations(
 # AI DECISION INTELLIGENCE — Prescriptive Actions & Autonomous Planning
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/ai/prescriptive-actions")
+@app.post("/api/ai/prescriptive-actions", dependencies=[Depends(require_permission("view:analytics"))])
 def generate_prescriptive_actions(
     dataset_version: str,
     sku: str = "",
@@ -987,7 +1055,7 @@ def generate_prescriptive_actions(
     return {"actions": actions[:10], "module": module}
 
 
-@app.post("/api/ai/autonomous-planning/enable")
+@app.post("/api/ai/autonomous-planning/enable", dependencies=[Depends(require_permission("manage:settings"))])
 def enable_autonomous_planning(
     dataset_version: str,
     sku_filter: dict = {},  # {mape_threshold: 5.0, min_history: 12}
@@ -1035,7 +1103,7 @@ def enable_autonomous_planning(
 # PLATFORM GOVERNANCE — Workflow Approvals & Master Data
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/workflow/approval/request")
+@app.post("/api/workflow/approval/request", dependencies=[Depends(get_current_user)])
 async def request_approval(
     req: schemas.ApprovalRequestCreate,
     db: Session = Depends(get_db)
@@ -1054,7 +1122,7 @@ async def request_approval(
     return {"status": "pending", "id": approval.id, "approver_role": req.approver_role}
 
 
-@app.get("/api/workflow/approval/pending")
+@app.get("/api/workflow/approval/pending", dependencies=[Depends(require_permission("manage:settings"))])
 def get_pending_approvals(
     approver_role: str = "",
     approval_type: str = "",
@@ -1086,7 +1154,7 @@ def get_pending_approvals(
     }
 
 
-@app.post("/api/workflow/approval/{approval_id}/decision")
+@app.post("/api/workflow/approval/{approval_id}/decision", dependencies=[Depends(require_permission("manage:settings"))])
 async def approve_or_reject(
     approval_id: int,
     decision: str,  # APPROVED or REJECTED
@@ -1112,7 +1180,7 @@ async def approve_or_reject(
     return {"status": decision.lower(), "id": approval_id}
 
 
-@app.get("/api/master-data/skus")
+@app.get("/api/master-data/skus", dependencies=[Depends(require_permission("view:demand"))])
 def get_sku_master(
     category: str = "",
     status: str = "ACTIVE",
@@ -1144,7 +1212,7 @@ def get_sku_master(
     }
 
 
-@app.post("/api/master-data/skus")
+@app.post("/api/master-data/skus", dependencies=[Depends(require_permission("manage:settings"))])
 async def create_sku_master(
     sku: str,
     name: str,
@@ -1183,7 +1251,7 @@ async def create_sku_master(
 # DIGITAL TWIN — Scenario Simulation Engine
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/twin/simulate-scenario")
+@app.post("/api/twin/simulate-scenario", dependencies=[Depends(get_current_user)])
 def simulate_scenario(
     scenario_id: str,
     baseline_network: dict,  # {nodes: [...], edges: [...]}
@@ -1274,7 +1342,7 @@ def simulate_scenario(
     }
 
 
-@app.post("/api/twin/scenario-comparison")
+@app.post("/api/twin/scenario-comparison", dependencies=[Depends(get_current_user)])
 def compare_scenarios(
     scenarios: list[dict],  # [{id, name, overrides}]
     baseline_network: dict,
@@ -1303,7 +1371,7 @@ def compare_scenarios(
 # RETAIL PLANNING — Space Optimization, Clustering, Markdown
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/retail/space-optimization")
+@app.post("/api/retail/space-optimization", dependencies=[Depends(get_current_user)])
 def optimize_planogram_space(
     categories: list[dict],  # [{id, revenue, margin, current_linear_feet}]
     total_space: float,      # Total linear feet available
@@ -1357,7 +1425,7 @@ def optimize_planogram_space(
     }
 
 
-@app.post("/api/retail/store-clustering")
+@app.post("/api/retail/store-clustering", dependencies=[Depends(get_current_user)])
 def cluster_stores(
     stores: list[dict],  # [{id, avg_transaction, basket_size, income_level, category_preference}]
     n_clusters: int = 3,
@@ -1418,7 +1486,7 @@ def cluster_stores(
     }
 
 
-@app.post("/api/retail/markdown-optimization")
+@app.post("/api/retail/markdown-optimization", dependencies=[Depends(get_current_user)])
 def optimize_markdown_schedule(
     sku: str,
     current_inventory: int,
@@ -1477,7 +1545,7 @@ def optimize_markdown_schedule(
     }
 
 
-@app.get("/api/retail/categories")
+@app.get("/api/retail/categories", dependencies=[Depends(get_current_user)])
 def get_retail_categories(db: Session = Depends(get_db)):
     """Get retail categories from SKU data"""
     from sqlalchemy import func
@@ -1510,7 +1578,7 @@ def get_retail_categories(db: Session = Depends(get_db)):
     return {"categories": categories}
 
 
-@app.post("/api/retail/assortment-analysis")
+@app.post("/api/retail/assortment-analysis", dependencies=[Depends(get_current_user)])
 def assortment_keep_drop_add(
     cluster_id: str,
     category_id: str,
@@ -1606,7 +1674,7 @@ def cache_forecast(cache_key: str, data: dict, ttl: int = 3600):
 
 
 # ── AutoML Forecast with Model Selection ─────────────────────────────────────
-@app.post("/api/forecast/automl")
+@app.post("/api/forecast/automl", dependencies=[Depends(require_permission("run:forecast"))])
 def automl_forecast(
     dataset_version: str,
     sku: str,
@@ -1666,7 +1734,7 @@ def automl_forecast(
 
 
 # ── Batch Forecast Processing ────────────────────────────────────────────────
-@app.post("/api/forecast/batch")
+@app.post("/api/forecast/batch", dependencies=[Depends(require_permission("run:forecast"))])
 async def batch_forecast(
     dataset_version: str,
     skus: list[str],
@@ -1718,7 +1786,7 @@ async def batch_forecast(
 
 
 # ── Dynamic Safety Stock Calculation ──────────────────────────────────────────
-@app.post("/api/inventory/safety-stock/dynamic")
+@app.post("/api/inventory/safety-stock/dynamic", dependencies=[Depends(require_permission("view:inventory"))])
 def calculate_dynamic_ss(
     req: schemas.SafetyStockRequest,
     db: Session = Depends(get_db)
@@ -1762,7 +1830,7 @@ def calculate_dynamic_ss(
 
 
 # ── Service Level Cost Optimizer ──────────────────────────────────────────────
-@app.post("/api/inventory/service-level/optimize")
+@app.post("/api/inventory/service-level/optimize", dependencies=[Depends(require_permission("view:inventory"))])
 def optimize_sl(
     req: schemas.ServiceLevelOptimizeRequest,
     db: Session = Depends(get_db)
@@ -1803,7 +1871,7 @@ def optimize_sl(
 
 from core.ensembles import stacked_ensemble_weights, detect_forecast_bias, sensitivity_analysis
 
-@app.post("/api/forecast/ensemble/optimized")
+@app.post("/api/forecast/ensemble/optimized", dependencies=[Depends(require_permission("run:forecast"))])
 def optimized_ensemble_forecast(
     dataset_version: str,
     sku: str,
@@ -1845,7 +1913,7 @@ def optimized_ensemble_forecast(
     return base_result
 
 
-@app.get("/api/forecast/bias-analysis")
+@app.get("/api/forecast/bias-analysis", dependencies=[Depends(require_permission("view:diagnostics"))])
 def analyze_forecast_bias(
     dataset_version: str,
     sku: str,
@@ -1887,7 +1955,7 @@ def analyze_forecast_bias(
     }
 
 
-@app.post("/api/forecast/sensitivity")
+@app.post("/api/forecast/sensitivity", dependencies=[Depends(require_permission("run:forecast"))])
 def forecast_sensitivity_analysis(
     dataset_version: str,
     sku: str,
@@ -1932,7 +2000,7 @@ def forecast_sensitivity_analysis(
     }
 
 
-@app.post("/api/inventory/network-transfers/execute")
+@app.post("/api/inventory/network-transfers/execute", dependencies=[Depends(require_permission("export:data"))])
 async def execute_network_transfers(
     req: schemas.ExecuteTransfersRequest
 ):
@@ -1979,7 +2047,7 @@ async def execute_network_transfers(
     }
 
 
-@app.get("/api/analytics/kpi-history")
+@app.get("/api/analytics/kpi-history", dependencies=[Depends(require_permission("view:analytics"))])
 def get_kpi_history(
     kpi_name: str,
     days: int = 30,
@@ -2013,7 +2081,7 @@ def get_kpi_history(
     }
 
 
-@app.post("/api/analytics/anomaly-detection")
+@app.post("/api/analytics/anomaly-detection", dependencies=[Depends(require_permission("view:analytics"))])
 def detect_demand_anomalies(
     dataset_version: str,
     sku: str = "",
@@ -2070,7 +2138,7 @@ def detect_demand_anomalies(
 # ═════════════════════════════════════════════════════════════════════════════
 
 # ── P2: Dynamic ROP with Forecast Integration ────────────────────────────────
-@app.post("/api/inventory/rop/dynamic")
+@app.post("/api/inventory/rop/dynamic", dependencies=[Depends(require_permission("view:inventory"))])
 def dynamic_reorder_point(
     req: schemas.RopRequest,
     db: Session = Depends(get_db)
@@ -2128,7 +2196,7 @@ def dynamic_reorder_point(
 
 
 # ── P3: Hierarchical Forecast Reconciliation ────────────────────────────────
-@app.post("/api/forecast/reconcile")
+@app.post("/api/forecast/reconcile", dependencies=[Depends(require_permission("run:forecast"))])
 def reconcile_hierarchical(
     dataset_version: str, horizon: int = 12,
     db: Session = Depends(get_db)
@@ -2168,7 +2236,7 @@ def reconcile_hierarchical(
 
 
 # ── P3: Seasonality Auto-Detection ───────────────────────────────────────────
-@app.get("/api/forecast/detect-seasonality")
+@app.get("/api/forecast/detect-seasonality", dependencies=[Depends(require_permission("view:diagnostics"))])
 def detect_seasonality(dataset_version: str, sku: str, db: Session = Depends(get_db)):
     """Detect seasonal period using autocorrelation"""
     records = db.query(models.DemandRecord).filter(
@@ -2207,7 +2275,7 @@ def detect_seasonality(dataset_version: str, sku: str, db: Session = Depends(get
 
 
 # ── P3: Outlier Detection & Cleaning ─────────────────────────────────────────
-@app.post("/api/forecast/detect-outliers")
+@app.post("/api/forecast/detect-outliers", dependencies=[Depends(require_permission("edit:forecast"))])
 def detect_outliers(dataset_version: str, sku: str, method: str = "iqr", db: Session = Depends(get_db)):
     """Detect outliers using IQR or Z-score method"""
     records = db.query(models.DemandRecord).filter(
@@ -2248,7 +2316,7 @@ def detect_outliers(dataset_version: str, sku: str, method: str = "iqr", db: Ses
 
 
 # ── P3: Forecast Versioning ──────────────────────────────────────────────────
-@app.post("/api/forecast/save-version")
+@app.post("/api/forecast/save-version", dependencies=[Depends(require_permission("edit:forecast"))])
 async def save_forecast_version(
     dataset_version: str, sku: str, model_name: str,
     forecast_values: list[float], notes: str = "",
@@ -2287,7 +2355,7 @@ async def save_forecast_version(
     return {"version_id": version_id, "sku": sku, "periods": len(forecast_values)}
 
 
-@app.get("/api/forecast/versions")
+@app.get("/api/forecast/versions", dependencies=[Depends(require_permission("view:demand"))])
 def list_forecast_versions(dataset_version: str, sku: str, db: Session = Depends(get_db)):
     """List all saved forecast versions for a SKU"""
     versions = db.query(
@@ -2310,7 +2378,7 @@ def list_forecast_versions(dataset_version: str, sku: str, db: Session = Depends
 
 
 # ── P3: Inventory Health Score ────────────────────────────────────────────────
-@app.get("/api/inventory/health-score")
+@app.get("/api/inventory/health-score", dependencies=[Depends(require_permission("view:inventory"))])
 def calculate_health_score(dataset_version: str, sku: str, db: Session = Depends(get_db)):
     """Composite 0-100 health score: DoS(40%) + Turns(30%) + Stockout Risk(20%) + Capital(10%)"""
     records = db.query(models.DemandRecord).filter(
@@ -2357,7 +2425,7 @@ def calculate_health_score(dataset_version: str, sku: str, db: Session = Depends
 
 
 # ── P2: Dataset Version Diffs ────────────────────────────────────────────────
-@app.get("/api/datasets/diff")
+@app.get("/api/datasets/diff", dependencies=[Depends(require_permission("view:demand"))])
 def diff_dataset_versions(version_a: str, version_b: str, db: Session = Depends(get_db)):
     """Compare two dataset versions"""
     records_a = {(r.sku, r.date.isoformat()): r.target_demand
@@ -2383,7 +2451,7 @@ def diff_dataset_versions(version_a: str, version_b: str, db: Session = Depends(
 # S&OP / IBP — Integrated Business Planning Engine
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.get("/api/sop/ibp-cycle-status")
+@app.get("/api/sop/ibp-cycle-status", dependencies=[Depends(require_permission("view:sop"))])
 def get_ibp_cycle_status(dataset_version: str = "", db: Session = Depends(get_db)):
     """
     Returns the status of the 5-step monthly IBP cycle.
@@ -2441,7 +2509,7 @@ def get_ibp_cycle_status(dataset_version: str = "", db: Session = Depends(get_db
     }
 
 
-@app.post("/api/sop/reconcile-plans")
+@app.post("/api/sop/reconcile-plans", dependencies=[Depends(require_permission("view:sop"))])
 def reconcile_sop_plans(
     dataset_version: str,
     air_freight_enabled: bool = False,
@@ -2553,7 +2621,7 @@ def reconcile_sop_plans(
     }
 
 
-@app.post("/api/sop/scenario-compare")
+@app.post("/api/sop/scenario-compare", dependencies=[Depends(require_permission("view:sop"))])
 def sop_scenario_compare(dataset_version: str, db: Session = Depends(get_db)):
     """
     Compare strategic S&OP scenarios side-by-side:
@@ -2593,7 +2661,7 @@ def sop_scenario_compare(dataset_version: str, db: Session = Depends(get_db)):
     return {"scenarios": results, "base_revenue": round(base_rev, 0)}
 
 
-@app.get("/api/sop/strategic-horizon")
+@app.get("/api/sop/strategic-horizon", dependencies=[Depends(require_permission("view:sop"))])
 def strategic_planning_horizon(dataset_version: str, years: int = 3, db: Session = Depends(get_db)):
     """
     Multi-year strategic planning horizon (rolling 36-month view).
@@ -2685,7 +2753,7 @@ def _finance_base(dataset_version: str, db: Session):
     return cats
 
 
-@app.get("/api/finance/cash-flow")
+@app.get("/api/finance/cash-flow", dependencies=[Depends(require_permission("view:finance"))])
 def cash_flow_forecast(
     dataset_version: str,
     months: int = 12,
@@ -2748,7 +2816,7 @@ def cash_flow_forecast(
     }
 
 
-@app.get("/api/finance/budget")
+@app.get("/api/finance/budget", dependencies=[Depends(require_permission("view:finance"))])
 def budget_plan(
     dataset_version: str,
     growth_target_pct: float = 8.0,
@@ -2794,7 +2862,7 @@ def budget_plan(
     }
 
 
-@app.get("/api/finance/profitability")
+@app.get("/api/finance/profitability", dependencies=[Depends(require_permission("view:finance"))])
 def profitability_model(dataset_version: str, db: Session = Depends(get_db)):
     """
     Profitability waterfall by category: revenue → gross margin →
@@ -2838,7 +2906,7 @@ def profitability_model(dataset_version: str, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/api/finance/working-capital")
+@app.get("/api/finance/working-capital", dependencies=[Depends(require_permission("view:finance"))])
 def working_capital_plan(
     dataset_version: str,
     dso: int = 45,
@@ -2892,7 +2960,7 @@ def working_capital_plan(
 # DIGITAL TWIN — Demand Shock & Monte Carlo Risk Simulation
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/twin/demand-shock")
+@app.post("/api/twin/demand-shock", dependencies=[Depends(get_current_user)])
 def demand_shock_simulation(
     dataset_version: str,
     shock_pct: float = 30.0,        # magnitude of demand spike/drop (%)
@@ -2985,7 +3053,7 @@ def demand_shock_simulation(
     }
 
 
-@app.post("/api/twin/monte-carlo")
+@app.post("/api/twin/monte-carlo", dependencies=[Depends(get_current_user)])
 def monte_carlo_risk(
     dataset_version: str,
     iterations: int = 1000,
@@ -3079,7 +3147,7 @@ def monte_carlo_risk(
 # CATEGORY MANAGEMENT — Category Role & Strategy
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.get("/api/category/roles")
+@app.get("/api/category/roles", dependencies=[Depends(require_permission("view:demand"))])
 def category_roles(dataset_version: str, db: Session = Depends(get_db)):
     """
     Classify each category into its strategic role using the standard
@@ -3159,7 +3227,7 @@ def category_roles(dataset_version: str, db: Session = Depends(get_db)):
 # PRICING & PROMOTION — Elasticity, Simulation, Promo ROI, Dynamic Pricing
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.get("/api/pricing/elasticity")
+@app.get("/api/pricing/elasticity", dependencies=[Depends(get_current_user)])
 def price_elasticity(dataset_version: str, db: Session = Depends(get_db)):
     """
     Estimate price elasticity of demand per category and find the
@@ -3206,7 +3274,7 @@ def price_elasticity(dataset_version: str, db: Session = Depends(get_db)):
     return {"categories": results}
 
 
-@app.post("/api/pricing/simulate")
+@app.post("/api/pricing/simulate", dependencies=[Depends(get_current_user)])
 def price_simulation(
     dataset_version: str,
     category: str = "",
@@ -3265,7 +3333,7 @@ def price_simulation(
     }
 
 
-@app.post("/api/pricing/promo-roi")
+@app.post("/api/pricing/promo-roi", dependencies=[Depends(get_current_user)])
 def promotion_roi(
     dataset_version: str,
     category: str = "",
@@ -3335,7 +3403,7 @@ def promotion_roi(
     }
 
 
-@app.get("/api/pricing/dynamic")
+@app.get("/api/pricing/dynamic", dependencies=[Depends(get_current_user)])
 def dynamic_pricing(dataset_version: str, db: Session = Depends(get_db)):
     """
     Recommend dynamic price moves per category based on inventory position,
@@ -3388,7 +3456,7 @@ def dynamic_pricing(dataset_version: str, db: Session = Depends(get_db)):
 # NOTE: connectors are simulated in this environment — no live external calls.
 # ═════════════════════════════════════════════════════════════════════════════
 
-@app.get("/api/execution/connectors")
+@app.get("/api/execution/connectors", dependencies=[Depends(get_current_user)])
 def execution_connectors():
     """
     Status of integration connectors across ERP, WMS, TMS, Procurement.
@@ -3422,7 +3490,7 @@ def execution_connectors():
     return {"connectors": connectors, "summary": summary}
 
 
-@app.post("/api/execution/generate-document")
+@app.post("/api/execution/generate-document", dependencies=[Depends(get_current_user)])
 def generate_execution_document(
     doc_type: str,        # purchase_order | asn | transfer_order | load_tender
     target_system: str = "SAP",
@@ -3502,7 +3570,7 @@ def generate_execution_document(
     }
 
 
-@app.get("/api/execution/api-registry")
+@app.get("/api/execution/api-registry", dependencies=[Depends(get_current_user)])
 def execution_api_registry():
     """
     Registry of real-time APIs and webhooks exposed/consumed by the platform.
@@ -3532,7 +3600,7 @@ def execution_api_registry():
     }
 
 
-@app.get("/api/execution/event-stream")
+@app.get("/api/execution/event-stream", dependencies=[Depends(get_current_user)])
 def execution_event_stream(limit: int = 25, db: Session = Depends(get_db)):
     """
     Recent integration event stream — the live ledger of messages flowing
@@ -3599,7 +3667,7 @@ def execution_event_stream(limit: int = 25, db: Session = Depends(get_db)):
 
 
 # ── P2: Dataset Version Diffs ─────────────────────────────────────────────────
-@app.post("/api/datasets/diff")
+@app.post("/api/datasets/diff", dependencies=[Depends(require_permission("view:demand"))])
 def dataset_diff(
     req: schemas.DatasetDiffRequest,
     db: Session = Depends(get_db)
@@ -3643,7 +3711,7 @@ def dataset_diff(
 
 
 # ── P2: Autonomous Planning High-Confidence Auto-Execution ────────────────────
-@app.post("/api/ai/autonomous-planning/execute-high-confidence")
+@app.post("/api/ai/autonomous-planning/execute-high-confidence", dependencies=[Depends(require_permission("manage:settings"))])
 def execute_high_confidence_actions(
     db: Session = Depends(get_db)
 ):
@@ -3686,12 +3754,12 @@ def execute_high_confidence_actions(
     }
 
 
-@app.get("/api/governance/settings")
+@app.get("/api/governance/settings", dependencies=[Depends(require_permission("manage:settings"))])
 def get_governance_settings():
     return GOVERNANCE_SETTINGS
 
 
-@app.post("/api/governance/settings")
+@app.post("/api/governance/settings", dependencies=[Depends(require_permission("manage:settings"))])
 def update_governance_settings(req: schemas.GovernanceSettingsUpdate):
     global GOVERNANCE_SETTINGS
     GOVERNANCE_SETTINGS["consensus_cap_pct"] = req.consensus_cap_pct
@@ -3700,7 +3768,7 @@ def update_governance_settings(req: schemas.GovernanceSettingsUpdate):
     return {"status": "success", "settings": GOVERNANCE_SETTINGS}
 
 
-@app.post("/api/execution/connectors/ping")
+@app.post("/api/execution/connectors/ping", dependencies=[Depends(get_current_user)])
 def ping_connector(req: schemas.ConnectorPingRequest):
     import random
     connector_id = req.connector_id
@@ -3720,44 +3788,44 @@ def ping_connector(req: schemas.ConnectorPingRequest):
     }
 
 
-@app.get("/api/warehouse/capacity")
+@app.get("/api/warehouse/capacity", dependencies=[Depends(get_current_user)])
 def get_warehouse_capacity():
     from core.warehouse import get_warehouse_capacity_plan
     return get_warehouse_capacity_plan()
 
 
-@app.post("/api/warehouse/slotting/optimize")
+@app.post("/api/warehouse/slotting/optimize", dependencies=[Depends(get_current_user)])
 def optimize_slotting(req: schemas.SlottingOptimizeRequest):
     from core.warehouse import run_slotting_optimization
     return run_slotting_optimization(req.facility_id, req.skus_count)
 
 
-@app.get("/api/supplier/forecasts")
+@app.get("/api/supplier/forecasts", dependencies=[Depends(get_current_user)])
 def get_supplier_forecasts(supplier_name: str = None):
     from core.supplier import get_shared_forecasts
     return get_shared_forecasts(supplier_name)
 
 
-@app.post("/api/supplier/commit")
+@app.post("/api/supplier/commit", dependencies=[Depends(get_current_user)])
 def commit_supplier(req: schemas.SupplierCommitRequest):
     from core.supplier import save_supplier_commit
     # Using dataset_version parameter from request payload as the month mapping
     return save_supplier_commit(req.supplier_name, req.sku, req.dataset_version, req.commit_qty, req.notes)
 
 
-@app.post("/api/supplier/asn")
+@app.post("/api/supplier/asn", dependencies=[Depends(get_current_user)])
 def upload_asn(req: schemas.AsnUploadRequest):
     from core.supplier import upload_supplier_asn
     return upload_supplier_asn(req.supplier_name, req.asn_number, req.items)
 
 
-@app.get("/api/supplier/asn/ledger")
+@app.get("/api/supplier/asn/ledger", dependencies=[Depends(get_current_user)])
 def get_asn_records(supplier_name: str = None):
     from core.supplier import get_asn_ledger
     return get_asn_ledger(supplier_name)
 
 
-@app.post("/api/execution/connectors/sync")
+@app.post("/api/execution/connectors/sync", dependencies=[Depends(get_current_user)])
 def sync_connector(req: schemas.ConnectorSyncRequest, db: Session = Depends(get_db)):
     import random
     from datetime import datetime

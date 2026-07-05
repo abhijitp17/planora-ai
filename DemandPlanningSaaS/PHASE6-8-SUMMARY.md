@@ -1,5 +1,11 @@
 # Phase 6-8 Implementation Summary
 
+> ⚠️ **HISTORICAL / SUPERSEDED — do not treat as current status.**
+> These "Phase 6–8" numbers refer to an earlier, informal phase scheme (not the current Build
+> Charter phases) and overstate completeness. Retained for history only. See the
+> **[Build Charter](../PLANORA_BUILD_CHARTER.md)** and **[PRD](../PLANORA_PRD.md)** for the
+> authoritative phase roadmap and status. (Note: the current **Phase 0 — Foundation** is complete.)
+
 ## Phase 6 — Accessibility & WCAG 2.1 AA Compliance ✅
 
 ### Keyboard Navigation
