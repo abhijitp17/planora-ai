@@ -30,6 +30,8 @@ class StructuredFormatter(logging.Formatter):
         # Add extra fields from record
         if hasattr(record, "user_id"):
             log_data["user_id"] = record.user_id
+        if hasattr(record, "organization_id"):
+            log_data["organization_id"] = record.organization_id
         if hasattr(record, "request_id"):
             log_data["request_id"] = record.request_id
         if hasattr(record, "action"):

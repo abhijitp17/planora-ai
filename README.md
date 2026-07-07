@@ -1,380 +1,158 @@
-# Planora AI: Enterprise Demand Planning & Forecasting Platform
+# Planora AI
 
-Planora AI is an enterprise-grade, high-fidelity Demand Planning, S&OP (Sales & Operations Planning), and Inventory Optimization solution. Designed for modern supply chain planners, it combines advanced forecasting models (ARIMA, Holt-Winters, Random Forest, XGBoost, and LightGBM) with a premium, responsive, desaturated Bloomberg-style cockpit visual interface.
+**A planner-native decision-intelligence platform for supply-chain & demand planning.**
 
----
+Planora AI pairs a genuinely strong forecasting engine (11 statistical models plus
+scikit-learn / XGBoost / LightGBM / AutoML, with real backtesting) with inventory,
+S&OP, financial, and analytics workspaces — delivered through a modern Next.js cockpit.
 
-## 🚀 Key Modules & Capabilities
-
-### 📈 1. Demand Planning
-* **Multi-Model Support**: Statistical forecasting models (Moving Average, SES, Holt, Holt-Winters, ARIMA, SARIMAX, Croston) and Machine Learning models (Decision Trees, Random Forest, AdaBoost, XGBoost, LightGBM).
-* **Consensus Forecast Editor**: Planners can manually apply percentage, absolute, set-value, or linear uplifts/downlifts directly inside an interactive pivot grid, projecting final consensus volumes in real-time.
-* **New Product Introduction (NPI)**: Simulate demand curves for new products with zero sales history by cloning and scaling profiles of similar existing SKUs.
-* **Data Explorer**: Comprehensive, server-paginated data grid displaying raw data uploads with full sorting, filtering, and live search.
-
-### 📦 2. Inventory Optimization
-* **Safety Stock Simulator**: Recalculate target safety stock buffer levels and capital expenditure requirements on-the-fly using custom service level constraints (80% to 99.9%).
-* **Multi-Echelon Network Explorer**: Track on-hand vs. in-transit inventory, unit costs, daily demand averages, and Days of Supply (DoS) to identify excess stock and stockout risks.
-* **Replenishment Workbench**: Auto-calculate Reorder Points (ROP) and Economic Order Quantities (EOQ) to draft Purchase Orders for items needing replenishment.
-* **Inventory Segmentation (ABC/XYZ)**: Multi-dimensional portfolio classification based on revenue yield and demand volatility with interactive heatmaps.
-
-### 🩺 3. Supply Chain Diagnostics & Analytics
-* **FVA (Forecast Value Added) Tracking**: Monitor automated forecast automation metrics. Compare Machine Learning accuracy (System MAPE) against planner overrides (Human MAPE) to calculate Positive Value Add (Positive/Negative FVA).
-* **Entropy Scanner**: Analyze demand patterns to classify SKUs based on volume volatility (Coefficient of Variation) and demand frequency (Average Demand Interval).
-* **Anomaly Detection**: Automated data quality scanner utilizing Isolation Forest ML models to flag outliers in history.
-
-### 🏢 4. S&OP / IBP (Integrated Business Planning)
-* **Demand-Supply Capacity Balancing**: Run Rough-Cut Capacity Planning (RCCP) charts to visualize capacity limitations against unconstrained forecasts, triggering flex subcontractor capacities to capture seasonal peaks.
-* **Financial Reconciliation**: Map constrained supply volumes to Projected Gross Margins, COGS, and revenue streams, tracking variances against the Annual Operational Plan (AOP).
-* **Scenario Comparison & Sandboxes**: Compare Conservative, Base Case, Aggressive, and Disruption scenarios side-by-side.
-
-### 💰 5. Scenario & Financial Simulation
-* **P&L Stress Testing**: Simulate system-wide demand shocks, price elasticity impacts (ASP adjustments), and COGS sourcing shifts.
-* **Product Mix Optimizer**: Algorithmic ranking of SKUs based on Gross Margin yield to prioritize production allocation during capacity bottlenecks.
+> ### 📌 Status & source of truth (read this first)
+>
+> This project is being built in disciplined phases from a high-fidelity **demo** into a
+> production-grade, multi-tenant SaaS. To keep documentation honest, the authoritative
+> status of every module and system lives in:
+>
+> - **[PLANORA_BUILD_CHARTER.md](PLANORA_BUILD_CHARTER.md)** — the Reality Matrix: what is
+>   genuinely real (🟢), partial (🟡), or still simulated (🔴), plus the phased roadmap.
+> - **[PLANORA_PRD.md](PLANORA_PRD.md)** — product requirements and acceptance criteria per phase.
+> - **[PLANORA_STRATEGY_MEMO.md](PLANORA_STRATEGY_MEMO.md)** — product/GTM strategy.
+>
+> Earlier status documents under `DemandPlanningSaaS/` (the "Documentation", "Session
+> Summary", and "Phase" files) are **historical** and overstate completeness — they are
+> superseded by the Charter and PRD. Where they conflict, the Charter and the code win.
 
 ---
 
-## 🛠️ Technology Stack & Architecture
+## What is actually real today (honest snapshot)
+
+Planora is **not** yet a finished enterprise product, and this README will not claim it is.
+Here is the accurate picture, graded per the Build Charter's Reality Matrix:
+
+| Area | Grade | Reality |
+|---|---|---|
+| **Forecasting engine** | 🟢 Real | 11 statistical + 6 ML models, AutoML, real MAE/RMSE/MAPE backtesting. The genuine core. |
+| **Inventory math** | 🟡 Real algorithms | Safety stock, ROP/EOQ, ABC/XYZ, service-level optimization — real formulas, currently on seeded/uploaded data. |
+| **Anomaly detection / clustering / space opt.** | 🟡 | IsolationForest, K-means, SciPy LP — real algorithms. |
+| **Platform foundation** (multi-tenancy, auth, RBAC, migrations, tests, CI) | 🟢 **Phase 0 complete** | See below. |
+| **S&OP, Finance, Pricing, Retail, Digital Twin, Analytics** | 🟡 | Real math in places, but running on seeded/mock data; not yet productionized. |
+| **Supplier Portal, Execution/ERP-WMS-TMS connectors, Self-Service BI** | 🔴 Simulated | UI shells over mock/`hash`/`random` outputs. Kept for demos; **frozen** (not under active development). |
+
+The strategic focus (per the Charter/PRD) is **depth on the Primary loop — Demand → Diagnostics/FVA
+→ Inventory → Consensus — on a real, secure, multi-tenant foundation**, before broadening.
+
+---
+
+## ✅ Phase 0 — Foundation (complete)
+
+The platform now has a real, production-grade foundation (replacing the former single-tenant,
+unauthenticated prototype):
+
+- **Multi-tenancy** — every business table carries `organization_id`; isolation is enforced
+  centrally (SQLAlchemy read-filter + write-stamp), verified by cross-tenant tests. Cross-tenant
+  access returns 404.
+- **Server-side authentication** — JWT access/refresh tokens, bcrypt password hashing, account
+  lockout, password reset; `JWT_SECRET_KEY` has no insecure default.
+- **Server-enforced RBAC** — every one of the ~80 API routes requires auth; roles
+  (`viewer`/`planner`/`manager`/`admin`) are enforced on the server (the frontend map is UX-only).
+- **PostgreSQL + Alembic migrations** — schema is migration-owned; no implicit `create_all`.
+- **Tests + CI** — a pytest suite (auth, RBAC, tenancy isolation, and golden-value regression
+  locks on the forecasting/inventory math) and a GitHub Actions pipeline gate every change.
+- **Observability & secrets hygiene** — structured logging, a `/health/ready` probe,
+  `.env.example`, environment-driven CORS.
+
+See **[DemandPlanningSaaS/backend/README.md](DemandPlanningSaaS/backend/README.md)** for the
+backend architecture, auth, and testing details.
+
+---
+
+## Architecture
 
 ```
-                       +------------------------+
-                       |   Next.js Frontend     |
-                       |  (React, Recharts,     |
-                       |   Lucide icons, CSS)   |
-                       +-----------+------------+
-                                   |
-                 Upload files /     |  Generate forecasts /
-                 Run calculations   |  Interactive queries
-                                    v
-                       +------------------------+
-                       |    FastAPI Backend     |
-                       | (Python, Statsmodels,  |
-                       |  scikit-learn, SQLA)   |
-                       +-----------+------------+
-                                   |
-                                   v
-                       +------------------------+
-                       |  SQLite / PostgreSQL   |
-                       |   (Demand DB Tables)   |
-                       +------------------------+
+Next.js 16 (React 19, TypeScript, Recharts) ── cockpit UI, UX-only RBAC
+        │  authenticated REST (Bearer JWT)
+        ▼
+FastAPI (Python) ── auth + tenant scope on every route
+        │  real ML: statsmodels / scikit-learn / xgboost / lightgbm / scipy
+        ▼
+PostgreSQL (Alembic migrations, org-scoped)   ·   SQLite for local dev
 ```
 
-### Frontend (`/DemandPlanningSaaS/frontend`)
-* **Framework**: Next.js 15 (App Router, React, TypeScript).
-* **Charts & Visualization**: Recharts (Composed charts, Area, Line, Scatter, and Bar charts).
-* **Aesthetics**: Vanilla CSS variables supporting a premium industrial theme, curated HSL color maps, smooth micro-animations, and sharp layout boundaries (no rounded corners).
-
-### Backend (`/DemandPlanningSaaS/backend`)
-* **Framework**: FastAPI (Python 3.9+).
-* **Database**: SQLite (SQLAlchemy ORM) storing Canonical Demand records, Forecast results, and Audit Logs.
-* **ML Engines**: `scikit-learn`, `statsmodels`, `xgboost`, `lightgbm` compiled libraries.
+- **Frontend** (`DemandPlanningSaaS/frontend`) — Next.js 16, React 19, TypeScript, Recharts,
+  TanStack Table/Virtual.
+- **Backend** (`DemandPlanningSaaS/backend`) — FastAPI, SQLAlchemy 2.0, Alembic, pandas,
+  statsmodels, scikit-learn, XGBoost, LightGBM, SciPy.
 
 ---
 
-## 📊 Planora AI Capability Matrix
+## Quick start (local development)
 
-Planora AI contains robust capabilities across 16 core supply chain planning modules. Below is the detailed breakdown of the platform's current status and codebase references.
+**Prerequisites:** Python 3.9+ and Node.js 18+.
 
-### 1. Planning & Forecasting
+### Backend
 
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Statistical Forecasting** | **Strong** (11 statistical models: SMA, SES, Holt, Holt-Winters, ARIMA, SARIMA, Croston, SBA, TSB) | [forecasting.py](DemandPlanningSaaS/backend/core/forecasting.py) |
-| **AI Forecasting** | **Strong** (ML models: Decision Trees, Random Forest, AdaBoost, XGBoost, LightGBM, AutoML) | [automl.py](DemandPlanningSaaS/backend/core/automl.py) |
-| **Forecast Overrides** | **Strong** (Editable pivot grid with visual delta coloring and audit logging) | [demand/index.tsx](DemandPlanningSaaS/frontend/src/modules/demand/index.tsx) |
-| **Forecast Accuracy Tracking** | **Strong** (Live backtesting engine calculates MAE, RMSE, and MAPE per model) | [main.py:L71](DemandPlanningSaaS/backend/main.py#L71) |
-| **Demand Sensing** | **Strong** (Real-time POS signal ingestion database model & signal query logic) | [models.py:L59](DemandPlanningSaaS/backend/models.py#L59) • [/api/demand-sensing/ingest](DemandPlanningSaaS/backend/main.py#L379) |
-| **Causal Forecasting** | **Strong** (ARIMAX forecasting support with exogenous variable matrices) | [main.py:L441](DemandPlanningSaaS/backend/main.py#L441) |
-| **Event-Based Forecasting** | **Strong** (Calendar events integration: holidays, launches, disruptions) | [models.py:L71](DemandPlanningSaaS/backend/models.py#L71) • [/api/forecast/event-based](DemandPlanningSaaS/backend/main.py#L566) |
-| **Promotion Forecasting** | **Strong** (Promotion calendar events with forward-buying cannibalization calculations) | [/api/pricing/promo-roi](DemandPlanningSaaS/backend/main.py#L3156) |
-| **New Product Forecasting** | **Strong** (New Product Introduction profile cloning and volume scaling workbench) | [demand/index.tsx](DemandPlanningSaaS/frontend/src/modules/demand/index.tsx) |
-| **Consensus Planning** | **Strong** (Bulk editor with 4 adjustment modes: percentage, absolute, set-value, and linear allocation) | `ConsensusBulkActions.tsx` • [main.py:L1595](DemandPlanningSaaS/backend/main.py#L1595) |
-| **Forecast Explainability** | **Strong** (Integrated AI Copilot that inspects model MAPE and explains forecast variations) | [main.py:L845](DemandPlanningSaaS/backend/main.py#L845) • [CopilotPanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/CopilotPanel.tsx) |
-
----
-
-### 2. Inventory Optimization
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Safety Stock** | **Strong** (Calculated safety stock with demand and lead-time variance adjustments) | [/api/inventory/safety-stock/dynamic](DemandPlanningSaaS/backend/main.py#L1647) |
-| **Reorder Point** | **Strong** (Workbench calculating dynamic ROP and EOQ with auto-reorder triggers) | [/api/inventory/rop/dynamic](DemandPlanningSaaS/backend/main.py#L1997) |
-| **Inventory Visibility** | **Strong** (Multi-echelon network grid detailing on-hand, in-transit, cost, and stockout warnings) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Stockout Analysis** | **Strong** (At-risk stockout calculations, lost sales estimates, and stockout count KPIs) | [main.py:L1906](DemandPlanningSaaS/backend/main.py#L1906) |
-| **Multi-Echelon Optimization** | **Strong** (Safety stock propagation and allocation across supplier/DC/retail network nodes) | [/api/inventory/multi-echelon](DemandPlanningSaaS/backend/main.py#L629) |
-| **Service Level Optimization** | **Strong** (Cost-based service level optimizer maximizing margin vs. holding costs) | [/api/inventory/service-level/optimize](DemandPlanningSaaS/backend/main.py#L1693) |
-| **Network Inventory Balancing** | **Strong** (Inventory transfer recommendations, including exporting WMS-compliant transfer CSVs) | [/api/inventory/network-balance](DemandPlanningSaaS/backend/main.py#L786) • [/api/inventory/network-transfers/execute](DemandPlanningSaaS/backend/main.py#L1864) |
-| **Inventory Segmentation (ABC/XYZ)** | **Strong** (9-box portfolio classification based on revenue and volatility, with interactive heatmap) | [/api/inventory/abc-xyz](DemandPlanningSaaS/backend/main.py#L684) |
-| **Working Capital Optimization** | **Strong** (Carrying cost calculators, trapped capital charts, and DIO/DSO/DPO tracking) | [/api/finance/working-capital](DemandPlanningSaaS/backend/main.py#L2729) |
-
----
-
-### 3. S&OP / IBP
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Demand vs Supply Balancing** | **Strong** (Rough-Cut Capacity Planning balance chart mapping demand vs. capacity limits) | [sop/index.tsx](DemandPlanningSaaS/frontend/src/modules/sop/index.tsx) |
-| **Revenue Impact Analysis** | **Strong** (AOP vs. unconstrained/constrained forecast variance tracking and margins) | [/api/sop/reconcile-plans](DemandPlanningSaaS/backend/main.py#L2332) |
-| **Capacity Constraints** | **Strong** (Interactive toggles for air freight expedite and subcontractor flex capacity) | [/api/sop/reconcile-plans](DemandPlanningSaaS/backend/main.py#L2332) |
-| **Executive Review Support** | **Strong** (Executive dashboard summarizing AOP targets, LE revenue, and margin gaps) | [sop/index.tsx](DemandPlanningSaaS/frontend/src/modules/sop/index.tsx) |
-| **Integrated Business Planning** | **Strong** (Structured 5-step monthly cycle tracking: Portfolio → Demand → Supply → Finance → Exec Review) | [/api/sop/ibp-cycle-status](DemandPlanningSaaS/backend/main.py#L2274) |
-| **Scenario-Based S&OP** | **Strong** (Comparison of Conservative, Base Case, Aggressive, and Disruption scenarios) | [/api/sop/scenario-compare](DemandPlanningSaaS/backend/main.py#L2444) |
-| **Strategic Planning Horizon** | **Strong** (Multi-year, rolling 36-month strategic view mapping CAPEX triggers and growth targets) | [/api/sop/strategic-horizon](DemandPlanningSaaS/backend/main.py#L2484) |
-
----
-
-### 4. Financial Planning
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Revenue Forecasting** | **Strong** (Calculated in budgeting, P&L modeling, and scenario runs) | [finance/index.tsx](DemandPlanningSaaS/frontend/src/modules/finance/index.tsx) |
-| **Margin Analysis** | **Strong** (Gross margin ($) and percentage calculations at category and SKU levels) | [/api/finance/profitability](DemandPlanningSaaS/backend/main.py#L2685) |
-| **COGS Analysis** | **Strong** (Budgets and profitability waterfall breakdowns) | [/api/finance/profitability](DemandPlanningSaaS/backend/main.py#L2685) |
-| **Financial Projections** | **Strong** (Variance comparison sheets comparing operational forecasts vs. annual operating plans) | [/api/finance/budget](DemandPlanningSaaS/backend/main.py#L2639) |
-| **Cash Flow Forecasting** | **Strong** (Direct-method cash flow projections utilizing DSO and DPO collection lags) | [/api/finance/cash-flow](DemandPlanningSaaS/backend/main.py#L2576) |
-| **Budget Planning** | **Strong** (Annual Operating Plan generation with targeted category growth metrics) | [/api/finance/budget](DemandPlanningSaaS/backend/main.py#L2639) |
-| **Profitability Modeling** | **Strong** (Category-level profitability tier classification: Star, Core, Drag) | [/api/finance/profitability](DemandPlanningSaaS/backend/main.py#L2685) |
-| **Working Capital Planning** | **Strong** (Full Cash Conversion Cycle: DIO + DSO - DPO mapping net working capital) | [/api/finance/working-capital](DemandPlanningSaaS/backend/main.py#L2729) |
-
----
-
-### 5. Scenario Planning & Digital Twin
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **What-if Analysis** | **Strong** (5 interactive sliders modeling demand, price, COGS, promo, and capacity adjustments) | [finance/index.tsx](DemandPlanningSaaS/frontend/src/modules/finance/index.tsx) |
-| **Scenario Library** | **Strong** (Multi-scenario comparisons and simulation templates) | [/api/twin/scenario-comparison](DemandPlanningSaaS/backend/main.py#L1203) |
-| **Scenario Comparison** | **Strong** (Simulates multi-scenario outcomes side-by-side) | [/api/twin/scenario-comparison](DemandPlanningSaaS/backend/main.py#L1203) |
-| **Financial Impact Simulation** | **Strong** (Simulates real-time EBITDA, Revenue, Cost, and Margin variances) | [/api/twin/simulate-scenario](DemandPlanningSaaS/backend/main.py#L1112) |
-| **Supply Chain Simulation** | **Strong** (Demand shock propagation and Monte Carlo risk simulations) | [twin/index.tsx](DemandPlanningSaaS/frontend/src/modules/twin/index.tsx) |
-| **Demand Shock Simulation** | **Strong** (Bullwhip effect simulation tracking weekly order volatility, recovery speed, and stockouts) | [/api/twin/demand-shock](DemandPlanningSaaS/backend/main.py#L2783) |
-| **Digital Twin Visualization** | **Strong** (Interactive network layout utilizing React Flow to map factories, DCs, and stores) | [twin/index.tsx](DemandPlanningSaaS/frontend/src/modules/twin/index.tsx) |
-| **Risk Modeling** | **Strong** (Monte Carlo simulation running 1000 iterations to predict service and stockout probabilities) | [/api/twin/monte-carlo](DemandPlanningSaaS/backend/main.py#L2876) |
-
----
-
-### 6. AI & Decision Intelligence
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **AI Diagnostics** | **Strong** (Forecast Value Added (FVA) metrics and Coefficient of Variation (CV) demand entropy quadrants) | [diagnostics/index.tsx](DemandPlanningSaaS/frontend/src/modules/diagnostics/index.tsx) |
-| **Exception Detection** | **Strong** (Anomaly detection engine utilizing Isolation Forest models) | [/api/analytics/anomaly-detection](DemandPlanningSaaS/backend/main.py#L1940) |
-| **Root Cause Analysis** | **Strong** (AI Copilot evaluates MAPE, lead times, and capacity to report root causes) | [CopilotPanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/CopilotPanel.tsx) |
-| **AI Recommendations** | **Strong** (Prescriptive AI actions generated with priority status and execution choices) | [/api/ai/prescriptive-actions](DemandPlanningSaaS/backend/main.py#L845) |
-| **AI Copilot** | **Strong** (Provider-agnostic streaming assistant supporting 9 models with context injection) | `aiProviders.ts` • [CopilotPanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/CopilotPanel.tsx) |
-| **Conversational Analytics** | **Strong** (Copilot reads live dashboard metrics, SKU lists, and KPIs) | `contextualPrompts.ts` • [CopilotPanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/CopilotPanel.tsx) |
-| **Automated Insights** | **Strong** (Interactive "Planora AI Insights" panel in Global Analytics suggesting specific actions) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Prescriptive Decisioning** | **Strong** (Action recommendations linked directly to system triggers) | [/api/ai/prescriptive-actions](DemandPlanningSaaS/backend/main.py#L845) |
-| **Autonomous Planning** | **Strong** (Autopilot system toggle configuring specific SKUs for unattended updates) | [/api/ai/autonomous-planning/enable](DemandPlanningSaaS/backend/main.py#L913) |
-
----
-
-### 7. Category Management
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Category Scorecards** | **Strong** (Classifies categories by role: Destination, Routine, Convenience, Seasonal) | [/api/category/roles](DemandPlanningSaaS/backend/main.py#L2970) |
-| **Category Profitability** | **Strong** (P&L waterfalls aggregated at the category level) | [/api/finance/profitability](DemandPlanningSaaS/backend/main.py#L2685) |
-| **SKU Rationalization** | **Strong** (Margin optimization ranks high vs. low-yield SKUs to suggest catalog cleanups) | [finance/index.tsx](DemandPlanningSaaS/frontend/src/modules/finance/index.tsx) |
-| **Long Tail Analysis** | **Strong** (Identified in ABC/XYZ segment matrices to flag highly volatile, slow-moving items) | [/api/inventory/abc-xyz](DemandPlanningSaaS/backend/main.py#L684) |
-| **Assortment Optimization** | **Strong** (Keep/Drop/Add assortment solver in Retail Planning module) | [/api/retail/assortment-analysis](DemandPlanningSaaS/backend/main.py#L1439) |
-| **Category Forecasting** | **Strong** (Aggregated category volume forecasting and historical charts) | [demand/index.tsx](DemandPlanningSaaS/frontend/src/modules/demand/index.tsx) |
-| **Product Lifecycle Analysis** | **Strong** (Product review cadence and new product cloning templates) | [/api/sop/ibp-cycle-status](DemandPlanningSaaS/backend/main.py#L2274) |
-| **Cannibalization Analysis** | **Strong** (Promotion ROI engine subtracts cannibalized future sales) | [/api/pricing/promo-roi](DemandPlanningSaaS/backend/main.py#L3156) |
-| **Space Optimization** | **Strong** (Planogram layout solver utilizing SciPy linear programming) | [/api/retail/space-optimization](DemandPlanningSaaS/backend/main.py#L1232) |
-
----
-
-### 8. Pricing & Promotion Optimization
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Price Simulation** | **Strong** (Volume response projection utilizing demand elasticity curves) | [/api/pricing/simulate](DemandPlanningSaaS/backend/main.py#L3097) |
-| **Promotion Planning** | **Strong** (Promo calendar mapping and event forecasting) | [/api/events/create](DemandPlanningSaaS/backend/main.py#L507) |
-| **Promotion ROI** | **Strong** (Calculates net promo ROI, discount costs, and incremental margin) | [/api/pricing/promo-roi](DemandPlanningSaaS/backend/main.py#L3156) |
-| **Markdown Optimization** | **Strong** (Dynamic markdown alerts for excess stock and retail clearance optimizations) | [/api/pricing/dynamic](DemandPlanningSaaS/backend/main.py#L3226) • [/api/retail/markdown-optimization](DemandPlanningSaaS/backend/main.py#L1347) |
-| **Elasticity Modeling** | **Strong** (Estimation of price elasticity curves to locate profit-maximizing price points) | [/api/pricing/elasticity](DemandPlanningSaaS/backend/main.py#L3050) |
-| **Dynamic Pricing Recs** | **Strong** (Markup/markdown signals based on inventory cover and margin ceilings) | [/api/pricing/dynamic](DemandPlanningSaaS/backend/main.py#L3226) |
-| **Margin Impact Analysis** | **Strong** (Simulated across pricing simulation and promotion ROI engines) | [/api/pricing/simulate](DemandPlanningSaaS/backend/main.py#L3097) |
-
----
-
-### 9. Supplier Collaboration
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Supplier Scorecards** | **Strong** (KPI tab with average lead time, lead time volatility, inbound OTIF %, and computed supply risk) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **OTIF Tracking** | **Strong** (Tracked in Service & Fulfillment dashboard and supplier scorecard sections) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Lead Time Monitoring** | **Strong** (Average lead time and lead time volatility tracked per supplier) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Forecast Sharing** | **Strong** (Exposed webhook: `webhook: forecast.published`) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
-| **Shipment Visibility** | **Strong** (Exposed webhook: `webhook: shipment.delivered`) | [/api/execution/api-registry](DemandPlanningSaaS/backend/main.py#L3393) |
-| **Supplier Risk Scoring** | **Strong** (Risk levels: High, Medium, Low calculated based on lead time volatility and OTIF gaps) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Collaborative Planning** | **Strong** (Planners publish unconstrained forecast targets, suppliers enter capacity commits with shortage gap warnings) | [/api/supplier/commit](DemandPlanningSaaS/backend/main.py) • [supplier/index.tsx](DemandPlanningSaaS/frontend/src/modules/supplier/index.tsx) |
-| **Supplier Portal** | **Strong** (Dedicated external workspace for vendor sign-ins, production confirmations, and ASN uploads) | [supplier/index.tsx](DemandPlanningSaaS/frontend/src/modules/supplier/index.tsx) |
-
----
-
-### 10. Workforce Planning
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Workforce Scenarios** | **Strong** (Headcount and labor limit constraints simulated in S&OP RCCP capacity review) | [sop/index.tsx](DemandPlanningSaaS/frontend/src/modules/sop/index.tsx) |
-| **Staffing Forecasting** | **Strong** (Workforce headcount requirements calculated based on daily pick volume requirements) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Shift Planning** | **Strong** (Shift allocation planners tracking morning, afternoon, night, and weekend staff metrics) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Labor Cost Forecasting** | **Strong** (Overtime payroll cost projections calculated inside workforce risk gauges) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
-| **Productivity Modeling** | **Strong** (Hourly pick efficiency trackers (m/s) per picker lane in DC facilities) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Overtime Forecasting** | **Strong** (Active overtime alarms triggering when hours breach consensus safety rules limits) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
-| **Workforce Capacity Plan** | **Strong** (Shift headcount requirements modeled dynamically side-by-side with warehouse congestion speed metrics) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-
----
-
-### 11. Retail & Assortment Planning
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Store Clustering** | **Strong** (K-means store clustering algorithm assigning stores to volume/margin categories) | [/api/retail/store-clustering](DemandPlanningSaaS/backend/main.py#L1286) |
-| **Localized Assortment** | **Strong** (Assortment recommendations solver recommending items to Keep/Drop/Add per cluster) | [/api/retail/assortment-analysis](DemandPlanningSaaS/backend/main.py#L1439) |
-| **Shelf Space Optimization** | **Strong** (Planogram space optimization utilizing SciPy linear programming solver) | [/api/retail/space-optimization](DemandPlanningSaaS/backend/main.py#L1232) |
-| **Assortment Planning** | **Strong** (Assortment analysis workbenches in UI modules) | [retail/index.tsx](DemandPlanningSaaS/frontend/src/modules/retail/index.tsx) |
-| **Store-Level Forecasting** | **Strong** (Localized store cluster volume predictions) | [retail/index.tsx](DemandPlanningSaaS/frontend/src/modules/retail/index.tsx) |
-| **Retail Performance Analytics** | **Strong** (Category-level revenue and margins aggregated over store databases) | [retail/index.tsx](DemandPlanningSaaS/frontend/src/modules/retail/index.tsx) |
-
----
-
-### 12. Warehouse Intelligence
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Replenishment Opt.** | **Strong** (Safety Stock, dynamic ROP, and EOQ calculations mapped to auto-reorder actions) | [/api/inventory/rop/dynamic](DemandPlanningSaaS/backend/main.py#L1997) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Warehouse Capacity Plan** | **Strong** (Spatial capacity calculations mapping total vs. utilized pallet spaces with flex leases) | [/api/warehouse/capacity](DemandPlanningSaaS/backend/main.py) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Slotting Optimization** | **Strong** (Location heuristic solver re-routing SKU coordinates based on pick velocities) | [/api/warehouse/slotting/optimize](DemandPlanningSaaS/backend/main.py) • [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Congestion Prediction** | **Strong** (Lanes congestion mapping tracking picker movement speeds and promotional bottlenecks) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Throughput Forecasting** | **Strong** (Rolling composed charts predicting putaway vs. outbound picking volumes) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-| **Labor Planning** | **Strong** (Operator shift planner estimating headcount requirements based on pick loads) | [inventory/index.tsx](DemandPlanningSaaS/frontend/src/modules/inventory/index.tsx) |
-
----
-
-### 13. Executive Control Tower
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **Enterprise KPI Dashboard** | **Strong** (Integrated dashboards inside Global Analytics displaying trailing metrics) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Revenue Risk Dashboard** | **Strong** (Variance cards mapping gap to budget targets, carrying cost, and revenue at risk) | [sop/index.tsx](DemandPlanningSaaS/frontend/src/modules/sop/index.tsx) • [finance/index.tsx](DemandPlanningSaaS/frontend/src/modules/finance/index.tsx) |
-| **Inventory Risk Dashboard** | **Strong** (Stockout alarms, carrying costs, and E&O metrics grouped visually) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Supplier Risk Dashboard** | **Strong** (Computed supplier scorecards tracking lead time volatility and risk ratings) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Executive AI Briefing** | **Strong** (Planora AI Insights panels synthesizing anomaly detection and business alerts) | [analytics/index.tsx](DemandPlanningSaaS/frontend/src/modules/analytics/index.tsx) |
-| **Cross-Functional Alerts** | **Strong** (System toast engine and visual warning indicators color-coded by severity) | `Toast.tsx` • [AppShell.tsx](DemandPlanningSaaS/frontend/src/components/ui/AppShell.tsx) |
-| **Workforce Risk Dashboard** | **Strong** (Personnel metrics dashboard summarizing facility shift allocation and active overtime alarms) | [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
-
----
-
-### 14. Data & Analytics
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **BI Dashboards** | **Strong** (Pre-built dashboards showing comprehensive visual metrics) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Visual Query Builder** | **Strong** (Interactive query builder panel in BI workspace) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Custom Dashboards** | **Strong** (Fully drag-and-drop dashboard customizer layout) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Data Exploration** | **Strong** (Server-paginated data grid displaying raw data uploads with sorting/filtering) | `DataExplorer.tsx` • [demand/index.tsx](DemandPlanningSaaS/frontend/src/modules/demand/index.tsx) |
-| **Self-Service Analytics** | **Strong** (Planners can create, customize, and save custom BI widgets) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Semantic Layer** | **Strong** (Inline forms to define custom dimensions, measures, and computed rules) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Metric Catalog** | **Strong** (Single source of truth KPI matrix permitting inline target threshold editing) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-| **Data Lineage** | **Strong** (Traceability flowchart mapping file uploads, database schemas, model engines, and outbound syncs) | [bi/index.tsx](DemandPlanningSaaS/frontend/src/modules/bi/index.tsx) |
-
----
-
-### 15. Platform & Governance
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **RBAC** | **Strong** (JWT-based role-based control mapping 4 user tiers to 14 permissions) | [AuthContext.tsx](DemandPlanningSaaS/frontend/src/store/AuthContext.tsx) |
-| **Multi-Currency** | **Strong** (Support for 10 currencies with dynamic currency rates) | [PlatformContext.tsx](DemandPlanningSaaS/frontend/src/store/PlatformContext.tsx) |
-| **Localization** | **Strong** (Interface scales according to locale selections) | [PlatformContext.tsx](DemandPlanningSaaS/frontend/src/store/PlatformContext.tsx) |
-| **Audit Trail** | **Strong** (Database model tracking action type, user, timestamp, and metadata) | [models.py:L41](DemandPlanningSaaS/backend/models.py#L41) • [/api/audit/logs](DemandPlanningSaaS/backend/main.py#L340) |
-| **Workflow Approvals** | **Strong** (Approval queue manager handling pending items, requester info, status, and comments) | [models.py:L84](DemandPlanningSaaS/backend/models.py#L84) • [/api/workflow/approval/pending](DemandPlanningSaaS/backend/main.py#L983) |
-| **Version Control** | **Strong** (Saves operational forecast versions and performs side-by-side dataset version diff comparisons) | [/api/datasets/diff](DemandPlanningSaaS/backend/main.py#L2248) • [/api/forecast/save-version](DemandPlanningSaaS/backend/main.py#L2156) |
-| **Master Data Management** | **Strong** (Seeded SKU registry API supporting SKU codes, category, costs, lead times, and suppliers) | [models.py:L99](DemandPlanningSaaS/backend/models.py#L99) • [/api/master-data/skus](DemandPlanningSaaS/backend/main.py#L1041) |
-| **Data Governance** | **Strong** (Rules settings mapping consensus cap overrides, minimum service levels, and write-blocking SKU locks) | [/api/governance/settings](DemandPlanningSaaS/backend/main.py) • [AdminGovernancePanel.tsx](DemandPlanningSaaS/frontend/src/components/ui/AdminGovernancePanel.tsx) |
-
----
-
-### 16. Execution Systems
-
-| Feature | Capability Status | Codebase Reference |
-| :--- | :--- | :--- |
-| **ERP Integration** | **Strong** (Simulated SAP S/4HANA & Oracle Fusion connectors with live Force Data Sync triggers logging events to the ledger) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
-| **WMS Integration** | **Strong** (Simulated Manhattan WMS connector with dynamic inventory sync triggers and outbound STO document downloaders) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
-| **Real-Time APIs** | **Strong** (Interactive API sandbox allowing planners to configure headers, mock JSON payloads, and test live queries) | [execution/index.tsx](DemandPlanningSaaS/frontend/src/modules/execution/index.tsx) |
-| **TMS Integration** | **Strong** (Simulated ORTEC TMS connector with active logistics route sync and outbound EDI Motor Carrier Load Tender exports) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
-| **Procurement Integration** | **Strong** (Simulated Coupa Procurement connector with active purchase requisition sync and cXML downloads) | [/api/execution/connectors](DemandPlanningSaaS/backend/main.py#L3279) • [/api/execution/connectors/sync](DemandPlanningSaaS/backend/main.py) |
-| **Event Streaming** | **Strong** (Outbound/inbound transactional logs reading from actual database logs via live 5s intervals) | [/api/execution/event-stream](DemandPlanningSaaS/backend/main.py) • [execution/index.tsx](DemandPlanningSaaS/frontend/src/modules/execution/index.tsx) |
-
-## 🏃 Local Setup & Running Instructions
-
-To run the platform concurrently, you can use the included setup shell script or start the services separately.
-
-### Prerequisites
-* **Node.js**: v18.0 or higher
-* **Python**: v3.9 or higher
-
-### Method A: Quick Start (Shell Script)
-Run the automated initialization script from the root project directory:
-```bash
-chmod +x DemandPlanningSaaS/run_platform.sh
-./DemandPlanningSaaS/run_platform.sh
-```
-This script initializes the Python virtual environment, installs dependencies, handles node module compilation, and launches both Next.js and FastAPI dev servers.
-
----
-
-### Method B: Manual Service Inception
-
-#### 1. Spin up the FastAPI Backend
 ```bash
 cd DemandPlanningSaaS/backend
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install requirements
 pip install -r requirements.txt
 
-# Start FastAPI server (runs on port 8000)
-python3 main.py
+cp .env.example .env          # set JWT_SECRET_KEY (openssl rand -hex 32)
+alembic upgrade head          # create the schema (migrations own it — no auto-create)
+SEED_ADMIN_PASSWORD='change-me' python -m scripts.seed_default_org \
+    --email admin@planora.ai --name 'Admin User'   # seed default org + first admin
+
+uvicorn main:app --reload     # http://localhost:8000
 ```
 
-#### 2. Spin up the Next.js Frontend
+### Frontend
+
 ```bash
 cd DemandPlanningSaaS/frontend
-
-# Install dependencies
 npm install
-
-# Start Next.js dev server (runs on port 3000)
-npm run dev
+npm run dev                    # http://localhost:3000
 ```
 
-Open your browser to [http://localhost:3000](http://localhost:3000) to access the landing portal and planning workspaces.
+Sign in with the admin you seeded above. (There are no more hardcoded demo accounts —
+users live in the database.)
+
+### Tests
+
+```bash
+cd DemandPlanningSaaS/backend
+pytest
+```
 
 ---
 
-## 📊 Canonical Ingestion Schema
-When uploading demand data through the UI's **Upload** tool, your CSV/Excel file should map to the following canonical database structure:
+## Canonical ingestion schema
+
+Upload CSV/Excel demand history mapping to:
 
 | Field | Type | Description |
 |---|---|---|
-| `date` | DateTime | Timestamp representing the period of demand (Day, Week, Month) |
-| `target_demand` | Float | Historical actual quantity sold |
-| `sku` | String | Unique Stock Keeping Unit identifier |
-| `category` | String | Product line classification (e.g., Electronics, Accessories) |
-| `location` | String | Warehouse, distribution center, or store locator |
-| `channel` | String | Sales channel (e.g., Online, Retail, Wholesale) |
-| `exogenous_variables` | JSON | Optional external factors (e.g., price, temperature, promo flag) |
+| `date` | DateTime | Period of demand (day/week/month) |
+| `target_demand` | Float | Historical actual quantity |
+| `sku` | String | Stock Keeping Unit |
+| `category` | String | Product line |
+| `location` | String | Warehouse / DC / store |
+| `channel` | String | Sales channel |
+| `exogenous_variables` | JSON | Optional external factors (price, promo, weather) |
 
 ---
 
-## 🗺️ Roadmap & Upcoming Features
-* **Multi-Site Multi-Currency Consolidation**: Provide unified currency translation and localization overlays across diverse geographic supplier nodes.
-* **Top-down/Bottom-up Consensus Editing**: Automatically allocate category-level manual forecast adjustments down to individual SKUs proportionally.
-* **Real-time EDI Event Streaming Integration**: Connect simulated event-stream webhooks directly into live message queues.
+## Roadmap
+
+Per the Build Charter, development proceeds in phases, each with an exit gate:
+
+- **Phase 0 — Foundation** ✅ *complete* (multi-tenancy, auth, RBAC, migrations, tests, CI).
+- **Phase 1 — Real Primary Loop** — harden Demand → FVA → Inventory → Consensus on real
+  uploaded data, mock-free, with async batch forecasting and real ingestion.
+- **Phase 2 — Productionization** — security hardening, observability, caching, one real integration.
+- **Phase 3 — Differentiation** — server-side AI gateway and agentic planning (the moat).
+- **Phase 4 — Expansion** — turn 🟡 modules real, in demand order.
+
+See **[PLANORA_BUILD_CHARTER.md](PLANORA_BUILD_CHARTER.md)** §6 for the full roadmap and exit gates.
+
+---
+
+## License
+
+Proprietary. © Planora AI. All rights reserved.

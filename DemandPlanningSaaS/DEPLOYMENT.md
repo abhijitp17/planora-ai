@@ -38,25 +38,35 @@ This starts:
 - FastAPI backend (port 8000)
 - Next.js frontend (port 3000)
 
-### 3. Verify services
+### 3. Apply migrations and seed the first admin
+
+Schema is owned by Alembic (there is no implicit `create_all`), and there are **no
+hardcoded default accounts** — you create the first admin explicitly:
 
 ```bash
-# Check health
-curl http://localhost:8000/
-curl http://localhost:3000
+# Apply migrations inside the backend container
+docker exec -it planora-backend alembic upgrade head
 
-# View logs
-docker-compose -f docker-compose.prod.yml logs -f backend
-docker-compose -f docker-compose.prod.yml logs -f frontend
+# Seed the default organization + first admin (choose a strong password)
+docker exec -it planora-backend sh -c \
+  "SEED_ADMIN_PASSWORD='<a-strong-password>' python -m scripts.seed_default_org \
+     --email admin@yourcompany.com --name 'Admin'"
 ```
 
-### 4. Access the platform
+### 4. Verify services
 
-Open `http://localhost:3000` and sign in with:
-- Email: `admin@planora.ai`
-- Password: `admin123`
+```bash
+curl http://localhost:8000/            # liveness
+curl http://localhost:8000/health/ready # readiness (checks DB connectivity)
+curl http://localhost:3000
 
-**CRITICAL**: Change the default admin password immediately in production.
+docker-compose -f docker-compose.prod.yml logs -f backend
+```
+
+### 5. Access the platform
+
+Open `http://localhost:3000` and sign in with the admin credentials you seeded above.
+`JWT_SECRET_KEY` must be set (there is no insecure default) — see `.env.example`.
 
 ---
 
@@ -140,7 +150,7 @@ yourdomain.com {
 
 ## Production Checklist
 
-- [ ] Change all default passwords (`admin123`, database password)
+- [ ] Set a strong seeded admin password (no default account exists) and database password
 - [ ] Generate and set `JWT_SECRET_KEY` (min 32 random chars)
 - [ ] Configure HTTPS with valid SSL certificate
 - [ ] Set `CORS_ORIGINS` to your actual domain

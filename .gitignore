@@ -61,6 +61,9 @@ dist/
 *.log
 *.pem
 .env*
+# ...but keep committed env templates (they contain no secrets).
+!.env.example
+!.env.template
 .vercel
 *.tsbuildinfo
 next-env.d.ts

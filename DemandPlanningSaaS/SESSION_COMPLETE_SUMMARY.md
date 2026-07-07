@@ -1,5 +1,11 @@
 # Planora AI — Complete Development Session Summary
 
+> ⚠️ **HISTORICAL / SUPERSEDED — do not treat as current status.**
+> This session summary overstates completeness (e.g. "82% complete", modules "100% Strong") and
+> predates the Phase 0 foundation work. Many capabilities it describes as done are simulated or
+> partial. Retained for history only. See the **[Build Charter](../PLANORA_BUILD_CHARTER.md)**
+> (Reality Matrix) and **[PRD](../PLANORA_PRD.md)** for accurate current status.
+
 **Session Date:** June 12, 2026  
 **Total Development Time:** ~6 hours  
 **Total Features Delivered:** 60+  

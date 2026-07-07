@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, UniqueConstraint
 from database import Base
+from tenant_mixin import TenantMixin
 
-class DemandRecord(Base):
+class DemandRecord(Base, TenantMixin):
     """
     Canonical Data Model for Demand Planning
     """
@@ -23,7 +24,7 @@ class DemandRecord(Base):
     planner_id = Column(String, index=True)
     dataset_version = Column(String, index=True, nullable=False)
 
-class ForecastResult(Base):
+class ForecastResult(Base, TenantMixin):
     """
     Stores forecast outputs
     """
@@ -38,7 +39,7 @@ class ForecastResult(Base):
     horizon = Column(Integer, nullable=False)
     dataset_version = Column(String, index=True, nullable=False)
 
-class AuditLog(Base):
+class AuditLog(Base, TenantMixin):
     """
     Governance & Auditability
     """
@@ -56,7 +57,7 @@ class AuditLog(Base):
 # Demand Sensing & Event-Based Models
 # ═════════════════════════════════════════════════════════════════════════════
 
-class DemandSensingSignal(Base):
+class DemandSensingSignal(Base, TenantMixin):
     __tablename__ = "demand_sensing_signals"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -68,7 +69,7 @@ class DemandSensingSignal(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-class CalendarEvent(Base):
+class CalendarEvent(Base, TenantMixin):
     __tablename__ = "calendar_events"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -81,7 +82,7 @@ class CalendarEvent(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Workflow Approvals
-class ApprovalRequest(Base):
+class ApprovalRequest(Base, TenantMixin):
     __tablename__ = "approval_requests"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -96,11 +97,17 @@ class ApprovalRequest(Base):
     comments = Column(String)
 
 # Master Data Management
-class SKUMaster(Base):
+class SKUMaster(Base, TenantMixin):
     __tablename__ = "sku_master"
-    
+    # SKU codes are unique WITHIN an organization, not globally — two tenants may
+    # legitimately use the same SKU code. (Global uniqueness would be a cross-tenant
+    # write-interference bug.)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "sku", name="uq_sku_master_org_sku"),
+    )
+
     id = Column(Integer, primary_key=True, index=True)
-    sku = Column(String, unique=True, nullable=False, index=True)
+    sku = Column(String, nullable=False, index=True)
     name = Column(String, nullable=False)
     category = Column(String, nullable=False, index=True)
     unit_cost = Column(Float, nullable=False)
